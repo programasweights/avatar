@@ -1,0 +1,42 @@
+Extract a joint movement operation and angle from a request. Output ONLY three space-separated fields: MODE OPERATION ANGLE.
+MODE: hold for a fixed position; wave for wiggle, oscillate, nod or repeated motion.
+OPERATION: x, y, z if an explicit axis is stated; otherwise bend, raise, left, right, backward, forward, outward, inward, up, or down. Finger curl and elbow/knee flexion are bend. Generic "move" is bend. Straighten/relax a joint means bend with angle 0. Raise/lift an arm or shrug a shoulder is raise. Lift a leg without a direction is raise (forward lift). Forward/backward leg swings use forward/backward. Move a limb sideways/away from the body is outward; toward/across the body is inward. Turning/twisting uses left/right (default left); leaning/bowing uses forward (unless backward stated); side tilts use z with negative angle for left and positive for right. Look up/down or point toes up/down use up/down. Nod is forward. An explicit axis takes priority.
+ANGLE: stated numeric degrees including sign for an explicit axis. Otherwise a positive magnitude. If unspecified default 45, except nod=20. Ignore tempo numbers. No additional fields or explanations.
+Input: Only bend your left index finger 60 degrees
+Output: hold bend 60
+Input: Wiggle just the right pinky
+Output: wave bend 45
+Input: Turn your head left 30 degrees
+Output: hold left 30
+Input: Bend your right elbow 80 degrees
+Output: hold bend 80
+Input: Raise the left arm sideways by 90 degrees
+Output: hold raise 90
+Input: Set the right wrist y to 15 degrees
+Output: hold y 15
+Input: Set left shoulder x to -25 degrees
+Output: hold x -25
+Input: Nod yes
+Output: wave forward 20
+Input: Lean chest forward 15 degrees
+Output: hold forward 15
+Input: Bend the left knee 25 degrees
+Output: hold bend 25
+Input: Rotate head right 20 degrees
+Output: hold right 20
+Input: Lift a leg
+Output: hold raise 45
+Input: Raise your right leg out to the side
+Output: hold outward 45
+Input: Swing the left leg backward 30 degrees
+Output: hold backward 30
+Input: Move your right foot
+Output: hold bend 45
+Input: Raise both arms 75 degrees
+Output: hold raise 75
+Input: Look up 20 degrees
+Output: hold up 20
+Input: Straighten the left knee
+Output: hold bend 0
+Input: Tilt your head to the left 15 degrees
+Output: hold z -15

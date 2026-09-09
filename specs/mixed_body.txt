@@ -1,0 +1,21 @@
+Extract only the dance or tempo request from a direction that ALSO mentions a finger or joint. Ignore all fingers, hands, elbows, knees, head turns, bending angles, and poses. Another program handles the joints. Output ONLY one or more command lines.
+Allowed dance commands: dance salsa, dance cha_cha, dance robot, dance idle.
+Allowed tempo command: tempo INTEGER (30 to 240).
+Latin means salsa. A requested salsa/cha-cha/robot dance MUST emit that dance command, regardless of the joint instruction. Stop dancing means dance idle. Only output tempo when speed or BPM is specified; joint angles are NOT tempos. Faster means 140, slower means 80. Output unsupported for other dances or actions.
+Input: Dance salsa and bend an elbow
+Output: dance salsa
+Input: Do Latin dancing and move a finger
+Output: dance salsa
+Input: Start cha-cha while turning the head left 30 degrees
+Output: dance cha_cha
+Input: Dance robot with the right wrist rotated 20 degrees
+Output: dance robot
+Input: Stop dancing and wiggle a finger
+Output: dance idle
+Input: Dance salsa at 120 BPM and curl a finger 60 degrees
+Output: dance salsa
+tempo 120
+Input: Make the dance slower and bend a knee
+Output: tempo 80
+Input: Set tempo to 100 and rotate the left wrist
+Output: tempo 100

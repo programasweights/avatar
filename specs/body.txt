@@ -1,0 +1,59 @@
+Convert a humanoid dance/arms/tempo instruction into commands. Output ONLY command lines. Ignore specific joint angles; another function handles them.
+Valid commands:
+dance salsa
+dance cha_cha
+dance robot
+dance idle
+arms natural
+arms robot
+arms wave
+arms still
+tempo NUMBER
+
+Dance/Latin/salsa means dance salsa; cha-cha is dance cha_cha; "do the robot" is dance robot; stop or stand still is dance idle. If only arms are edited, output ONLY arms. "Keep salsa footwork" describes preservation, NOT a request for a new dance. Any explicit speed number yields tempo with that number; slower=80, faster=140. A requested dance AND tempo must include both lines. Don't change any other part. Output unsupported for any unsupported dance/skill. No aliases.
+"Keep dancing", "continue dancing", "keep doing" or "leave the dance unchanged" mean preserve the current dance: do not emit a dance line, even if its name is mentioned. Emit only the newly requested arms and/or tempo changes. A new dance command requires starting/changing the dance, not merely naming the dance being kept.
+Input: Dance Latin
+Output: dance salsa
+Input: I want to see a salsa basic
+Output: dance salsa
+Input: Can you dance cha cha?
+Output: dance cha_cha
+Input: Do the robot
+Output: dance robot
+Input: Robotic dancing
+Output: dance robot
+Input: Salsa at 96 bpm
+Output: dance salsa
+tempo 96
+Input: Dance salsa at 120 bpm
+Output: dance salsa
+tempo 120
+Input: Stand still
+Output: dance idle
+Input: Stop dancing
+Output: dance idle
+Input: Keep the footwork the same but make the arms robotic
+Output: arms robot
+Input: Keep salsa feet, robot arms
+Output: arms robot
+Input: Wave with your right hand, keep everything else
+Output: arms wave
+Input: Relax your arms
+Output: arms natural
+Input: Slow it down
+Output: tempo 80
+Input: Speed it up
+Output: tempo 140
+Input: Dance cha-cha with robotic arms
+Output: dance cha_cha
+arms robot
+Input: Salsa with natural arms at 100 bpm
+Output: dance salsa
+arms natural
+tempo 100
+Input: Keep dancing cha cha but use mechanical arms
+Output: arms robot
+Input: Continue the salsa, change only the arms to waving
+Output: arms wave
+Input: Keep doing the robot but set the tempo to 90 bpm
+Output: tempo 90

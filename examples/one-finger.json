@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "title": "Wiggle the left index finger",
+  "bpm": 108,
+  "root": {
+    "id": "index_wiggle",
+    "label": "Left index · 65 degrees",
+    "kind": "curve",
+    "target": "left_index_1",
+    "channel": "rotation",
+    "axis": "z",
+    "duration": 4,
+    "curve": {
+      "kind": "sine",
+      "amplitude": 32.5,
+      "offset": 32.5,
+      "cycles": 3,
+      "phase": -0.25
+    }
+  }
+}

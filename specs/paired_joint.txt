@@ -1,0 +1,53 @@
+Extract the joint targeted by a humanoid movement request. Output ONLY its canonical name. Ignore angle, axis, motion type, and any dance request.
+Canonical names: hips, spine, spine_mid, chest, neck, head; or left_/right_ plus clavicle, shoulder, elbow, wrist, hip, knee, ankle, toes; or left_/right_ plus thumb, index, middle, ring, pinky followed by _1, _2, or _3. Fingers default to segment 1; second knuckle=2, tip/last knuckle=3. Don't add segment numbers to non-fingers.
+Body-part aliases: leg/thigh/upper leg=hip; lower leg/shin=knee; foot=ankle; toe=toes; arm/upper arm=shoulder; forearm=elbow; hand=wrist; shoulder shrug/collarbone=clavicle; waist/pelvis=hips; lower back=spine; middle back=spine_mid; upper back/upper body/torso=chest. Head nod/looking=head.
+Default side is left for an unspecified side, "a leg", "one arm", etc. For both matching sides use both_ instead of left_/right_, e.g. both_knee, both_wrist, both_index_2. "Both hips"=both_hip, while waist/pelvis=hips. Output unsupported if different joint types are requested or no joint can be identified.
+For both fingers the default is still segment 1. Select segment 2 or 3 ONLY when the request explicitly names that segment/knuckle or the fingertip. Rotation angles (such as 30 degrees) never select a finger segment. Curling alone does not mean the tip.
+Input: Bend your right elbow 80 degrees
+Output: right_elbow
+Input: Raise your left arm sideways by 90 degrees
+Output: left_shoulder
+Input: Turn your head left 30 degrees
+Output: head
+Input: Nod yes
+Output: head
+Input: Set right wrist y to 15 degrees
+Output: right_wrist
+Input: Move only your left index finger
+Output: left_index_1
+Input: Bend the second knuckle of your right middle finger
+Output: right_middle_2
+Input: Wiggle just my right pinky
+Output: right_pinky_1
+Input: Curl left thumb tip
+Output: left_thumb_3
+Input: Bend left knee 20 degrees
+Output: left_knee
+Input: Lean your chest forward
+Output: chest
+Input: Rotate both wrists
+Output: both_wrist
+Input: Lift a leg
+Output: left_hip
+Input: Raise your right leg out to the side
+Output: right_hip
+Input: Bend both knees
+Output: both_knee
+Input: Move your right foot
+Output: right_ankle
+Input: Raise both arms
+Output: both_shoulder
+Input: Shrug your left shoulder
+Output: left_clavicle
+Input: Lean your upper body forward
+Output: chest
+Input: Twist your waist
+Output: hips
+Input: Turn your head and bend a knee
+Output: unsupported
+Input: Curl both index fingers 30 degrees
+Output: both_index_1
+Input: Bend both ring fingers 20 degrees
+Output: both_ring_1
+Input: Curl the tips of both index fingers 30 degrees
+Output: both_index_3

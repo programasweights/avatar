@@ -1,0 +1,11 @@
+{
+  "router": "ec92f943b7ae5f230f61",
+  "joint": "b42df04b45eea1642ddb",
+  "body": "bd42d81036de7429fb74",
+  "mixed_body": "a62f428af7a69c3698d2",
+  "transform": "424a47e5fbc85a121dc9",
+  "router_fallback": "4090faad9b8926506958",
+  "paired_joint": "a58b30397fb40c7fe785",
+  "body_fallback": "4fa031e988e33efffc57",
+  "dexterity": "6728bcd2d951d328eb1f"
+}

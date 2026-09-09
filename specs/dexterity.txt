@@ -1,0 +1,60 @@
+Recognize four coordinated avatar motions. Return exactly legacy OR one line:
+skill NAME SIDE DIRECTION
+NAME is finger_ripple, finger_touches, arm_wave, or coin_roll.
+SIDE is left or right. DIRECTION is forward or reverse. No explanations.
+
+finger_ripple: a ripple, cascade, or wave of individual fingers curling one after another across ONE hand. Default side left. forward means pinky, ring, middle, index, thumb; reverse means thumb, index, middle, ring, pinky. A finger ripple runs across the hand; wiggling only one finger is legacy.
+finger_touches: touch the thumb to each fingertip in turn, on ONE hand. Default side left. forward means index, middle, ring, pinky; reverse means pinky, ring, middle, index.
+arm_wave: a traveling wave from one hand through its wrist, elbow, shoulders, and the other arm to the opposite hand. SIDE is the starting hand, default left. Explicit left-to-right is left forward; right-to-left is right forward. Reverse a left-to-right arm wave is left reverse. Waving hello, shaking one hand, robot arms, and ordinary arm raises are legacy.
+coin_roll: roll a coin across ONE hand's knuckles, a coordinated finger trick. Default side left. forward means index toward pinky; reverse means pinky toward index. Flipping, tossing, or spinning a coin, or rolling it on a table, are legacy.
+
+Use forward unless backward, reversed, or the opposite finger order is requested. Use the explicitly named hand. Each request must specify one supported skill. Maintaining an existing dance or footwork is allowed; starting/changing a dance or requesting multiple different skills in one sentence is legacy. Both hands simultaneously is legacy. All other instructions are legacy, including isolated joint rotations, dance choices, tempo changes, facial motions, arbitrary tricks, and instructions to explain something. Standalone "reverse it" is legacy because no prior action is provided. Do not guess the meaning of missing context.
+
+Input: Make a wave from your pinky to your thumb.
+Output: skill finger_ripple left forward
+Input: Ripple the fingers of your right hand from thumb to little finger.
+Output: skill finger_ripple right reverse
+Input: Make the left fingers curl one after another, little finger first.
+Output: skill finger_ripple left forward
+Input: Reverse the finger ripple on the left hand.
+Output: skill finger_ripple left reverse
+Input: Keep dancing and ripple the fingers on your right hand.
+Output: skill finger_ripple right forward
+Input: Touch your thumb to each fingertip, one at a time.
+Output: skill finger_touches left forward
+Input: Tap each finger with the right thumb, starting at the pinky.
+Output: skill finger_touches right reverse
+Input: Touch left thumb to index, then middle, then ring, then pinky.
+Output: skill finger_touches left forward
+Input: Send a wave from your left fingertips to your right fingertips.
+Output: skill arm_wave left forward
+Input: Pass a wave from the right hand through both shoulders to the left hand.
+Output: skill arm_wave right forward
+Input: Reverse the wave that goes from the left hand to the right hand.
+Output: skill arm_wave left reverse
+Input: Roll a coin across your knuckles.
+Output: skill coin_roll left forward
+Input: Walk a coin over my right knuckles, from little finger toward index.
+Output: skill coin_roll right reverse
+Input: Keep the footwork and roll a coin over the left knuckles.
+Output: skill coin_roll left forward
+Input: Wiggle only the left index finger 65 degrees.
+Output: legacy
+Input: Move your left thumb.
+Output: legacy
+Input: Bend both index fingers 30 degrees.
+Output: legacy
+Input: Keep the footwork. Make the arms robotic.
+Output: legacy
+Input: Wave hello with your right hand.
+Output: legacy
+Input: Dance salsa.
+Output: legacy
+Input: Send a wave across both arms then roll a coin.
+Output: legacy
+Input: Ripple both hands simultaneously.
+Output: legacy
+Input: Flip a coin in the air.
+Output: legacy
+Input: Reverse it.
+Output: legacy
