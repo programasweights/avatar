@@ -1,0 +1,108 @@
+Classify one requested edit to an existing avatar motion. Output ONLY freeze TARGET, restore TARGET, or none.
+First reject informational requests: questions about how editing works, explanations, instructions/tutorials, and hypothetical examples are none even when they mention pausing a finger. A polite action request ("Please pause the ring finger" or "Can you freeze my thumb?") is an edit.
+freeze holds just the named joint/finger at its CURRENT pose while other movement continues. Use for pause, freeze, stop moving, keep still, or disable that part. restore reinstates its saved animation: restore, resume, unfreeze, re-enable, or let it move again. This is NOT setting a new pose or starting an action.
+TARGET is selected; hips, spine, spine_mid, chest, neck, head; or clavicle, shoulder, elbow, wrist, hip, knee, ankle, toes, thumb, index, middle, ring, pinky, optionally prefixed left_, right_, or both_. Fingers may end _1, _2, or _3 ONLY for an explicitly named segment: base/first knuckle=1, second/middle knuckle=2, tip/last knuckle=3. No segment means the WHOLE finger. Do not infer a segment from an angle.
+Use explicit left/right/both. Without a side, leave the prefix OFF so the editor can use the active hand. This/that/it/the selected part means selected. Restore/resume/unfreeze alone means restore selected. Bare freeze means freeze selected. Bare stop, pause, stop moving, and pause it all are none. Pause with NO named part or selected-part pronoun is always none. Requests to stop the entire avatar/scene/animation are none.
+Canonical limb targets matter: an entire leg or thigh is hip, NOT knee. Only the lower leg or shin is knee. A foot is ankle, never foot. Keep these aliases when pausing AND when restoring.
+Aliases: little finger=pinky; pointer/forefinger=index; leg/thigh=hip; shin/lower leg=knee; foot=ankle; toe=toes; arm/upper arm=shoulder; forearm=elbow; hand=wrist; collarbone=clavicle; pelvis/waist=hips; lower back=spine; middle back=spine_mid; torso/upper back=chest. Both hips means both_hip.
+Return none for ordinary movements, new dances/gestures, speed changes, bend/straighten/relax, a requested angle, camera commands, global playback controls, explanations, or multiple unrelated edits. Stop dancing is none. Hold a pose or bend a finger to a fixed angle is none. Restore a file/program/settings, or resume a named dance, is none. A preservation clause (keep the wave/dance/rest going) does not request a new action: classify the one actual pause/restore edit.
+Input: Keep the wave going. Stop just the ring finger.
+Output: freeze ring
+Input: Restore the ring finger.
+Output: restore ring
+Input: Freeze only my left ring finger
+Output: freeze left_ring
+Input: Let the right ring finger move again
+Output: restore right_ring
+Input: Pause this finger
+Output: freeze selected
+Input: Restore that
+Output: restore selected
+Input: Resume
+Output: restore selected
+Input: Freeze
+Output: freeze selected
+Input: Keep doing the ripple, but pause the pinky
+Output: freeze pinky
+Input: Keep everything else moving and hold your right thumb still
+Output: freeze right_thumb
+Input: Unfreeze the little finger
+Output: restore pinky
+Input: Re-enable both index fingers
+Output: restore both_index
+Input: Stop moving both knees
+Output: freeze both_knee
+Input: Pause the left index finger's second knuckle
+Output: freeze left_index_2
+Input: Resume the last knuckle of the right middle finger
+Output: restore right_middle_3
+Input: Stop only the forearm
+Output: freeze elbow
+Input: Unfreeze my left hand
+Output: restore left_wrist
+Input: Keep dancing and pause the head
+Output: freeze head
+Input: Stop your waist from twisting
+Output: freeze hips
+Input: Restore the right shoulder
+Output: restore right_shoulder
+Input: Restore
+Output: restore selected
+Input: Stop dancing
+Output: none
+Input: Stop the whole animation
+Output: none
+Input: Pause
+Output: none
+Input: Freeze the camera
+Output: none
+Input: Resume salsa
+Output: none
+Input: Restore the JSON file
+Output: none
+Input: Keep the wave going and slow it down
+Output: none
+Input: Keep the wave going, bend the ring finger 30 degrees
+Output: none
+Input: Straighten your left index finger
+Output: none
+Input: Hold the left ring finger at 45 degrees
+Output: none
+Input: Wiggle only the left index finger 65 degrees
+Output: none
+Input: Make a wave from pinky to thumb on your left hand.
+Output: none
+Input: Reverse the finger ripple on your right hand.
+Output: none
+Input: Touch your left thumb to each fingertip, index first.
+Output: none
+Input: Roll a coin across your right knuckles.
+Output: none
+Input: Freeze the ring finger and restore the pinky
+Output: none
+Input: Freeze the left leg.
+Output: freeze left_hip
+Input: Stop only the right thigh
+Output: freeze right_hip
+Input: Resume moving the foot.
+Output: restore ankle
+Input: Restore the left leg
+Output: restore left_hip
+Input: Pause the lower right leg
+Output: freeze right_knee
+Input: Explain how to pause a finger
+Output: none
+Input: How do I freeze just the ring finger?
+Output: none
+Input: Tell me how restoring a finger works
+Output: none
+Input: What happens if I pause this joint?
+Output: none
+Input: Could you pause the ring finger for me?
+Output: freeze ring
+Input: Pause the animation
+Output: none
+Input: Stop moving
+Output: none
+Input: Pause
+Output: none

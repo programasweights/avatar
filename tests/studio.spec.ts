@@ -251,9 +251,8 @@ test("studio renders, scrubs deterministically, and edits only one finger", asyn
       return d.snapshot();
     }, time);
   const before = await snapshot(1);
-  await page
-    .getByRole("button", { name: "Robot arms only", exact: true })
-    .click();
+  await openSection(page, "Edit motion");
+  await page.getByLabel("Arm choreography", { exact: true }).selectOption("robot");
   await page.waitForFunction(() =>
     (window as any).__motion.timeline.tracks.some(
       (t: any) => t.id === "arms.left.shoulder.x" && t.curve.kind === "keys",
@@ -606,7 +605,7 @@ test("the focused studio fits desktop and keeps mobile controls reachable withou
   await expect(editSummary.locator("..")).toHaveJSProperty("open", false);
   await page.getByRole("button", { name: "One finger", exact: true }).click();
   await expect(page.locator(".motion-caption p")).toHaveText(
-    "Move only the left index finger.",
+    "Wiggle only the left index finger 65 degrees.",
   );
   await page
     .getByLabel("Direction", { exact: true })

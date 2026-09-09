@@ -1,0 +1,62 @@
+[
+  {
+    "instruction": "How can I pause the left ring finger?",
+    "expected": "none"
+  },
+  {
+    "instruction": "Explain what freezing a joint does.",
+    "expected": "none"
+  },
+  {
+    "instruction": "Show me instructions for restoring a finger.",
+    "expected": "none"
+  },
+  {
+    "instruction": "What does resume the thumb mean?",
+    "expected": "none"
+  },
+  {
+    "instruction": "Describe how to stop just one finger.",
+    "expected": "none"
+  },
+  {
+    "instruction": "Pause the playback.",
+    "expected": "none"
+  },
+  {
+    "instruction": "Please pause.",
+    "expected": "none"
+  },
+  {
+    "instruction": "Stop all movement.",
+    "expected": "none"
+  },
+  {
+    "instruction": "Can you pause just my right index finger?",
+    "expected": "freeze right_index"
+  },
+  {
+    "instruction": "Please restore the left pinky.",
+    "expected": "restore left_pinky"
+  },
+  {
+    "instruction": "Keep the ripple going, but stop the right ring finger.",
+    "expected": "freeze right_ring"
+  },
+  {
+    "instruction": "Let just the thumb start moving again.",
+    "expected": "restore thumb"
+  },
+  {
+    "instruction": "Freeze my right thigh.",
+    "expected": "freeze right_hip"
+  },
+  {
+    "instruction": "Unfreeze the left foot.",
+    "expected": "restore left_ankle"
+  },
+  {
+    "instruction": "Pause my left shin.",
+    "expected": "freeze left_knee"
+  }
+]

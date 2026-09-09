@@ -22,7 +22,12 @@ JOINT_ALIASES.update({
     f"{side}_mid{suffix}": f"{side}_middle{suffix or '_1'}"
     for side in SIDES for suffix in ("", "_1", "_2", "_3")
 })
+EDIT_ALIASES = {f"{prefix}foot": f"{prefix}ankle" for prefix in ("", "left_", "right_", "both_")}
 DEXTERITY_SKILLS = {"finger_ripple", "finger_touches", "arm_wave", "coin_roll"}
+EDIT_PARTS = set(PARTS) | set(FINGERS) | {f"{finger}_{segment}" for finger in FINGERS for segment in (1, 2, 3)}
+EDIT_TARGETS = {"selected", "hips", "spine", "spine_mid", "chest", "neck", "head"} | EDIT_PARTS | {
+    f"{side}_{part}" for side in ("left", "right", "both") for part in EDIT_PARTS
+}
 
 
 @cache
@@ -133,11 +138,24 @@ def validate_dexterity(raw: str) -> str:
     return " ".join(parts)
 
 
+def validate_edit(raw: str) -> str:
+    if raw == "none":
+        return raw
+    parts = raw.split()
+    if (len(parts) != 2 or parts[0] not in {"freeze", "restore"}
+            or "\n" in raw or "\r" in raw):
+        raise ValueError("Invalid motion edit command")
+    parts[1] = EDIT_ALIASES.get(parts[1], parts[1])
+    if parts[1] not in EDIT_TARGETS:
+        raise ValueError("Invalid motion edit command")
+    return " ".join(parts)
+
+
 def direct(instruction: str, infer: Infer | None = None) -> dict:
     """Interpret one direction. Every neural call runs sequentially and locally.
 
-    The returned trace records the actual model decisions. Validation failures
-    remain errors; the director never guesses an action from the user's words.
+    Every emitted command is validated. The trace records actual model decisions
+    and any validated target repair; the director never guesses from user wording.
     Pass an inference callable to test the command graph without loading models.
     """
     if not isinstance(instruction, str) or not instruction.strip() or len(instruction) > 400:
@@ -150,6 +168,29 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
         if not isinstance(raw, str):
             raise ValueError("PAW returned a non-text response")
         return raw.strip()
+
+    intent = ask("edit_intent")
+    trace["edit_intent"] = intent
+    if intent not in {"freeze", "restore", "none"}:
+        raise ValueError("Invalid motion edit intent")
+    if intent != "none":
+        confirmation = ask("edit_confirmation")
+        trace["edit_confirmation"] = confirmation
+        if confirmation != "none":
+            confirmed = validate_edit(confirmation)
+            target = ask("edit_target")
+            trace["edit_target"] = target
+            try:
+                command = validate_edit(target)
+                if command == "none":
+                    raise ValueError("Motion edit did not identify a target")
+            except ValueError:
+                # Both neural functions agreed this was an edit. If the
+                # target specialist fails, retain the confirmation's valid
+                # target and expose that choice in the trace.
+                command = confirmed
+                trace["edit_target_source"] = "edit_confirmation"
+            return {"output": f"{intent} {command.split()[1]}", "trace": {**trace, "route": "edit"}}
 
     dexterity = ask("dexterity")
     trace["dexterity"] = dexterity

@@ -13,14 +13,14 @@ from unittest.mock import patch
 
 from director import (
     JOINTS, PROGRAMS, _load_function, direct, joint_commands,
-    transform_command, validate_body, validate_dexterity,
+    transform_command, validate_body, validate_dexterity, validate_edit,
 )
 from paw_worker import serve
 
 
 class Inference:
     def __init__(self, **outputs):
-        self.outputs = {"dexterity": "legacy", **outputs}
+        self.outputs = {"edit_intent": "none", "dexterity": "legacy", **outputs}
         self.calls = []
 
     def __call__(self, program_id, text):
@@ -86,7 +86,7 @@ class DirectorTest(unittest.TestCase):
         result = direct("Move your left thumb", infer)
         self.assertEqual(result["output"], "joint left_thumb_1 z 45")
         self.assertEqual(result["trace"]["joint"], "left_thumb")
-        self.assertEqual([name for name, _ in infer.calls], ["dexterity", "router", "joint", "transform"])
+        self.assertEqual([name for name, _ in infer.calls], ["edit_intent", "dexterity", "router", "joint", "transform"])
 
     def test_mixed_motion_scopes_joint_transform(self):
         text = "Stop dancing and curl the left index finger"
@@ -106,7 +106,7 @@ class DirectorTest(unittest.TestCase):
         invalid = Inference(router="body", body="dance imaginary")
         with self.assertRaisesRegex(ValueError, "Unsupported motion command"):
             direct("Dance", invalid)
-        self.assertEqual([name for name, _ in invalid.calls], ["dexterity", "router", "body"])
+        self.assertEqual([name for name, _ in invalid.calls], ["edit_intent", "dexterity", "router", "body"])
 
     def test_paired_specialist_may_refine_segment_but_not_finger(self):
         infer = Inference(router="joint", joint="both_index_3", transform="hold bend 30", paired_joint="both_index_1")
@@ -116,7 +116,7 @@ class DirectorTest(unittest.TestCase):
             with self.subTest(invalid=invalid), self.assertRaisesRegex(ValueError, "refinement"):
                 direct("Curl both index fingers 30 degrees", infer)
 
-    def test_dexterity_uses_only_the_skill_function(self):
+    def test_dexterity_skips_body_functions_after_editor_abstention(self):
         for skill in ["finger_ripple", "finger_touches", "arm_wave", "coin_roll"]:
             for side in ["left", "right"]:
                 for direction in ["forward", "reverse"]:
@@ -124,15 +124,15 @@ class DirectorTest(unittest.TestCase):
                     infer = Inference(dexterity=command)
                     result = direct("An instruction", infer)
                     self.assertEqual(result["output"], command)
-                    self.assertEqual(result["trace"], {"dexterity": command, "route": "dexterity"})
-                    self.assertEqual(len(infer.calls), 1)
+                    self.assertEqual(result["trace"], {"edit_intent": "none", "dexterity": command, "route": "dexterity"})
+                    self.assertEqual(len(infer.calls), 2)
 
     def test_invalid_skill_does_not_fall_through_or_guess(self):
         for raw in ["", "unsupported", "finger_ripple left forward", "skill imaginary left forward", "skill coin_roll both forward", "skill coin_roll right fast", "skill coin_roll right forward 90", "skill coin_roll right forward\ndance salsa", "skill\ncoin_roll right forward", "legacy\nskill coin_roll left forward"]:
             infer = Inference(dexterity=raw)
             with self.subTest(raw=raw), self.assertRaisesRegex(ValueError, "Invalid dexterity"):
                 direct("Roll a coin", infer)
-            self.assertEqual(len(infer.calls), 1)
+            self.assertEqual(len(infer.calls), 2)
 
     def test_input_and_output_types_are_bounded_before_execution(self):
         for instruction in [None, [], "", "  ", "x" * 401]:
@@ -164,6 +164,8 @@ class WorkerTest(unittest.TestCase):
         requests = ["invalid JSON", json.dumps({"id": "bad", "instruction": " "}), json.dumps({"id": "model", "instruction": "Bad model"}), json.dumps({"id": "valid", "instruction": "Ripple"})]
         calls = []
         def infer(pid, text):
+            if pid == PROGRAMS.get("edit_intent"):
+                return "none"
             calls.append(text)
             return "invalid" if text == "Bad model" else "skill finger_ripple left forward"
         output = io.StringIO()
@@ -186,10 +188,12 @@ class WorkerTest(unittest.TestCase):
     def test_subprocess_keeps_python_and_native_logs_off_protocol(self):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as directory:
-            Path(directory, "programasweights.py").write_text(textwrap.dedent('''
+            Path(directory, "programasweights.py").write_text(textwrap.dedent(f'''
                 import os
                 print("import log")
                 def function(program_id):
+                    if program_id == {PROGRAMS.get("edit_intent")!r}:
+                        return lambda *args, **kwargs: "none"
                     print("load log")
                     def infer(text, **kwargs):
                         print("python inference log")
@@ -210,6 +214,69 @@ class WorkerTest(unittest.TestCase):
         self.assertEqual(result.stderr.count("load log"), 1)
         self.assertEqual(result.stderr.count("native inference log"), 2)
         self.assertEqual(result.stderr.count("python inference log"), 2)
+
+
+class EditorRoutingTest(unittest.TestCase):
+    def setUp(self):
+        self.manifest = patch.dict(PROGRAMS, {"edit_intent": "intent", "edit_confirmation": "confirmation", "edit_target": "target"})
+        self.manifest.start()
+        self.addCleanup(self.manifest.stop)
+
+    def test_editor_gate_and_target_are_sequential_and_short_circuit_actions(self):
+        infer = Inference(edit_intent="freeze", edit_confirmation="freeze ring", edit_target="freeze ring")
+        result = direct("Keep the wave going. Stop just the ring finger.", infer)
+        self.assertEqual(result, {
+            "output": "freeze ring",
+            "trace": {"edit_intent": "freeze", "edit_confirmation": "freeze ring", "edit_target": "freeze ring", "route": "edit"},
+        })
+        self.assertEqual([name for name, _ in infer.calls], ["edit_intent", "edit_confirmation", "edit_target"])
+
+    def test_only_the_intent_gate_decides_the_operation(self):
+        infer = Inference(edit_intent="restore", edit_confirmation="restore right_index_2", edit_target="freeze right_index_2")
+        result = direct("Resume that knuckle", infer)
+        self.assertEqual(result["output"], "restore right_index_2")
+        self.assertEqual(result["trace"]["edit_target"], "freeze right_index_2")
+
+    def test_abstention_skips_target_and_preserves_ordinary_motion(self):
+        infer = Inference(dexterity="skill finger_ripple right reverse")
+        result = direct("Reverse the finger ripple on your right hand.", infer)
+        self.assertEqual(result["output"], "skill finger_ripple right reverse")
+        self.assertEqual([name for name, _ in infer.calls], ["edit_intent", "dexterity"])
+        self.assertEqual(result["trace"]["edit_intent"], "none")
+
+    def test_invalid_editor_output_never_guesses_or_falls_through(self):
+        for raw in ["", "unsupported", "freeze ring", "Freeze", "none\nfreeze"]:
+            infer = Inference(edit_intent=raw)
+            with self.subTest(intent=raw), self.assertRaisesRegex(ValueError, "Invalid motion edit intent"):
+                direct("Freeze the ring finger", infer)
+            self.assertEqual([name for name, _ in infer.calls], ["edit_intent"])
+        for raw in ["", "unsupported", "freeze", "freeze left_ring_4", "freeze both_head", "freeze ring extra", "restore selected\ndance salsa", "freeze\nring", "edit freeze ring"]:
+            infer = Inference(edit_intent="freeze", edit_confirmation=raw)
+            with self.subTest(confirmation=raw), self.assertRaises(ValueError):
+                direct("Freeze the ring finger", infer)
+            self.assertEqual([name for name, _ in infer.calls], ["edit_intent", "edit_confirmation"])
+
+    def test_confirmation_abstention_preserves_the_original_thumb_direction(self):
+        infer = Inference(edit_intent="restore", edit_confirmation="none", router="joint", joint="left_thumb", transform="hold bend 45")
+        result = direct("Move your left thumb", infer)
+        self.assertEqual(result["output"], "joint left_thumb_1 z 45")
+        self.assertEqual([name for name, _ in infer.calls], ["edit_intent", "edit_confirmation", "dexterity", "router", "joint", "transform"])
+
+    def test_invalid_target_uses_only_the_validated_neural_confirmation(self):
+        for raw in ["restore paused", "none", "freeze\nring"]:
+            infer = Inference(edit_intent="restore", edit_confirmation="restore ring", edit_target=raw)
+            result = direct("Let the paused ring finger move again.", infer)
+            self.assertEqual(result["output"], "restore ring")
+            self.assertEqual(result["trace"]["edit_target"], raw)
+            self.assertEqual(result["trace"]["edit_target_source"], "edit_confirmation")
+
+    def test_editor_tokens_cover_fingers_joints_and_selected_without_resolving_context(self):
+        for target in ["selected", "hips", "spine_mid", "head", "elbow", "ring", "index_3", "right_ring", "both_thumb", "left_knee"]:
+            for operation in ["freeze", "restore"]:
+                self.assertEqual(validate_edit(f"{operation} {target}"), f"{operation} {target}")
+        self.assertEqual(validate_edit("none"), "none")
+        for prefix in ["", "left_", "right_", "both_"]:
+            self.assertEqual(validate_edit(f"restore {prefix}foot"), f"restore {prefix}ankle")
 
 
 if __name__ == "__main__":

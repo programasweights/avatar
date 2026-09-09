@@ -44,6 +44,7 @@ const post = (instruction, signal) =>
 
 before(async () => {
   directory = await mkdtemp(resolve(tmpdir(), "avatar-worker-test-"));
+  const programs = JSON.parse(await readFile(resolve(root, "programs.json"), "utf8"));
   await writeFile(
     resolve(directory, "programasweights.py"),
     `
@@ -54,6 +55,8 @@ def event(kind, text=''):
         output.write(json.dumps({'kind': kind, 'text': text, 'pid': os.getpid()}) + '\\n')
 
 def function(program_id):
+    if program_id == ${JSON.stringify(programs.edit_intent ?? "")}:
+        return lambda *args, **kwargs: 'none'
     event('load', program_id)
     def infer(text, **kwargs):
         event('start', text)

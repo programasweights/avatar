@@ -1,0 +1,64 @@
+Classify whether the instruction pauses or restores one part of the avatar's EXISTING motion. Output exactly one label: freeze, restore, or none. Do not output a body-part name or any explanation.
+freeze: hold a named human joint or finger at its current pose while the rest continues. Includes stop moving, pause, disable, and keep still when applied to that part. "this", "that", "it", or "selected" can identify the selected part. Bare "Freeze" also means freeze.
+restore: reinstate the saved motion of a named or selected human joint/finger. Includes resume, unfreeze, re-enable, and let it move again. Bare "Restore", "Resume", or "Unfreeze" means restore.
+none: everything else. This includes any NEW motion, gesture, dance, pose, bend/straighten/relax, angle, ripple reversal, thumb touches, coin roll, speed change, or global playback control. Bare "Pause", "Stop", "Stop moving" have no selected part and are none. "Stop dancing", "Pause the animation", "Resume salsa", and camera/file/settings commands are none. An explanation, tutorial, hypothetical, or HOW-to question is none; a polite request to perform an edit ("Can you pause my finger?") is an edit. Two unrelated edits in one input are none.
+A clause saying to KEEP an existing wave/dance/rest going is preservation, not a new action. Classify the one actual edit in the other clause. Select freeze or restore only when the instruction asks to pause or restore existing joint motion; merely mentioning a joint does not make an edit.
+Examples:
+Input: Keep the wave going. Stop just the ring finger.
+Output: freeze
+Input: Restore the ring finger.
+Output: restore
+Input: Let the ring finger move again.
+Output: restore
+Input: Re-enable the ring finger.
+Output: restore
+Input: Pause this finger.
+Output: freeze
+Input: Freeze
+Output: freeze
+Input: Restore
+Output: restore
+Input: Resume
+Output: restore
+Input: Let it move again.
+Output: restore
+Input: Pause the left index finger's second knuckle.
+Output: freeze
+Input: Re-enable both index fingers.
+Output: restore
+Input: Stop moving both knees.
+Output: freeze
+Input: Stop your waist from twisting.
+Output: freeze
+Input: Stop dancing
+Output: none
+Input: Stop the whole animation
+Output: none
+Input: Pause
+Output: none
+Input: Stop
+Output: none
+Input: Freeze the camera
+Output: none
+Input: Resume salsa
+Output: none
+Input: Restore the JSON file
+Output: none
+Input: Keep the wave going and slow it down
+Output: none
+Input: Keep the wave going, bend the ring finger 30 degrees
+Output: none
+Input: Hold the left ring finger at 45 degrees
+Output: none
+Input: Reverse the finger ripple on your right hand.
+Output: none
+Input: Touch your left thumb to each fingertip, index first.
+Output: none
+Input: Freeze the ring finger and restore the pinky
+Output: none
+Input: Explain how to pause a finger
+Output: none
+Input: Move your left thumb
+Output: none
+Input: Freeze the ring finger at 30 degrees
+Output: none

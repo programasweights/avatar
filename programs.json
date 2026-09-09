@@ -7,5 +7,8 @@
   "router_fallback": "4090faad9b8926506958",
   "paired_joint": "a58b30397fb40c7fe785",
   "body_fallback": "4fa031e988e33efffc57",
-  "dexterity": "6728bcd2d951d328eb1f"
+  "dexterity": "6728bcd2d951d328eb1f",
+  "edit_intent": "b11c8d47049a45e7149d",
+  "edit_confirmation": "73f19db60929f666cdba",
+  "edit_target": "8defb95ebb022c0787ec"
 }

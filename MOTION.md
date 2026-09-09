@@ -10,6 +10,18 @@ Groups compose recursively:
 - `parallel`: start children together; the longest child sets the duration.
 - `repeat`: repeat the child sequence `count` times.
 
+The visible motion tree links each selected branch to its joints on the avatar.
+Its activity dots follow changing rotation/position values, including replacement
+overlays. **Full tree** shows every authored node, including static poses and
+camera tracks.
+
+Pausing a joint adds a constant `blend: "replace"` rotation overlay at the sampled
+pose. Original curves remain in the program. Restoring removes the overlay;
+unrelated edits stay intact. Pause controls work on independent rotations and
+are disabled where a contact solver or foot IK also controls the selection.
+The curl slider scales a leaf's angle values while retaining its timing, phase,
+interpolation and mirrored sign. See [editing.ts](src/motion/editing.ts).
+
 A `curve` addresses one joint, axis and channel. Durations are seconds; rotations
 are degrees; positions are metres. A curve can be constant, sinusoidal, or a
 list of keyframes whose times run from 0 to 1. Keyframes support smooth, linear

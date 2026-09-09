@@ -48,10 +48,29 @@ locally, with models retained in one worker and requests processed sequentially.
 No API key or recompilation is required. The example buttons play authored
 motions; **Direct** interprets your text with PAW.
 
-Try “Wiggle only the left index finger 65 degrees,” or start salsa and then
-change an arm or finger. Open **Edit motion** for the tree, joint and curve
-controls to change timing, angles and repetition. Motion JSON can be exported, edited and imported.
-**More motions** contains the other studies, hand selection and sequence direction.
+Try **Finger ripple**, select **Ring finger** in the motion tree, and press
+**Pause finger**. Its three joints stay fixed while the other fingers continue.
+**Restore motion** brings it back. Expand a finger to select one joint and
+change its curl with the slider; **Undo** restores the previous edit.
+
+[Watch the joint-control recording](https://programasweights.com/avatar/joint-control.mp4).
+
+You can also type “Keep the wave going. Stop just the ring finger,” then
+“Restore the ring finger.” An omitted side uses the active hand. “This joint”
+uses the current tree selection. Pauses hold local joint rotations; contact
+choreography and leg IK need their own trajectory controls.
+
+Language can misinterpret wording: “Could you move just your left thumb?”
+currently pauses it. “Move your left thumb” follows the movement path.
+
+**More motions** contains the other studies and hand selection. **Edit motion**
+contains detailed curves, joint axes, skeleton inspection and JSON import/export.
+**Full tree** reveals the pose and camera branches folded out of the compact view.
+
+Use **Recording view** for a large stage, or record while editing in the normal
+view. The video includes the current instruction, selected branch and angle or
+pause state. Recording starts from the current playhead and downloads a square
+video in a format supported by your browser.
 
 ## Render an MP4
 

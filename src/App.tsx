@@ -2,17 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowUpRight,
   Check,
-  ChevronDown,
-  ChevronRight,
   Code2,
   Download,
   Focus,
-  GitBranch,
   Loader2,
   Pause,
   Play,
   RotateCcw,
   ScanLine,
+  Undo2,
+  Maximize2,
+  Minimize2,
   SlidersHorizontal,
   Sparkles,
   Video,
@@ -20,15 +20,22 @@ import {
 } from "lucide-react";
 import MotionStage from "./motion/MotionStage";
 import SiteHeader from "./SiteHeader";
+import { drawRecordingFrame } from "./motion/recordingFrame";
+import MotionTree, { nodePath, shortNodeLabel } from "./motion/MotionTree";
+import {
+  branchTargets,
+  editingBlockReason,
+  freezeTargets,
+  restoreFrozen,
+  resolveEditTarget,
+  rotationMagnitude,
+  withRotationMagnitude,
+} from "./motion/editing";
+import type { FrozenRotation } from "./motion/editing";
 import CurveEditor from "./motion/CurveEditor";
 import type { Transport } from "./motion/MotionStage";
-import type { Axis, Curve, MotionNode, MotionProgram } from "./motion/types";
-import {
-  activeNodes,
-  findNode,
-  sampleCurve,
-  updateNode,
-} from "./motion/engine";
+import type { Axis, Curve, CurveNode, MotionProgram } from "./motion/types";
+import { findNode, sampleCurve, updateNode } from "./motion/engine";
 import {
   applyCommands,
   directMotion,
@@ -90,74 +97,6 @@ function download(blob: Blob, filename: string) {
   link.download = filename;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-function TreeNode({
-  node,
-  level = 0,
-  selected,
-  active,
-  onSelect,
-}: {
-  node: MotionNode;
-  level?: number;
-  selected: string;
-  active: Set<string>;
-  onSelect: (id: string) => void;
-}) {
-  const [open, setOpen] = useState(level < 1);
-  const group =
-    node.kind === "sequence" ||
-    node.kind === "parallel" ||
-    node.kind === "repeat";
-  return (
-    <div className="motion-tree-node">
-      <button
-        className={`motion-tree-row ${selected === node.id ? "selected" : ""}`}
-        style={{ paddingLeft: 12 + level * 14 }}
-        onClick={() => {
-          onSelect(node.id);
-          if (group) setOpen(!open);
-        }}
-        aria-expanded={group ? open : undefined}
-      >
-        {group ? (
-          open ? (
-            <ChevronDown size={13} />
-          ) : (
-            <ChevronRight size={13} />
-          )
-        ) : (
-          <span
-            className={`motion-dot ${active.has(node.id) ? "active" : ""}`}
-          />
-        )}
-        <span>{node.label}</span>
-        <small>
-          {node.kind === "curve"
-            ? node.axis.toUpperCase()
-            : node.kind === "contact"
-              ? node.mode === "fingertips"
-                ? "IK"
-                : "PROP"
-              : node.kind === "repeat"
-                ? `×${node.count}`
-                : node.children.length}
-        </small>
-      </button>
-      {group &&
-        open &&
-        node.children.map((child) => (
-          <TreeNode
-            key={child.id}
-            node={child}
-            level={level + 1}
-            selected={selected}
-            active={active}
-            onSelect={onSelect}
-          />
-        ))}
-    </div>
-  );
 }
 function CurvePlot({ curve }: { curve: Curve }) {
   const values = Array.from({ length: 81 }, (_, i) =>
@@ -248,16 +187,75 @@ export default function App() {
     : caption;
   const captionRef = useRef(caption);
   captionRef.current = displayedCaption;
+  const originRef = useRef(origin);
+  originRef.current = origin;
   const sequenceCuesRef = useRef(sequenceCues);
   sequenceCuesRef.current = sequenceCues;
   const programRef = useRef(program);
   programRef.current = program;
   const selectedNode = findNode(program.root, selected);
-  const totalBeats = Math.max(
-    1,
-    Math.ceil((timeline.duration * program.bpm) / 60),
+  const [captureMode, setCaptureMode] = useState(false);
+  const [frozen, setFrozen] = useState<FrozenRotation[]>([]);
+  const [undo, setUndo] = useState<
+    {
+      program: MotionProgram;
+      frozen: FrozenRotation[];
+      caption: string;
+      cues: SequenceCue[];
+    }[]
+  >([]);
+  const selectedTargets = useMemo(
+    () =>
+      selectedNode &&
+      (selectedNode.id !== program.root.id ||
+        branchTargets(selectedNode).length <= 3)
+        ? branchTargets(selectedNode).filter((target) =>
+            Object.hasOwn(JOINTS, target),
+          )
+        : [],
+    [selectedNode, program.root.id],
   );
-  const active = useMemo(() => activeNodes(timeline, time), [timeline, time]);
+  const selectionFreezes = frozen.filter((item) =>
+    item.targets.some((target) => selectedTargets.includes(target)),
+  );
+  const selectedFreeze = selectionFreezes[0];
+  const blocked = selectedTargets.length
+    ? editingBlockReason(program, selectedTargets)
+    : null;
+  const magnitude =
+    selectedNode?.kind === "curve" ? rotationMagnitude(selectedNode) : null;
+  const selectionLabel =
+    selectedTargets.length === 1
+      ? JOINT_LABEL(selectedTargets[0])
+      : selectedTargets.length === 3 &&
+          selectedTargets.every(
+            (target) =>
+              target.replace(/_[123]$/, "") ===
+              selectedTargets[0].replace(/_[123]$/, ""),
+          )
+        ? JOINT_LABEL(selectedTargets[0].replace(/_[123]$/, "")) + " finger"
+        : selectedNode
+          ? shortNodeLabel(selectedNode)
+          : "";
+  const selectionPath = selectedNode
+    ? nodePath(program.root, selected).slice(-3).map(shortNodeLabel).join(" → ")
+    : "";
+  const sliderStart = useRef<MotionProgram | null>(null);
+  const curlReferences = useRef(new Map<string, CurveNode>());
+  useEffect(() => {
+    if (selectedNode?.kind === "curve" && magnitude && magnitude.value > 0)
+      curlReferences.current.set(selectedNode.id, selectedNode);
+  }, [selectedNode, magnitude?.value]);
+  const selectionRef = useRef({ label: "", path: "", value: "" });
+  selectionRef.current = {
+    label: selectedTargets.length ? selectionLabel : "",
+    path: selectionPath,
+    value: selectedFreeze
+      ? "Paused"
+      : magnitude
+        ? `${Math.round(magnitude.value)}° ${magnitude.label.toLowerCase()}`
+        : "",
+  };
   const detail = findNode(program.root, `detail.${joint}.${axis}`);
   const angle =
     detail?.kind === "curve" && detail.curve.kind === "constant"
@@ -275,8 +273,15 @@ export default function App() {
       transport.current.playing = true;
       setPlaying(true);
     }
+    programRef.current = next;
     setProgram(next);
     setError("");
+    if (restart) {
+      setFrozen([]);
+      setUndo([]);
+      curlReferences.current.clear();
+      sliderStart.current = null;
+    }
   }, []);
   const cancelInference = () => {
     abort.current?.abort();
@@ -302,6 +307,205 @@ export default function App() {
       );
     else clearSequence();
   };
+  function rememberEdit() {
+    const previous = {
+      program: programRef.current,
+      frozen,
+      caption: displayedCaption,
+      cues: sequenceCues,
+    };
+    setUndo((items) => [...items.slice(-19), previous]);
+  }
+  function selectNode(id: string) {
+    sliderStart.current = null;
+    setSelected(id);
+    const node = findNode(programRef.current.root, id);
+    if (!node) return;
+    const targets = branchTargets(node).filter((target) =>
+      Object.hasOwn(JOINTS, target),
+    );
+    if (targets.length && targets.every((target) => target.startsWith("left_")))
+      setHand("left");
+    if (
+      targets.length &&
+      targets.every((target) => target.startsWith("right_"))
+    )
+      setHand("right");
+    if (node.kind === "curve") {
+      setJoint(node.target);
+      setAxis(node.axis);
+    }
+    if (
+      targets.length &&
+      targets.every((target) =>
+        /_(index|thumb|middle|ring|pinky)_[123]$/.test(target),
+      )
+    ) {
+      const side = targets[0].startsWith("left") ? "left" : "right";
+      if (targets.every((target) => target.startsWith(side)))
+        setFocus(`${side}_hand`);
+      else setFocus("body");
+    } else if (targets.length) setFocus("body");
+  }
+  function pauseSelection() {
+    try {
+      rememberEdit();
+      if (selectedFreeze) {
+        edit(
+          selectionFreezes.reduce(
+            (next, token) => restoreFrozen(next, token),
+            programRef.current,
+          ),
+        );
+        setFrozen((items) =>
+          items.filter((item) => !selectionFreezes.includes(item)),
+        );
+        setCaption(`Resume the ${selectionLabel.toLowerCase()}.`);
+      } else {
+        let next = programRef.current;
+        const tokens: FrozenRotation[] = [];
+        for (const target of selectedTargets) {
+          const result = freezeTargets(next, [target], transport.current.time);
+          next = result.program;
+          tokens.push(result.token);
+        }
+        edit(next);
+        setFrozen((items) => [...items, ...tokens]);
+        setCaption(
+          `Keep going. Pause just the ${selectionLabel.toLowerCase()}.`,
+        );
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not edit this motion.");
+    }
+  }
+  function applyLanguageEdit(op: string, target: string, text: string) {
+    const current = programRef.current;
+    const targets = resolveEditTarget(target, hand, selectedTargets);
+    const matching = frozen.filter((item) =>
+      item.targets.some((joint) => targets.includes(joint)),
+    );
+    let next = current;
+    if (op === "restore") {
+      if (!matching.length)
+        throw new Error(
+          "That selection is not paused. Pause a finger or joint first.",
+        );
+      next = matching.reduce(
+        (value, token) => restoreFrozen(value, token),
+        current,
+      );
+      rememberEdit();
+      setFrozen((items) => items.filter((item) => !matching.includes(item)));
+    } else {
+      const already = new Set(matching.flatMap((item) => item.targets));
+      const remaining = targets.filter((joint) => !already.has(joint));
+      if (!remaining.length) return;
+      const tokens: FrozenRotation[] = [];
+      for (const joint of remaining) {
+        const result = freezeTargets(next, [joint], transport.current.time);
+        next = result.program;
+        tokens.push(result.token);
+      }
+      rememberEdit();
+      setFrozen((items) => [...items, ...tokens]);
+    }
+    accept(next);
+    setSequenceCues([]);
+    setCaption(text);
+    setOrigin("PAW · neural commands");
+    // Select the smallest existing branch that represents the requested joints.
+    const search = (
+      node: import("./motion/types").MotionNode,
+    ): import("./motion/types").MotionNode | undefined => {
+      if (/^editing\.freeze\.\d+$/.test(node.id)) return undefined;
+      if (node.kind !== "curve" && node.kind !== "contact") {
+        for (const child of node.children) {
+          const found = search(child);
+          if (found) return found;
+        }
+      }
+      const joints = branchTargets(node);
+      if (
+        !/^editing\.freeze\.\d+\.root$/.test(node.id) &&
+        joints.length === targets.length &&
+        targets.every((joint) => joints.includes(joint))
+      )
+        return node;
+    };
+    const node = search(current.root);
+    if (node) selectNode(node.id);
+    else if (
+      targets.every((joint) => /_(thumb|index|middle|ring|pinky)_/.test(joint))
+    )
+      setFocus(targets[0].startsWith("left") ? "left_hand" : "right_hand");
+  }
+  function undoEdit() {
+    const previous = undo.at(-1);
+    if (!previous) return;
+    cancelInference();
+    accept(previous.program);
+    setFrozen(previous.frozen);
+    setCaption(previous.caption);
+    setSequenceCues(previous.cues);
+    setUndo((items) => items.slice(0, -1));
+    setOrigin("Edited motion");
+    sliderStart.current = null;
+  }
+  function beginCurlEdit() {
+    if (!sliderStart.current) {
+      sliderStart.current = programRef.current;
+      rememberEdit();
+    }
+  }
+  function changeCurl(value: number) {
+    try {
+      beginCurlEdit();
+      edit(
+        withRotationMagnitude(
+          sliderStart.current!,
+          selected,
+          value,
+          curlReferences.current.get(selected),
+        ),
+      );
+      setCaption(`${selectionLabel} · ${Math.round(value)} degrees.`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not change this joint.");
+    }
+  }
+  useEffect(() => {
+    if (!captureMode) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setCaptureMode(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [captureMode]);
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has("dbg")) return;
+    const host = window as unknown as { __motionStudio?: unknown };
+    host.__motionStudio = {
+      snapshot: () => ({
+        program: programRef.current,
+        selected,
+        selectedTargets,
+        focus,
+        captureMode,
+        time: transport.current.time,
+        frozen,
+      }),
+      seek: (value: number) => {
+        transport.current.time = value;
+        transport.current.playing = false;
+        setPlaying(false);
+        setTime(value);
+      },
+    };
+    return () => {
+      delete host.__motionStudio;
+    };
+  }, [selected, selectedTargets, focus, captureMode, frozen]);
   const onTick = useCallback((t: number, p: boolean) => {
     setTime(t);
     setPlaying(p);
@@ -332,19 +536,42 @@ export default function App() {
         controller.signal,
       );
       if (controller.signal.aborted) return;
+      const motionEdit = /^(freeze|restore) (\S+)$/.exec(commands.trim());
+      if (motionEdit) {
+        applyLanguageEdit(motionEdit[1], motionEdit[2], instruction.trim());
+        setRaw(commands);
+        return;
+      }
       const lines = commands.split("\n");
       // The showcase is a complete sequence. A new skill starts a new scene;
       // ordinary dance scenes retain their footwork when a skill is applied.
+      const newScene = lines.some((line) => /^(dance|skill) /.test(line));
+      const editedTargets = lines
+        .filter((line) => /^(joint|wiggle) /.test(line))
+        .map((line) => line.split(" ")[1]);
+      const released = frozen.filter(
+        (token) =>
+          newScene ||
+          token.targets.some((target) => editedTargets.includes(target)),
+      );
+      const restored = released.reduce(
+        (next, token) => restoreFrozen(next, token),
+        programRef.current,
+      );
       const base =
-        findNode(programRef.current.root, "dexterity_sequence") &&
+        findNode(restored.root, "dexterity_sequence") &&
         lines[0]?.startsWith("skill ")
-          ? createDance("idle", "still", programRef.current.bpm)
-          : programRef.current;
+          ? createDance("idle", "still", restored.bpm)
+          : restored;
       const next = applyCommands(base, commands);
       accept(
         next,
         lines.some((line) => /^(dance|skill) /.test(line)),
       );
+      if (!newScene)
+        setFrozen((items) =>
+          items.filter((token) => !released.includes(token)),
+        );
       setSequenceCues([]);
       setCaption(instruction.trim());
       setRaw(commands);
@@ -371,6 +598,8 @@ export default function App() {
       if (detail) {
         const [, target, nextAxis] = detail;
         setJoint(target);
+        if (target.startsWith("left_")) setHand("left");
+        if (target.startsWith("right_")) setHand("right");
         setAxis(nextAxis as Axis);
         setSelected(`detail.${target}.${nextAxis}`);
         setFocus(
@@ -416,6 +645,8 @@ export default function App() {
     try {
       const next = createDexterity(skill, side, backwards, program.bpm);
       accept(next, true);
+      transport.current.loop = true;
+      setLoop(true);
       setDexterity(skill);
       setHand(side);
       setReverse(backwards);
@@ -527,46 +758,25 @@ export default function App() {
     output.height = 1080;
     const ctx = output.getContext("2d")!;
     const draw = () => {
-      ctx.fillStyle = "#101719";
-      ctx.fillRect(0, 0, 1080, 1080);
-      const scale = Math.min(1080 / source.width, 860 / source.height),
-        w = source.width * scale,
-        h = source.height * scale;
-      ctx.drawImage(source, (1080 - w) / 2, 100 + (860 - h) / 2, w, h);
-      ctx.fillStyle = "#a7f3d0";
-      ctx.font = "500 20px sans-serif";
-      ctx.fillText("AVATAR DIRECTOR / MOTION STUDIO", 48, 58);
-      ctx.fillStyle = "#ffffff";
-      let fontSize = 32,
-        lines: string[] = [];
-      do {
-        ctx.font = `500 ${fontSize}px sans-serif`;
-        lines = [];
-        let line = "";
-        const currentCue = sequenceCueAt(
-          sequenceCuesRef.current,
-          transport.current.time,
-        );
-        const currentCaption = currentCue
-          ? currentCue.instruction || currentCue.label
-          : captionRef.current;
-        for (const word of currentCaption.split(" ")) {
-          if (ctx.measureText(line + word).width > 984 && line) {
-            lines.push(line);
-            line = "";
-          }
-          line += word + " ";
-        }
-        lines.push(line);
-        if (lines.length <= 3) break;
-        fontSize -= 2;
-      } while (fontSize >= 12);
-      lines.forEach((line, index) =>
-        ctx.fillText(line, 48, 960 + index * (fontSize + 8), 984),
+      if (rec.state !== "recording") return;
+      const currentCue = sequenceCueAt(
+        sequenceCuesRef.current,
+        transport.current.time,
       );
+      drawRecordingFrame(ctx, source, {
+        caption: currentCue
+          ? currentCue.instruction || currentCue.label
+          : captionRef.current,
+        selectionLabel: selectionRef.current.label,
+        selectionPath: selectionRef.current.path,
+        selectionValue: selectionRef.current.value,
+        origin: originRef.current,
+      });
+      // Request the finished composite explicitly. Depending on a later canvas
+      // paint can leave a short recording with only its container header.
+      captureTrack.requestFrame?.();
       recordFrame.current = requestAnimationFrame(draw);
     };
-    draw();
     const mimeType = [
       "video/webm;codecs=vp9",
       "video/webm;codecs=vp8",
@@ -579,6 +789,8 @@ export default function App() {
       return;
     }
     const stream = output.captureStream(30);
+    const captureTrack =
+      stream.getVideoTracks()[0] as CanvasCaptureMediaStreamTrack;
     const rec = new MediaRecorder(stream, {
       mimeType,
       videoBitsPerSecond: 8_000_000,
@@ -599,10 +811,13 @@ export default function App() {
         `avatar-director.${mimeType.includes("mp4") ? "mp4" : "webm"}`,
       );
     };
-    seek(0);
+    if (transport.current.time >= transport.current.duration) seek(0);
     transport.current.playing = true;
     setPlaying(true);
     rec.start();
+    // Start drawing after capture is armed. Waiting for onstart can deadlock:
+    // some encoders emit that event only once they receive their first frame.
+    draw();
     setRecording(true);
     if (sequenceCues.length) {
       transport.current.loop = false;
@@ -612,7 +827,9 @@ export default function App() {
       () => {
         if (rec.state === "recording") rec.stop();
       },
-      sequenceCues.length ? Math.min(30_000, timeline.duration * 1000) : 30_000,
+      sequenceCues.length
+        ? Math.min(30_000, (timeline.duration - transport.current.time) * 1000)
+        : 30_000,
     );
   }
   function setJointAngle(value: number) {
@@ -635,14 +852,16 @@ export default function App() {
     setJoint("left_index_1");
     setAxis("z");
     setDexterity(null);
-    setCaption("Move only the left index finger.");
+    transport.current.loop = true;
+    setLoop(true);
+    setCaption("Wiggle only the left index finger 65 degrees.");
     setOrigin("Authored study");
     setRaw("");
   }
   return (
     <>
-      <SiteHeader />
-      <main className="motion-studio">
+      {!captureMode && <SiteHeader />}
+      <main className={`motion-studio ${captureMode ? "capture-mode" : ""}`}>
         <div className="motion-demo-layout">
           <section className="motion-stage" aria-label="Avatar preview">
             <MotionStage
@@ -650,6 +869,7 @@ export default function App() {
               transport={transport}
               skeleton={skeleton}
               focus={focus}
+              selectedTargets={selectedTargets}
               onTick={onTick}
               onReady={onReady}
               onCanvas={onCanvas}
@@ -667,17 +887,28 @@ export default function App() {
               </span>
               <div>
                 <button
-                  aria-label="Toggle skeleton"
-                  title="Skeleton"
-                  className={skeleton ? "on" : ""}
-                  onClick={() => setSkeleton(!skeleton)}
+                  aria-label={
+                    captureMode ? "Exit recording view" : "Recording view"
+                  }
+                  title={
+                    captureMode ? "Exit recording view (Esc)" : "Recording view"
+                  }
+                  onClick={() => setCaptureMode(!captureMode)}
                 >
-                  <ScanLine size={17} />
+                  {captureMode ? (
+                    <Minimize2 size={17} />
+                  ) : (
+                    <Maximize2 size={17} />
+                  )}
                 </button>
                 <button
-                  aria-label="Full body camera"
-                  title="Full body"
-                  onClick={() => setFocus("body")}
+                  aria-label={
+                    focus === "body" ? "Hand camera" : "Full body camera"
+                  }
+                  title={focus === "body" ? "Hand close-up" : "Full body"}
+                  onClick={() =>
+                    setFocus(focus === "body" ? `${hand}_hand` : "body")
+                  }
                 >
                   <Focus size={17} />
                 </button>
@@ -694,6 +925,21 @@ export default function App() {
                 </button>
               </div>
             </div>
+            {selectedTargets.length > 0 && (
+              <div
+                className="motion-selection-badge"
+                aria-label="Selected motion"
+              >
+                <span>{selectionLabel}</span>
+                {(selectedFreeze || magnitude) && (
+                  <strong>
+                    {selectedFreeze
+                      ? "Paused"
+                      : `${Math.round(magnitude!.value)}°`}
+                  </strong>
+                )}
+              </div>
+            )}
             <div className="motion-caption">
               <span>
                 {activeCue ? activeCue.label.toUpperCase() : "DIRECTION"}
@@ -729,14 +975,6 @@ export default function App() {
                   />{" "}
                   Loop
                 </label>
-                <span className="motion-beat">
-                  BEAT{" "}
-                  {Math.min(
-                    totalBeats,
-                    Math.floor((time * program.bpm) / 60) + 1,
-                  )}{" "}
-                  / {totalBeats}
-                </span>
               </div>
               <input
                 className="motion-scrubber"
@@ -774,7 +1012,7 @@ export default function App() {
                 value={instruction}
                 onChange={(event) => setInstruction(event.target.value)}
                 maxLength={400}
-                rows={3}
+                rows={1}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();
@@ -815,8 +1053,13 @@ export default function App() {
             )}
 
             <div className="motion-quick-examples" aria-label="Example motions">
-              <p>Try an example</p>
               <div className="motion-example-buttons">
+                <button
+                  onClick={() => dexterityStudy("finger_ripple")}
+                  aria-pressed={dexterity === "finger_ripple"}
+                >
+                  Finger ripple
+                </button>
                 <button onClick={oneFinger}>One finger</button>
                 <button
                   aria-pressed={dexterity === "finger_touches"}
@@ -839,32 +1082,97 @@ export default function App() {
             >
               <Play size={16} /> Play full sequence
             </button>
+            <MotionTree
+              program={program}
+              timeline={timeline}
+              time={time}
+              playing={playing}
+              selected={selected}
+              onSelect={selectNode}
+            >
+              {selectedTargets.length > 0 && (
+                <div className="live-joint-controls">
+                  <div className="live-joint-title">
+                    <span>{selectionLabel}</span>
+                    <button
+                      onClick={undoEdit}
+                      disabled={!undo.length}
+                      aria-label="Undo edit"
+                    >
+                      <Undo2 size={14} /> Undo
+                    </button>
+                  </div>
+                  {magnitude && !blocked && (
+                    <label className="live-curl-control">
+                      <span>{magnitude.label}</span>
+                      <output>{Math.round(magnitude.value)}°</output>
+                      <input
+                        aria-label="Curl amount"
+                        type="range"
+                        min="0"
+                        max={magnitude.max}
+                        step="1"
+                        value={magnitude.value}
+                        disabled={!!selectedFreeze}
+                        onPointerDown={beginCurlEdit}
+                        onPointerUp={() => {
+                          sliderStart.current = null;
+                        }}
+                        onKeyUp={() => {
+                          sliderStart.current = null;
+                        }}
+                        onBlur={() => {
+                          sliderStart.current = null;
+                        }}
+                        onChange={(event) =>
+                          changeCurl(Number(event.target.value))
+                        }
+                      />
+                    </label>
+                  )}
+                  {blocked ? (
+                    <p className="live-edit-hint">
+                      {blocked}{" "}
+                      <button onClick={() => dexterityStudy("finger_ripple")}>
+                        Try a finger ripple
+                      </button>
+                    </p>
+                  ) : (
+                    <button className="live-freeze" onClick={pauseSelection}>
+                      {selectedFreeze ? (
+                        <Play size={14} />
+                      ) : (
+                        <Pause size={14} />
+                      )}
+                      {selectedFreeze
+                        ? "Restore motion"
+                        : selectedTargets.length === 1
+                          ? "Pause joint"
+                          : selectedTargets.length === 3
+                            ? "Pause finger"
+                            : "Pause selection"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </MotionTree>
             <details className="motion-disclosure motion-more">
               <summary>More motions</summary>
               <div className="motion-example-buttons">
                 <button onClick={() => study("salsa")}>Salsa</button>
                 <button onClick={() => study("cha_cha")}>Cha-cha</button>
                 <button onClick={() => study("robot")}>Robot</button>
-                {DEXTERITY_STUDIES.filter(
-                  ({ id }) => id === "finger_ripple" || id === "arm_wave",
-                ).map(({ id, label }) => (
-                  <button
-                    key={id}
-                    aria-pressed={dexterity === id}
-                    onClick={() => dexterityStudy(id)}
-                  >
-                    {label}
-                  </button>
-                ))}
-                <button
-                  disabled={!findNode(program.root, "arms")}
-                  onClick={() => {
-                    edit(replaceArms(program, "robot"));
-                    setCaption("Same footwork. Robot arms.");
-                  }}
-                >
-                  Robot arms only
-                </button>
+                {DEXTERITY_STUDIES.filter(({ id }) => id === "arm_wave").map(
+                  ({ id, label }) => (
+                    <button
+                      key={id}
+                      aria-pressed={dexterity === id}
+                      onClick={() => dexterityStudy(id)}
+                    >
+                      {label}
+                    </button>
+                  ),
+                )}
               </div>
               <div className="motion-dexterity-options">
                 <label>
@@ -909,8 +1217,7 @@ export default function App() {
               </summary>
               <aside className="motion-inspector">
                 <div className="motion-panel-title">
-                  <GitBranch size={16} />
-                  <h2>Motion tree</h2>
+                  <h2>Advanced controls</h2>
                   <button
                     aria-label="Edit motion JSON"
                     title="Edit / import motion JSON"
@@ -935,17 +1242,14 @@ export default function App() {
                   >
                     <Download size={16} />
                   </button>
-                </div>
-                <p className="motion-panel-hint">
-                  Open a branch. Follow it down to a joint.
-                </p>
-                <div className="motion-tree">
-                  <TreeNode
-                    node={program.root}
-                    selected={selected}
-                    active={active}
-                    onSelect={setSelected}
-                  />
+                  <button
+                    aria-label="Toggle skeleton"
+                    title="Skeleton"
+                    aria-pressed={skeleton}
+                    onClick={() => setSkeleton(!skeleton)}
+                  >
+                    <ScanLine size={17} />
+                  </button>
                 </div>
                 <div className="motion-global-controls">
                   <label>
@@ -1004,6 +1308,10 @@ export default function App() {
                       value={joint}
                       onChange={(event) => {
                         setJoint(event.target.value);
+                        if (event.target.value.startsWith("left_"))
+                          setHand("left");
+                        if (event.target.value.startsWith("right_"))
+                          setHand("right");
                         setFocus(
                           /_(index|thumb|middle|ring|pinky)_/.test(
                             event.target.value,
@@ -1248,7 +1556,15 @@ export default function App() {
                     try {
                       const next = JSON.parse(json) as MotionProgram;
                       validateRigProgram(next);
-                      edit(next);
+                      cancelInference();
+                      accept(next);
+                      setFrozen([]);
+                      setUndo([]);
+                      curlReferences.current.clear();
+                      sliderStart.current = null;
+                      setSequenceCues([]);
+                      setCaption(next.title);
+                      setOrigin("Imported motion");
                       setJson(null);
                       setSelected(next.root.id);
                     } catch (e) {
