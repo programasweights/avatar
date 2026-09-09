@@ -382,7 +382,7 @@ test("new skills and JSON replacement release old pauses without hidden frozen r
   await page
     .getByLabel("Direction", { exact: true })
     .fill("Make a finger ripple");
-  await page.getByRole("button", { name: "Direct", exact: true }).click();
+  await page.getByRole("button", { name: "Apply direction", exact: true }).click();
   await expect(page.locator(".motion-stage-label")).toHaveText(
     "PAW · neural commands",
   );
@@ -440,7 +440,7 @@ test("an implicit language pause follows the selected right hand and preserves t
   await page
     .getByLabel("Direction", { exact: true })
     .fill("Pause the index finger");
-  await page.getByRole("button", { name: "Direct", exact: true }).click();
+  await page.getByRole("button", { name: "Apply direction", exact: true }).click();
   await expect
     .poll(() =>
       page.evaluate(() =>
@@ -461,6 +461,106 @@ test("an implicit language pause follows the selected right hand and preserves t
       "Left finger preserved",
     );
   });
+  expect(errors).toEqual([]);
+});
+
+test("a direction after playback ends resumes the visible motion and replay preserves the edit", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const errors = await ready(page, false);
+  const original = await program(page);
+  await expect(page.getByText("Editing current motion", { exact: true })).toBeVisible();
+  const before = (await poses(page, [0]))[0];
+  const duration = compileMotion(original).duration;
+  await seek(page, duration);
+  await expect(
+    page.getByRole("button", { name: "Play current motion", exact: true }),
+  ).toBeVisible();
+  await page.route("**/api/direct", (route) =>
+    route.fulfill({ json: { output: "joint left_hip x -45" } }),
+  );
+  await page.getByLabel("Direction", { exact: true }).fill("Lift your left leg");
+  await page.getByRole("button", { name: "Apply direction", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Pause current motion", exact: true }),
+  ).toBeVisible();
+  await expect.poll(() => page.evaluate(() =>
+    (window as any).__motionStudio.snapshot().time,
+  )).toBeLessThan(duration);
+  await expect.poll(() => page.evaluate(() =>
+    (window as any).__motion.cameraSnapshot().focus,
+  )).toBe("body");
+
+  const edited = await program(page);
+  expect(node(edited.root, original.root.id)).toEqual(original.root);
+  expect(edited.props).toEqual(original.props);
+  expect(node(edited.root, "detail.left_hip.x")).toMatchObject({
+    target: "left_hip", axis: "x", curve: { kind: "constant", value: -45 },
+  });
+  const lifted = (await poses(page, [0]))[0];
+  expect(lifted.left_ankle.position[1] - before.left_ankle.position[1]).toBeGreaterThan(.05);
+  expect(lifted.left_ankle.position[2] - before.left_ankle.position[2]).toBeGreaterThan(.2);
+  sameJoint(lifted.right_ankle, before.right_ankle, "Unedited right leg");
+
+  await seek(page, duration);
+  await page.getByRole("button", { name: "Replay current motion", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Pause current motion", exact: true }),
+  ).toBeVisible();
+  expect(await program(page)).toEqual(edited);
+  await expect(page.locator(".motion-caption p")).toHaveText("Lift your left leg");
+  const replayed = (await poses(page, [0]))[0];
+  sameJoint(replayed.left_ankle, lifted.left_ankle, "Replay retains the lifted leg");
+  expect(errors).toEqual([]);
+});
+
+test("Start over clears the edited scene and only an explicit example loader brings the hand demo back", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const errors = await ready(page, false);
+  const example = await program(page);
+  await page.route("**/api/direct", (route) =>
+    route.fulfill({ json: { output: "joint head y 30" } }),
+  );
+  await page.getByLabel("Direction", { exact: true }).fill("Turn your head 30 degrees");
+  await page.getByRole("button", { name: "Apply direction", exact: true }).click();
+  await expect.poll(() => page.evaluate(() =>
+    (window as any).__motionStudio.snapshot().selected,
+  )).toBe("detail.head.y");
+  await seek(page, 12);
+  await page.getByRole("button", { name: "Pause joint", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Restore motion", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Hand camera", exact: true }).click();
+  await page.getByRole("checkbox", { name: "Loop", exact: true }).check();
+  expect((await program(page)).props).toEqual(example.props);
+
+  await page.getByRole("button", { name: "Start over", exact: true }).click();
+  await expect(page.locator(".motion-stage-label")).toHaveText("Your motion");
+  await expect(page.locator(".motion-caption p")).toHaveText("Stand still.");
+  const cleared = await page.evaluate(() => (window as any).__motionStudio.snapshot());
+  expect(cleared).toMatchObject({
+    time: 0, playing: false, loop: false, focus: "body", selectedTargets: [], frozen: [], cues: [],
+  });
+  const clean = compileMotion(cleared.program);
+  expect(cleared.program.props ?? []).toEqual([]);
+  expect(clean.contacts ?? []).toEqual([]);
+  expect(clean.tracks.some(track =>
+    track.target.endsWith("_hand_camera") || track.id.startsWith("detail.") || track.id.startsWith("editing.freeze"),
+  )).toBe(false);
+  await poses(page, [0]);
+  expect(await page.evaluate(() => (window as any).__motion.rig.props.snapshot())).toEqual({});
+  expect(await page.evaluate(() => (window as any).__motion.selectionSnapshot())).toEqual([]);
+  await expect(page.getByRole("button", { name: "Undo edit", exact: true })).not.toBeVisible();
+
+  await page.getByRole("button", { name: "Replay current motion", exact: true }).click();
+  expect(await program(page)).toEqual(cleared.program);
+  const more = page.locator("summary").filter({ hasText: "More motions" });
+  await more.click();
+  await page.getByRole("button", { name: "Load hand demo", exact: true }).click();
+  await expect.poll(() => program(page)).toEqual(example);
+  await expect(page.locator(".motion-stage-label")).toHaveText("Example · Hand sequence");
   expect(errors).toEqual([]);
 });
 
@@ -485,7 +585,7 @@ test("recording view keeps playback and capture usable and produces a video", as
   await expect(page.locator(".motion-caption p")).toBeVisible();
   await noHorizontalOverflow(page);
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Record video", exact: true }).click();
+  await page.getByRole("button", { name: "Record current motion", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Stop recording", exact: true }),
   ).toBeVisible();
@@ -566,7 +666,7 @@ test("the compact tree, selected controls and recording view remain reachable on
     .click();
   await expect(tree).not.toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Record video", exact: true }),
+    page.getByRole("button", { name: "Record current motion", exact: true }),
   ).toBeVisible();
   await noHorizontalOverflow(page);
   await page

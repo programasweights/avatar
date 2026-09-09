@@ -58,6 +58,33 @@
   gap: 12px;
   position: relative;
 }
+.motion-session {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.motion-session button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  padding: 3px 0 3px 8px;
+  background: transparent;
+  color: #c4b5fd;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.motion-session button:hover {
+  color: white;
+}
+.motion-examples-label {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
 .motion-prompt textarea {
   display: block;
   width: 100%;
@@ -125,25 +152,6 @@
   background: #8b5cf61f;
   border-color: #a78bfa66;
   color: #ddd6fe;
-}
-.motion-sequence-play {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  width: 100%;
-  border: 1px solid #ffffff26;
-  border-radius: 10px;
-  background: #ffffff06;
-  color: #e5e7eb;
-  min-height: 34px;
-  padding: 7px 12px;
-  margin: 10px 0;
-  font-size: 12px;
-}
-.motion-sequence-play:hover {
-  background: #ffffff0c;
-  border-color: #a78bfa66;
 }
 .motion-disclosure {
   border-top: 1px solid var(--border);
@@ -786,9 +794,6 @@
   .motion-demo-layout:has(.motion-error) .motion-stage {
     grid-row: 4;
   }
-  .motion-sequence-play {
-    margin: 0;
-  }
   .motion-links {
     margin-top: 0;
   }
@@ -851,7 +856,7 @@
   border-radius: 12px;
   background: #141720;
   overflow: hidden;
-  margin: 0 0 16px;
+  margin: 14px 0 16px;
 }
 .live-tree-heading {
   display: flex;
@@ -1063,14 +1068,11 @@
     margin: 0;
   }
   .motion-prompt textarea {
-    min-height: 88px;
-    padding: 12px 102px 12px 14px;
+    min-height: 112px;
+    padding: 12px 14px 52px;
   }
   .motion-quick-examples {
     margin-top: 0;
-  }
-  .motion-sequence-play {
-    margin: 0;
   }
   .motion-selection-badge {
     top: 60px;
@@ -1102,11 +1104,5 @@
 @media (max-width: 900px) {
   .motion-heading {
     margin-bottom: 0;
-  }
-  .motion-prompt textarea {
-    padding-bottom: 12px;
-  }
-  .motion-sequence-play {
-    margin: 0;
   }
 }

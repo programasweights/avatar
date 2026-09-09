@@ -33,7 +33,7 @@ test("the default showcase has chapters, no loop, and survives a JSON round trip
   await page.waitForFunction(() => !!(window as any).__motion, undefined, {
     timeout: 60_000,
   });
-  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.getByRole("button", { name: "Pause current motion", exact: true }).click();
 
   expect(
     await page.evaluate(() => (window as any).__motion.timeline.duration),
@@ -42,7 +42,7 @@ test("the default showcase has chapters, no loop, and survives a JSON round trip
     page.getByRole("checkbox", { name: "Loop", exact: true }),
   ).not.toBeChecked();
   await expect(page.locator(".motion-stage-label")).toHaveText(
-    "Authored sequence",
+    "Example · Hand sequence",
   );
   await openSection(page, "Edit motion");
   const chapters = page.getByRole("navigation", { name: "Sequence chapters" });
@@ -133,7 +133,7 @@ test("a typed skill replaces the showcase using a mocked PAW response", async ({
     page.getByRole("navigation", { name: "Sequence chapters" }),
   ).toBeVisible();
   await page.getByLabel("Direction", { exact: true }).fill(instruction);
-  await page.getByRole("button", { name: "Direct", exact: true }).click();
+  await page.getByRole("button", { name: "Apply direction", exact: true }).click();
   await expect(page.locator(".motion-stage-label")).toHaveText(
     "PAW · neural commands",
   );
@@ -202,24 +202,24 @@ test("cancelling a sequence ignores a late mocked response and keeps the next sc
   });
   await openSection(page, "More motions");
   await page
-    .getByRole("button", { name: "Direct sequence with PAW", exact: true })
+    .getByRole("button", { name: "Load hand demo through PAW", exact: true })
     .click();
   await expect.poll(() => requests.length).toBe(2);
   await expect(
     page.getByRole("status", { name: "Sequence progress" }),
   ).toContainText("2 / 4");
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(
+    page.getByRole("status", { name: "Sequence progress" }),
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "Salsa", exact: true }).click();
   release();
   await finished;
   await page.evaluate(() => new Promise(requestAnimationFrame));
-  await expect(
-    page.getByRole("status", { name: "Sequence progress" }),
-  ).toHaveCount(0);
   await expect(page.getByRole("alert")).toHaveCount(0);
   await expect(page.locator(".motion-caption p")).toHaveText("Dance salsa.");
   await expect(page.locator(".motion-stage-label")).toHaveText(
-    "Authored study",
+    "Example · Salsa",
   );
   expect(requests).toHaveLength(2);
 });
@@ -242,7 +242,7 @@ test("studio renders, scrubs deterministically, and edits only one finger", asyn
   });
   await openSection(page, "More motions");
   await page.getByRole("button", { name: "Salsa", exact: true }).click();
-  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.getByRole("button", { name: "Pause current motion", exact: true }).click();
   const snapshot = async (time: number) =>
     page.evaluate(async (t) => {
       await new Promise(requestAnimationFrame);
@@ -330,7 +330,7 @@ test("live PAW moves the left thumb from an unsuffixed finger request", async ({
       response.url().endsWith("/api/direct") &&
       response.request().method() === "POST",
   );
-  await page.getByRole("button", { name: "Direct", exact: true }).click();
+  await page.getByRole("button", { name: "Apply direction", exact: true }).click();
   const response = await responsePromise;
   const result = await response.json();
   expect(response.ok(), JSON.stringify(result)).toBe(true);
@@ -467,7 +467,7 @@ test("live PAW lifts a leg after a finger close-up and selects its joint control
   const responsePromise = page.waitForResponse(
     (r) => r.url().endsWith("/api/direct") && r.request().method() === "POST",
   );
-  await page.getByRole("button", { name: "Direct", exact: true }).click();
+  await page.getByRole("button", { name: "Apply direction", exact: true }).click();
   const response = await responsePromise;
   const result = await response.json();
   expect(response.ok(), JSON.stringify(result)).toBe(true);
@@ -508,7 +508,7 @@ test("live PAW lifts a leg after a finger close-up and selects its joint control
   const armsResponsePromise = page.waitForResponse(
     (r) => r.url().endsWith("/api/direct") && r.request().method() === "POST",
   );
-  await page.getByRole("button", { name: "Direct", exact: true }).click();
+  await page.getByRole("button", { name: "Apply direction", exact: true }).click();
   const armsResponse = await armsResponsePromise;
   expect(armsResponse.ok()).toBe(true);
   expect((await armsResponse.json()).output).toBe(
@@ -561,7 +561,7 @@ test("the focused studio fits desktop and keeps mobile controls reachable withou
   await expect(moreSummary.locator("..")).toHaveJSProperty("open", false);
   await expect(page.locator(".motion-inspector")).not.toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Play full sequence", exact: true }),
+    page.getByRole("button", { name: "Replay current motion", exact: true }),
   ).toBeVisible();
 
   const stage = await page
@@ -611,7 +611,7 @@ test("the focused studio fits desktop and keeps mobile controls reachable withou
     .getByLabel("Direction", { exact: true })
     .fill("Move your left thumb");
   await expect(
-    page.getByRole("button", { name: "Direct", exact: true }),
+    page.getByRole("button", { name: "Apply direction", exact: true }),
   ).toBeEnabled();
   await openSection(page, "More motions");
   await page.getByRole("button", { name: "Salsa", exact: true }).click();

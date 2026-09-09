@@ -4,7 +4,7 @@ Direct a 3D character with words. Edit the motion down to individual finger join
 
 [Try the demo](https://programasweights.com/avatar) · [Watch the sequence](https://programasweights.com/avatar/showcase.mp4)
 
-[![The editable hand sequence](public/share.png)](https://programasweights.com/avatar)
+[![Finger ripple, fingertip touches and a coin rolling across the avatar’s knuckles](public/demo.gif)](https://programasweights.com/avatar)
 
 > “Make a wave from pinky to thumb on your left hand.”  
 > “Touch your left thumb to each fingertip, index first.”  
@@ -25,7 +25,8 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. **Play full sequence** runs immediately.
+Open the local URL printed by Vite. The hand sequence runs immediately as an
+editable example, matching the showcase video.
 The bundled character, examples, joint controls and JSON editor work without
 Python or model downloads.
 
@@ -46,7 +47,14 @@ Python executable.
 The first direction downloads the pretrained models. Subsequent inference runs
 locally, with models retained in one worker and requests processed sequentially.
 No API key or recompilation is required. The example buttons play authored
-motions; **Direct** interprets your text with PAW.
+motions; **Apply direction** interprets your text with PAW and edits the motion
+currently on screen. **Start over** clears the choreography, props and joint
+edits and returns the character to a neutral pose.
+
+**Play**, **Replay current motion** and **Record current motion** all use that
+same creation. To reload the original example, open **More motions → Load hand
+demo**. New directions resume playback; Replay starts the current motion from
+the beginning without replacing it.
 
 Try **Finger ripple**, select **Ring finger** in the motion tree, and press
 **Pause finger**. Its three joints stay fixed while the other fingers continue.

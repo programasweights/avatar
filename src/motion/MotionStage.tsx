@@ -27,6 +27,7 @@ interface Props {
   transport: React.MutableRefObject<Transport>;
   skeleton: boolean;
   focus: "body" | "left_hand" | "right_hand";
+  cameraReset?: number;
   selectedTargets?: string[];
   onTick: (time: number, playing: boolean) => void;
   onReady: () => void;
@@ -103,6 +104,7 @@ function Actor({
   transport,
   skeleton,
   focus,
+  cameraReset = 0,
   selectedTargets = [],
   onTick,
   onReady,
@@ -127,6 +129,7 @@ function Actor({
   const { camera, gl, scene: world } = useThree();
   const lastTick = useRef(0);
   const focusRef = useRef(focus);
+  const cameraResetRef = useRef(cameraReset);
   const cameraReady = useRef(false);
   const transition = useRef<{ from: CameraFrame; elapsed: number } | null>(
     null,
@@ -202,8 +205,10 @@ function Actor({
       timeline.props,
     );
     selection.update();
-    const changedFocus = focusRef.current !== focus;
+    const changedFocus =
+      focusRef.current !== focus || cameraResetRef.current !== cameraReset;
     focusRef.current = focus;
+    cameraResetRef.current = cameraReset;
     if (changedFocus && cameraReady.current) {
       transition.current = {
         from: {

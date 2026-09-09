@@ -154,7 +154,7 @@ export default function App() {
     [loop, setLoop] = useState(false);
   const [instruction, setInstruction] = useState(""),
     [caption, setCaption] = useState(initialSequence.cues[0].instruction);
-  const [origin, setOrigin] = useState("Authored sequence"),
+  const [origin, setOrigin] = useState("Example · Hand sequence"),
     [raw, setRaw] = useState("");
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -195,6 +195,7 @@ export default function App() {
   programRef.current = program;
   const selectedNode = findNode(program.root, selected);
   const [captureMode, setCaptureMode] = useState(false);
+  const [cameraReset, setCameraReset] = useState(0);
   const [frozen, setFrozen] = useState<FrozenRotation[]>([]);
   const [undo, setUndo] = useState<
     {
@@ -289,6 +290,43 @@ export default function App() {
     setBusy(false);
     setSequenceProgress("");
   };
+  function startOver() {
+    cancelInference();
+    if (recorder.current?.state === "recording") recorder.current.stop();
+    const neutral = createDance("idle", "still");
+    accept({ ...neutral, title: "Your motion" }, true);
+    transport.current.time = 0;
+    transport.current.playing = false;
+    transport.current.loop = false;
+    setTime(0);
+    setPlaying(false);
+    setLoop(false);
+    setInstruction("");
+    setCaption("Stand still.");
+    setOrigin("Your motion");
+    setRaw("");
+    setSequenceCues([]);
+    setSelected(neutral.root.id);
+    setFocus("body");
+    setCameraReset((value) => value + 1);
+    setJoint("left_index_1");
+    setAxis("z");
+    setHand("left");
+    setReverse(false);
+    setDexterity(null);
+    setSkeleton(false);
+    setJson(null);
+    setJsonError("");
+    setCaptureMode(false);
+  }
+  function resumeCurrentMotion() {
+    if (transport.current.time >= transport.current.duration) {
+      transport.current.time = 0;
+      setTime(0);
+    }
+    transport.current.playing = true;
+    setPlaying(true);
+  }
   const clearSequence = () => {
     setSequenceCues([]);
     setCaption(displayedCaption);
@@ -494,6 +532,11 @@ export default function App() {
         captureMode,
         time: transport.current.time,
         frozen,
+        cues: sequenceCues,
+        caption: displayedCaption,
+        origin,
+        playing: transport.current.playing,
+        loop: transport.current.loop,
       }),
       seek: (value: number) => {
         transport.current.time = value;
@@ -505,7 +548,16 @@ export default function App() {
     return () => {
       delete host.__motionStudio;
     };
-  }, [selected, selectedTargets, focus, captureMode, frozen]);
+  }, [
+    selected,
+    selectedTargets,
+    focus,
+    captureMode,
+    frozen,
+    sequenceCues,
+    displayedCaption,
+    origin,
+  ]);
   const onTick = useCallback((t: number, p: boolean) => {
     setTime(t);
     setPlaying(p);
@@ -539,6 +591,7 @@ export default function App() {
       const motionEdit = /^(freeze|restore) (\S+)$/.exec(commands.trim());
       if (motionEdit) {
         applyLanguageEdit(motionEdit[1], motionEdit[2], instruction.trim());
+        resumeCurrentMotion();
         setRaw(commands);
         return;
       }
@@ -568,6 +621,7 @@ export default function App() {
         next,
         lines.some((line) => /^(dance|skill) /.test(line)),
       );
+      resumeCurrentMotion();
       if (!newScene)
         setFrozen((items) =>
           items.filter((token) => !released.includes(token)),
@@ -630,7 +684,9 @@ export default function App() {
     setCaption(
       style === "idle" ? "Stand still." : `Dance ${style.replace("_", "-")}.`,
     );
-    setOrigin("Authored study");
+    setOrigin(
+      `Example · ${style === "idle" ? "Stand still" : style === "cha_cha" ? "Cha-cha" : style === "salsa" ? "Salsa" : "Robot"}`,
+    );
     setRaw("");
     setSelected("motion");
     setFocus("body");
@@ -652,7 +708,9 @@ export default function App() {
       setReverse(backwards);
       setSequenceCues([]);
       setCaption(dexterityCaption(skill, side, backwards));
-      setOrigin("Authored study");
+      setOrigin(
+        `Example · ${DEXTERITY_STUDIES.find(({ id }) => id === skill)!.label}`,
+      );
       setRaw("");
       setSelected(next.root.id);
       setJoint(`${side}_index_1`);
@@ -678,7 +736,7 @@ export default function App() {
     setJoint(`${side}_index_1`);
     setAxis("z");
     setFocus(`${side}_hand`);
-    setOrigin(commands ? "PAW · four directions" : "Authored sequence");
+    setOrigin(commands ? "PAW · four directions" : "Example · Hand sequence");
     setRaw(commands?.join("\n") ?? "");
   }
   function previewSequence(side = hand) {
@@ -855,7 +913,7 @@ export default function App() {
     transport.current.loop = true;
     setLoop(true);
     setCaption("Wiggle only the left index finger 65 degrees.");
-    setOrigin("Authored study");
+    setOrigin("Example · One finger");
     setRaw("");
   }
   return (
@@ -869,6 +927,7 @@ export default function App() {
               transport={transport}
               skeleton={skeleton}
               focus={focus}
+              cameraReset={cameraReset}
               selectedTargets={selectedTargets}
               onTick={onTick}
               onReady={onReady}
@@ -913,9 +972,13 @@ export default function App() {
                   <Focus size={17} />
                 </button>
                 <button
-                  aria-label={recording ? "Stop recording" : "Record video"}
+                  aria-label={
+                    recording ? "Stop recording" : "Record current motion"
+                  }
                   title={
-                    recording ? "Stop recording" : "Record up to 30 seconds"
+                    recording
+                      ? "Stop recording"
+                      : "Record this motion from the current playhead (up to 30 seconds)"
                   }
                   onClick={startRecording}
                   className={recording ? "recording" : ""}
@@ -949,7 +1012,12 @@ export default function App() {
             <div className="motion-transport">
               <div className="motion-transport-controls">
                 <button
-                  aria-label={playing ? "Pause" : "Play"}
+                  aria-label={
+                    playing ? "Pause current motion" : "Play current motion"
+                  }
+                  title={
+                    playing ? "Pause current motion" : "Play current motion"
+                  }
                   onClick={togglePlay}
                 >
                   {playing ? (
@@ -958,7 +1026,11 @@ export default function App() {
                     <Play size={18} fill="currentColor" />
                   )}
                 </button>
-                <button aria-label="Restart" onClick={restart}>
+                <button
+                  aria-label="Replay current motion"
+                  title="Replay current motion from the beginning"
+                  onClick={restart}
+                >
                   <RotateCcw size={16} />
                 </button>
                 <span>
@@ -1006,6 +1078,12 @@ export default function App() {
                 void direct();
               }}
             >
+              <div className="motion-session">
+                <span>Editing current motion</span>
+                <button type="button" onClick={startOver}>
+                  <RotateCcw size={13} /> Start over
+                </button>
+              </div>
               <textarea
                 aria-label="Direction"
                 placeholder="Wiggle only the left index finger 65 degrees"
@@ -1029,7 +1107,7 @@ export default function App() {
                 ) : (
                   <Play size={17} fill="currentColor" />
                 )}
-                {busy ? "Directing…" : "Direct"}
+                {busy ? "Applying…" : "Apply direction"}
               </button>
             </form>
             {sequenceProgress && (
@@ -1053,6 +1131,7 @@ export default function App() {
             )}
 
             <div className="motion-quick-examples" aria-label="Example motions">
+              <p className="motion-examples-label">Load an example</p>
               <div className="motion-example-buttons">
                 <button
                   onClick={() => dexterityStudy("finger_ripple")}
@@ -1075,13 +1154,6 @@ export default function App() {
                 </button>
               </div>
             </div>
-            <button
-              className="motion-sequence-play"
-              aria-pressed={sequenceCues.length > 0}
-              onClick={() => previewSequence()}
-            >
-              <Play size={16} /> Play full sequence
-            </button>
             <MotionTree
               program={program}
               timeline={timeline}
@@ -1159,6 +1231,12 @@ export default function App() {
             <details className="motion-disclosure motion-more">
               <summary>More motions</summary>
               <div className="motion-example-buttons">
+                <button
+                  onClick={() => previewSequence()}
+                  aria-pressed={sequenceCues.length > 0}
+                >
+                  Load hand demo
+                </button>
                 <button onClick={() => study("salsa")}>Salsa</button>
                 <button onClick={() => study("cha_cha")}>Cha-cha</button>
                 <button onClick={() => study("robot")}>Robot</button>
@@ -1208,7 +1286,7 @@ export default function App() {
                 disabled={busy}
                 onClick={() => void directSequence()}
               >
-                <Sparkles size={15} /> Direct sequence with PAW
+                <Sparkles size={15} /> Load hand demo through PAW
               </button>
             </details>
             <details className="motion-disclosure motion-editor">
@@ -1511,7 +1589,7 @@ export default function App() {
                 target="_blank"
                 rel="noreferrer"
               >
-                GitHub <ArrowUpRight size={14} />
+                Source code <ArrowUpRight size={14} />
               </a>
             </div>
           </section>
