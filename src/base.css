@@ -3,7 +3,9 @@
 }
 body {
   margin: 0;
-  background: #f5f7f3;
+  background: #0f1117;
+  color: #f3f4f6;
+  font-family: Inter, system-ui, sans-serif;
 }
 a {
   color: inherit;

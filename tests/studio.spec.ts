@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test.use({
   launchOptions: {
@@ -10,6 +10,18 @@ test.use({
     ],
   },
 });
+
+async function openSection(page: Page, name: "More motions" | "Edit motion") {
+  const summary = page.locator("summary").filter({ hasText: name });
+  const disclosure = summary.locator("..");
+  if (
+    !(await disclosure.evaluate(
+      (element) => (element as HTMLDetailsElement).open,
+    ))
+  )
+    await summary.click();
+  await expect(disclosure).toHaveJSProperty("open", true);
+}
 
 test("the default showcase has chapters, no loop, and survives a JSON round trip", async ({
   page,
@@ -32,6 +44,7 @@ test("the default showcase has chapters, no loop, and survives a JSON round trip
   await expect(page.locator(".motion-stage-label")).toHaveText(
     "Authored sequence",
   );
+  await openSection(page, "Edit motion");
   const chapters = page.getByRole("navigation", { name: "Sequence chapters" });
   await expect(chapters.getByRole("button")).toHaveCount(5);
   const examples = [
@@ -115,6 +128,7 @@ test("a typed skill replaces the showcase using a mocked PAW response", async ({
   await page.waitForFunction(() => !!(window as any).__motion, undefined, {
     timeout: 60_000,
   });
+  await openSection(page, "Edit motion");
   await expect(
     page.getByRole("navigation", { name: "Sequence chapters" }),
   ).toBeVisible();
@@ -186,6 +200,7 @@ test("cancelling a sequence ignores a late mocked response and keeps the next sc
   await page.waitForFunction(() => !!(window as any).__motion, undefined, {
     timeout: 60_000,
   });
+  await openSection(page, "More motions");
   await page
     .getByRole("button", { name: "Direct sequence with PAW", exact: true })
     .click();
@@ -220,11 +235,12 @@ test("studio renders, scrubs deterministically, and edits only one finger", asyn
   });
   await page.goto("/?dbg=1&quality=low");
   await expect(
-    page.getByRole("heading", { name: "Small details. Whole new moves." }),
+    page.getByRole("heading", { name: "Tell the character what to do." }),
   ).toBeVisible({ timeout: 60_000 });
   await page.waitForFunction(() => !!(window as any).__motion, undefined, {
     timeout: 60_000,
   });
+  await openSection(page, "More motions");
   await page.getByRole("button", { name: "Salsa", exact: true }).click();
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   const snapshot = async (time: number) =>
@@ -248,6 +264,7 @@ test("studio renders, scrubs deterministically, and edits only one finger", asyn
   expect(after.right_ankle.position).toEqual(before.right_ankle.position);
   expect(after.left_elbow.quaternion).not.toEqual(before.left_elbow.quaternion);
   const baseline = await snapshot(0);
+  await openSection(page, "Edit motion");
   await page.getByLabel("Joint angle", { exact: true }).fill("65");
   await page.waitForFunction(() =>
     (window as any).__motion.timeline.tracks.some(
@@ -462,6 +479,7 @@ test("live PAW lifts a leg after a finger close-up and selects its joint control
     ),
   );
   await expect(page.getByRole("alert")).toHaveCount(0);
+  await openSection(page, "Edit motion");
   await expect(page.getByLabel("Joint", { exact: true })).toHaveValue(
     "left_hip",
   );
@@ -519,4 +537,102 @@ test("live PAW lifts a leg after a finger close-up and selects its joint control
     path: testInfo.outputPath("leg-and-arms.png"),
     fullPage: true,
   });
+});
+
+test("the focused studio fits desktop and keeps mobile controls reachable without horizontal scrolling", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/?dbg=1&quality=low");
+  await expect(
+    page.getByRole("heading", { name: "Tell the character what to do." }),
+  ).toBeVisible();
+  await page.waitForFunction(() => !!(window as any).__motion, undefined, {
+    timeout: 60_000,
+  });
+
+  const editSummary = page
+    .locator("summary")
+    .filter({ hasText: "Edit motion" });
+  const moreSummary = page
+    .locator("summary")
+    .filter({ hasText: "More motions" });
+  await expect(editSummary.locator("..")).toHaveJSProperty("open", false);
+  await expect(moreSummary.locator("..")).toHaveJSProperty("open", false);
+  await expect(page.locator(".motion-inspector")).not.toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Play full sequence", exact: true }),
+  ).toBeVisible();
+
+  const stage = await page
+    .getByRole("region", { name: "Avatar preview", exact: true })
+    .boundingBox();
+  const direction = await page
+    .getByLabel("Direction", { exact: true })
+    .boundingBox();
+  expect(stage).not.toBeNull();
+  expect(direction).not.toBeNull();
+  expect(stage!.y).toBeGreaterThanOrEqual(0);
+  expect(
+    stage!.y + stage!.height,
+    "The complete desktop stage should fit above the fold",
+  ).toBeLessThanOrEqual(page.viewportSize()!.height + 12);
+  expect(
+    stage!.width,
+    "The character should remain the main visual",
+  ).toBeGreaterThan(400);
+  expect(
+    direction!.x,
+    "Desktop instructions should sit beside the stage",
+  ).toBeGreaterThanOrEqual(stage!.x + stage!.width - 12);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload();
+  await page.waitForFunction(() => !!(window as any).__motion, undefined, {
+    timeout: 60_000,
+  });
+  const expectNoHorizontalScroll = async () => {
+    const dimensions = await page.evaluate(() => ({
+      viewport: window.innerWidth,
+      content: Math.max(
+        document.documentElement.scrollWidth,
+        document.body.scrollWidth,
+      ),
+    }));
+    expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 2);
+  };
+  await expectNoHorizontalScroll();
+  await expect(editSummary.locator("..")).toHaveJSProperty("open", false);
+  await page.getByRole("button", { name: "One finger", exact: true }).click();
+  await expect(page.locator(".motion-caption p")).toHaveText(
+    "Move only the left index finger.",
+  );
+  await page
+    .getByLabel("Direction", { exact: true })
+    .fill("Move your left thumb");
+  await expect(
+    page.getByRole("button", { name: "Direct", exact: true }),
+  ).toBeEnabled();
+  await openSection(page, "More motions");
+  await page.getByRole("button", { name: "Salsa", exact: true }).click();
+  await expect(page.locator(".motion-caption p")).toHaveText("Dance salsa.");
+  await openSection(page, "Edit motion");
+  await page.getByLabel("Joint angle", { exact: true }).fill("30");
+  await expect(page.getByLabel("Joint angle", { exact: true })).toHaveValue(
+    "30",
+  );
+  await expectNoHorizontalScroll();
+  await page
+    .getByRole("button", { name: "Edit motion JSON", exact: true })
+    .click();
+  await expect(
+    page.getByRole("dialog", { name: "Motion program JSON" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Motion JSON", { exact: true })).toBeEditable();
+  await expectNoHorizontalScroll();
+  await page
+    .getByRole("button", { name: "Close JSON editor", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
 });

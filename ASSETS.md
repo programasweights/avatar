@@ -79,3 +79,8 @@ A Python environment with `bpy` installed can run the same script directly.
 Mixamo files retain their original licensing terms and are not covered by this
 repository's MIT license or the bundled character's CC0 dedication. Keep these
 local files separate from the public asset bundle.
+
+## Typography
+
+The app uses Inter, matching the PAW website. Its self-hosted Latin fonts are
+distributed under the [SIL Open Font License](public/fonts/INTER-LICENSE.txt).

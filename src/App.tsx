@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import MotionStage from "./motion/MotionStage";
+import SiteHeader from "./SiteHeader";
 import CurveEditor from "./motion/CurveEditor";
 import type { Transport } from "./motion/MotionStage";
 import type { Axis, Curve, MotionNode, MotionProgram } from "./motion/types";
@@ -179,13 +180,13 @@ function CurvePlot({ curve }: { curve: Curve }) {
           x2={10 + 65 * i}
           y1="8"
           y2="60"
-          stroke="#d5ddda"
+          stroke="#333747"
           strokeDasharray="2 4"
         />
       ))}
       <polyline
         fill="none"
-        stroke="#148262"
+        stroke="#a78bfa"
         strokeWidth="2"
         points={values
           .map(
@@ -618,630 +619,652 @@ export default function App() {
     edit(jointOffset(program, joint, axis, value));
     setSelected(`detail.${joint}.${axis}`);
   }
+  function oneFinger() {
+    const next = jointOffset(
+      createDance("idle"),
+      "left_index_1",
+      "z",
+      65,
+      true,
+    );
+    cancelInference();
+    accept(next, true);
+    setSequenceCues([]);
+    setFocus("left_hand");
+    setSelected("detail.left_index_1.z");
+    setJoint("left_index_1");
+    setAxis("z");
+    setDexterity(null);
+    setCaption("Move only the left index finger.");
+    setOrigin("Authored study");
+    setRaw("");
+  }
   return (
-    <main className="motion-studio">
-      <header className="motion-header">
-        <a href={import.meta.env.BASE_URL} className="motion-wordmark">
-          paw<span> / </span>avatar director
-        </a>
-        <div className="motion-header-right">
-          <span className="motion-version">EDITABLE MOTION</span>
-          <a
-            href="https://github.com/programasweights/avatar"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Source code <ArrowUpRight size={13} />
-          </a>
-        </div>
-      </header>
-      <div className="motion-heading">
-        <div>
-          <p className="motion-eyebrow">
-            A CHARACTER. EVERY JOINT. YOUR DIRECTION.
-          </p>
-          <h1>
-            Small details.
-            <br className="mobile-only" /> Whole new moves.
-          </h1>
-          <p>Ripple the fingers. Touch each fingertip. Roll a coin.</p>
-        </div>
-        <div className="motion-capability">
-          <span className="motion-live-dot" />
-          {Object.keys(JOINTS).length} articulated joints<span> / </span>
-          continuous curves
-        </div>
-      </div>
-      <form
-        className="motion-prompt"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void direct();
-        }}
-      >
-        <Sparkles size={20} />
-        <input
-          aria-label="Direction"
-          placeholder="Touch your left thumb to each fingertip, index first."
-          value={instruction}
-          onChange={(event) => setInstruction(event.target.value)}
-          maxLength={400}
-        />
-        <button
-          className="motion-primary"
-          disabled={busy || !instruction.trim()}
-        >
-          {busy ? (
-            <Loader2 size={17} className="motion-spin" />
-          ) : (
-            <ArrowUpRight size={18} />
-          )}
-          {busy ? "Directing…" : "Direct"}
-        </button>
-      </form>
-      <div className="motion-examples">
-        <span>EXPLORE</span>
-        <button onClick={() => study("salsa")}>Salsa</button>
-        <button onClick={() => study("cha_cha")}>Cha-cha</button>
-        <button onClick={() => study("robot")}>Robot</button>
-        <i />
-        <button
-          disabled={!findNode(program.root, "arms")}
-          onClick={() => {
-            edit(replaceArms(program, "robot"));
-            setCaption("Same footwork. Robot arms.");
-          }}
-        >
-          Robot arms only
-        </button>
-        <button
-          onClick={() => {
-            const next = jointOffset(
-              createDance("idle"),
-              "left_index_1",
-              "z",
-              65,
-              true,
-            );
-            cancelInference();
-            accept(next, true);
-            setSequenceCues([]);
-            setFocus("left_hand");
-            setSelected("detail.left_index_1.z");
-            setJoint("left_index_1");
-            setAxis("z");
-            setDexterity(null);
-            setCaption("Move only the left index finger.");
-            setOrigin("Authored study");
-            setRaw("");
-          }}
-        >
-          One finger
-        </button>
-      </div>
-      <div
-        className="motion-dexterity"
-        role="group"
-        aria-label="Dexterity studies"
-      >
-        <span className="motion-dexterity-title">DEXTERITY</span>
-        <div className="motion-dexterity-studies">
-          <button
-            className="motion-sequence-play"
-            aria-pressed={sequenceCues.length > 0}
-            onClick={() => previewSequence()}
-          >
-            <Play size={12} fill="currentColor" />
-            Play full sequence
-          </button>
-          {DEXTERITY_STUDIES.map(({ id, label }) => (
-            <button
-              key={id}
-              aria-pressed={dexterity === id}
-              onClick={() => dexterityStudy(id)}
-              title={
-                id === "coin_roll"
-                  ? "A coin animated with the fingers"
-                  : undefined
-              }
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="motion-dexterity-options">
-          <label>
-            {dexterity === "arm_wave" ? "Start" : "Hand"}
-            <select
-              aria-label="Dexterity hand"
-              value={hand}
-              onChange={(event) => {
-                const side = event.target.value as Hand;
-                if (sequenceCues.length) previewSequence(side);
-                else if (dexterity) dexterityStudy(dexterity, side);
-                else setHand(side);
-              }}
-            >
-              <option value="left">Left</option>
-              <option value="right">Right</option>
-            </select>
-          </label>
-          <button
-            aria-label="Reverse dexterity motion"
-            aria-pressed={reverse}
-            disabled={sequenceCues.length > 0}
-            title={
-              sequenceCues.length
-                ? "The full sequence includes forward and reverse ripples."
-                : "Reverse this motion"
-            }
-            onClick={() => {
-              if (dexterity) dexterityStudy(dexterity, hand, !reverse);
-              else setReverse(!reverse);
-            }}
-          >
-            <RotateCcw size={12} />
-            Reverse
-          </button>
-        </div>
-        <div className="motion-sequence-direct">
-          <span>Ripple → reverse → fingertip touches → coin roll</span>
-          <button disabled={busy} onClick={() => void directSequence()}>
-            <Sparkles size={12} />
-            Direct sequence with PAW
-          </button>
-        </div>
-      </div>
-      {sequenceProgress && (
-        <div
-          className="motion-sequence-progress"
-          role="status"
-          aria-label="Sequence progress"
-        >
-          <Loader2 size={14} className="motion-spin" />
-          <span>{sequenceProgress}</span>
-          <button onClick={cancelInference}>Cancel</button>
-        </div>
-      )}
-      {error && (
-        <div className="motion-error" role="alert">
-          {error}
-          <button aria-label="Dismiss error" onClick={() => setError("")}>
-            <X size={15} />
-          </button>
-        </div>
-      )}
-      <div className="motion-workspace">
-        <section className="motion-stage" aria-label="Avatar preview">
-          <MotionStage
-            timeline={timeline}
-            transport={transport}
-            skeleton={skeleton}
-            focus={focus}
-            onTick={onTick}
-            onReady={onReady}
-            onCanvas={onCanvas}
-          />
-          {!ready && (
-            <div className="motion-loading">
-              <Loader2 className="motion-spin" />
-              Loading the character…
-            </div>
-          )}
-          <div className="motion-stage-top">
-            <span className="motion-stage-label">
-              <span className="motion-live-dot" />
-              {origin}
-            </span>
-            <div>
-              <button
-                aria-label="Toggle skeleton"
-                title="Skeleton"
-                className={skeleton ? "on" : ""}
-                onClick={() => setSkeleton(!skeleton)}
-              >
-                <ScanLine size={17} />
-              </button>
-              <button
-                aria-label="Full body camera"
-                title="Full body"
-                onClick={() => setFocus("body")}
-              >
-                <Focus size={17} />
-              </button>
-              <button
-                aria-label={recording ? "Stop recording" : "Record video"}
-                title={recording ? "Stop recording" : "Record up to 30 seconds"}
-                onClick={startRecording}
-                className={recording ? "recording" : ""}
-              >
-                <Video size={17} />
-                {recording && "REC"}
-              </button>
-            </div>
-          </div>
-          <div className="motion-caption">
-            <span>
-              {activeCue ? activeCue.label.toUpperCase() : "DIRECTION"}
-            </span>
-            <p>{displayedCaption}</p>
-          </div>
-          <div className="motion-transport">
-            <div className="motion-transport-controls">
-              <button
-                aria-label={playing ? "Pause" : "Play"}
-                onClick={togglePlay}
-              >
-                {playing ? (
-                  <Pause size={18} fill="currentColor" />
-                ) : (
-                  <Play size={18} fill="currentColor" />
-                )}
-              </button>
-              <button aria-label="Restart" onClick={restart}>
-                <RotateCcw size={16} />
-              </button>
-              <span>
-                {time.toFixed(2)} <i>/ {timeline.duration.toFixed(2)}s</i>
-              </span>
-              <label className="motion-loop">
-                <input
-                  type="checkbox"
-                  checked={loop}
-                  onChange={(event) => {
-                    setLoop(event.target.checked);
-                    transport.current.loop = event.target.checked;
-                  }}
-                />{" "}
-                Loop
-              </label>
-              <span className="motion-beat">
-                BEAT{" "}
-                {Math.min(
-                  totalBeats,
-                  Math.floor((time * program.bpm) / 60) + 1,
-                )}{" "}
-                / {totalBeats}
-              </span>
-            </div>
-            <input
-              className="motion-scrubber"
-              aria-label="Timeline"
-              type="range"
-              min="0"
-              max={timeline.duration}
-              step="0.001"
-              value={time}
-              onChange={(event) => seek(Number(event.target.value))}
+    <>
+      <SiteHeader />
+      <main className="motion-studio">
+        <div className="motion-demo-layout">
+          <section className="motion-stage" aria-label="Avatar preview">
+            <MotionStage
+              timeline={timeline}
+              transport={transport}
+              skeleton={skeleton}
+              focus={focus}
+              onTick={onTick}
+              onReady={onReady}
+              onCanvas={onCanvas}
             />
-          </div>
-        </section>
-        <aside className="motion-inspector">
-          <div className="motion-panel-title">
-            <GitBranch size={16} />
-            <h2>Motion tree</h2>
-            <button
-              aria-label="Edit motion JSON"
-              title="Edit / import motion JSON"
-              onClick={() => {
-                setJson(JSON.stringify(program, null, 2));
-                setJsonError("");
-              }}
-            >
-              <Code2 size={17} />
-            </button>
-            <button
-              aria-label="Export motion JSON"
-              title="Export editable motion"
-              onClick={() =>
-                download(
-                  new Blob([JSON.stringify(program, null, 2)], {
-                    type: "application/json",
-                  }),
-                  "avatar-motion.json",
-                )
-              }
-            >
-              <Download size={16} />
-            </button>
-          </div>
-          <p className="motion-panel-hint">
-            Open a branch. Follow it down to a joint.
-          </p>
-          <div className="motion-tree">
-            <TreeNode
-              node={program.root}
-              selected={selected}
-              active={active}
-              onSelect={setSelected}
-            />
-          </div>
-          <div className="motion-global-controls">
-            <label>
-              Tempo{" "}
-              <span>
-                {program.bpm} <small>BPM</small>
-              </span>
-              <input
-                aria-label="Tempo"
-                type="range"
-                min="30"
-                max="240"
-                step="1"
-                value={program.bpm}
-                onChange={(event) =>
-                  edit(changeTempo(program, Number(event.target.value)), true)
-                }
-              />
-            </label>
-            <label>
-              Arm choreography
-              <select
-                aria-label="Arm choreography"
-                disabled={!findNode(program.root, "arms")}
-                value={
-                  program.root.kind !== "curve"
-                    ? (findNode(program.root, "arms")?.label.split(" · ")[1] ??
-                      "natural")
-                    : "natural"
-                }
-                onChange={(event) =>
-                  edit(replaceArms(program, event.target.value as ArmStyle))
-                }
-              >
-                <option value="natural">Natural</option>
-                <option value="robot">Robot</option>
-                <option value="wave">Right-hand wave</option>
-                <option value="still">Still</option>
-              </select>
-            </label>
-          </div>
-          <div className="motion-joint-editor">
-            <div className="motion-panel-title">
-              <SlidersHorizontal size={15} />
-              <h2>Joint detail</h2>
-            </div>
-            <div className="motion-joint-select">
-              <select
-                aria-label="Joint"
-                value={joint}
-                onChange={(event) => {
-                  setJoint(event.target.value);
-                  setFocus(
-                    /_(index|thumb|middle|ring|pinky)_/.test(event.target.value)
-                      ? event.target.value.startsWith("left")
-                        ? "left_hand"
-                        : "right_hand"
-                      : "body",
-                  );
-                }}
-              >
-                {Object.keys(JOINTS).map((id) => (
-                  <option key={id} value={id}>
-                    {JOINT_LABEL(id)}
-                  </option>
-                ))}
-              </select>
-              <select
-                aria-label="Joint axis"
-                value={axis}
-                onChange={(event) => setAxis(event.target.value as Axis)}
-              >
-                <option>x</option>
-                <option>y</option>
-                <option>z</option>
-              </select>
-            </div>
-            <label className="motion-angle">
-              <span>Rotation offset</span>
-              <output>{angle}°</output>
-              <input
-                aria-label="Joint angle"
-                type="range"
-                min="-180"
-                max="180"
-                step="1"
-                value={angle}
-                onChange={(event) => setJointAngle(Number(event.target.value))}
-              />
-            </label>
-            <p>Local axes for fingers. Body axes for larger joints.</p>
-          </div>
-          {selectedNode?.kind === "curve" && (
-            <div className="motion-leaf-editor">
-              <div className="motion-leaf-heading">
-                <span>{selectedNode.curve.kind.toUpperCase()} CURVE</span>
-                <code>
-                  {selectedNode.target}.{selectedNode.axis}
-                </code>
+            {!ready && (
+              <div className="motion-loading">
+                <Loader2 className="motion-spin" />
+                Loading the character…
               </div>
-              <CurvePlot curve={selectedNode.curve} />
-              <CurveEditor
-                node={selectedNode}
-                onChange={(curve) =>
-                  edit({
-                    ...program,
-                    root: updateNode(program.root, selected, (node) =>
-                      node.kind === "curve" ? { ...node, curve } : node,
-                    ),
-                  })
-                }
-              />
-              <button
-                onClick={() => {
-                  setJson(JSON.stringify(program, null, 2));
-                  setJsonError("");
-                }}
-              >
-                Edit keyframes <ArrowUpRight size={12} />
-              </button>
-              <button
-                onClick={() =>
-                  edit({
-                    ...program,
-                    root: updateNode(program.root, selected, (node) =>
-                      node.kind === "curve"
-                        ? { ...node, curve: { kind: "constant", value: 0 } }
-                        : node,
-                    ),
-                  })
-                }
-              >
-                Zero this curve
-              </button>
-            </div>
-          )}
-          {selectedNode?.kind === "contact" && (
-            <div
-              className="motion-leaf-editor motion-contact-editor"
-              aria-label="Contact detail"
-            >
-              <div className="motion-leaf-heading">
-                <span>
-                  {selectedNode.mode === "fingertips"
-                    ? "FINGERTIP CONTACT"
-                    : "PROP TRANSFER"}
-                </span>
-                <code>{selectedNode.duration.toFixed(2)}s</code>
-              </div>
-              <p>
-                {selectedNode.mode === "fingertips" ? (
-                  <>
-                    {JOINT_LABEL(selectedNode.effector)} →{" "}
-                    {JOINT_LABEL(selectedNode.target)}
-                  </>
-                ) : (
-                  <>
-                    {JOINT_LABEL(selectedNode.prop)} ·{" "}
-                    {JOINT_LABEL(selectedNode.from)} →{" "}
-                    {JOINT_LABEL(selectedNode.to)}
-                  </>
-                )}
-              </p>
-              <CurvePlot
-                curve={
-                  selectedNode.mode === "fingertips"
-                    ? selectedNode.weight
-                    : selectedNode.progress
-                }
-              />
-              <p className="motion-contact-hint">
-                {selectedNode.mode === "fingertips"
-                  ? "The curve controls how closely the fingertips meet."
-                  : "The curve controls the transfer between finger contacts."}{" "}
-                Edit its timing and curve in Motion JSON.
-              </p>
-              <button
-                onClick={() => {
-                  setJson(JSON.stringify(program, null, 2));
-                  setJsonError("");
-                }}
-              >
-                Edit contact in Motion JSON <ArrowUpRight size={12} />
-              </button>
-            </div>
-          )}
-        </aside>
-      </div>
-      {sequenceCues.length > 0 && (
-        <nav
-          className="motion-sequence-chapters"
-          aria-label="Sequence chapters"
-        >
-          {sequenceCues.map((cue) => (
-            <button
-              key={cue.id}
-              aria-current={activeCue?.id === cue.id ? "step" : undefined}
-              onClick={() => seek(cue.start)}
-            >
-              <span>{cue.label}</span>
-              <small>{cue.start.toFixed(1)}s</small>
-            </button>
-          ))}
-        </nav>
-      )}
-      <footer className="motion-footer">
-        <span>
-          <Check size={13} /> {timeline.tracks.length} editable curves
-          {timeline.contacts?.length
-            ? ` · ${timeline.contacts.length} contacts`
-            : ""}{" "}
-          · foot targets + inverse kinematics
-        </span>
-        <span>
-          PAW interprets language. The motion engine moves the rig.{" "}
-          <a href={`${import.meta.env.BASE_URL}assets/character.glb`} download>
-            Character ↗
-          </a>
-        </span>
-      </footer>
-      {raw && (
-        <details className="motion-commands">
-          <summary>Last PAW command program</summary>
-          <pre>{raw}</pre>
-        </details>
-      )}
-      <p className="motion-scope">
-        Direct dance, joint movements, finger ripples, fingertip touches,
-        traveling arm waves and coin rolls. Every articulated joint is editable;
-        new complex skills still need authored choreography.
-      </p>
-      {json !== null && (
-        <div className="motion-modal-backdrop">
-          <section
-            className="motion-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Motion program JSON"
-          >
-            <div className="motion-panel-title">
-              <h2>Editable motion program</h2>
-              <button
-                aria-label="Close JSON editor"
-                onClick={() => setJson(null)}
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <p>
-              Sequence, parallel, repeat → rotation / position → constant, sine
-              or keyframe curves. Times in seconds; rotations in degrees.
-            </p>
-            <textarea
-              aria-label="Motion JSON"
-              value={json}
-              onChange={(event) => setJson(event.target.value)}
-              spellCheck={false}
-            />
-            {jsonError && (
-              <p role="alert" className="motion-json-error">
-                {jsonError}
-              </p>
             )}
-            <div className="motion-modal-actions">
-              <button onClick={() => setJson(null)}>Cancel</button>
-              <button
-                className="motion-primary"
-                onClick={() => {
-                  try {
-                    const next = JSON.parse(json) as MotionProgram;
-                    validateRigProgram(next);
-                    edit(next);
-                    setJson(null);
-                    setSelected(next.root.id);
-                  } catch (e) {
-                    setJsonError(
-                      e instanceof Error ? e.message : "Invalid motion JSON.",
-                    );
+            <div className="motion-stage-top">
+              <span className="motion-stage-label">
+                <span className="motion-live-dot" />
+                {origin}
+              </span>
+              <div>
+                <button
+                  aria-label="Toggle skeleton"
+                  title="Skeleton"
+                  className={skeleton ? "on" : ""}
+                  onClick={() => setSkeleton(!skeleton)}
+                >
+                  <ScanLine size={17} />
+                </button>
+                <button
+                  aria-label="Full body camera"
+                  title="Full body"
+                  onClick={() => setFocus("body")}
+                >
+                  <Focus size={17} />
+                </button>
+                <button
+                  aria-label={recording ? "Stop recording" : "Record video"}
+                  title={
+                    recording ? "Stop recording" : "Record up to 30 seconds"
+                  }
+                  onClick={startRecording}
+                  className={recording ? "recording" : ""}
+                >
+                  <Video size={17} />
+                  {recording && "REC"}
+                </button>
+              </div>
+            </div>
+            <div className="motion-caption">
+              <span>
+                {activeCue ? activeCue.label.toUpperCase() : "DIRECTION"}
+              </span>
+              <p>{displayedCaption}</p>
+            </div>
+            <div className="motion-transport">
+              <div className="motion-transport-controls">
+                <button
+                  aria-label={playing ? "Pause" : "Play"}
+                  onClick={togglePlay}
+                >
+                  {playing ? (
+                    <Pause size={18} fill="currentColor" />
+                  ) : (
+                    <Play size={18} fill="currentColor" />
+                  )}
+                </button>
+                <button aria-label="Restart" onClick={restart}>
+                  <RotateCcw size={16} />
+                </button>
+                <span>
+                  {time.toFixed(2)} <i>/ {timeline.duration.toFixed(2)}s</i>
+                </span>
+                <label className="motion-loop">
+                  <input
+                    type="checkbox"
+                    checked={loop}
+                    onChange={(event) => {
+                      setLoop(event.target.checked);
+                      transport.current.loop = event.target.checked;
+                    }}
+                  />{" "}
+                  Loop
+                </label>
+                <span className="motion-beat">
+                  BEAT{" "}
+                  {Math.min(
+                    totalBeats,
+                    Math.floor((time * program.bpm) / 60) + 1,
+                  )}{" "}
+                  / {totalBeats}
+                </span>
+              </div>
+              <input
+                className="motion-scrubber"
+                aria-label="Timeline"
+                type="range"
+                min="0"
+                max={timeline.duration}
+                step="0.001"
+                value={time}
+                onChange={(event) => seek(Number(event.target.value))}
+              />
+            </div>
+          </section>
+
+          <section
+            className="motion-direction-panel"
+            aria-label="Direct the avatar"
+          >
+            <div className="motion-heading">
+              <span className="motion-product-label">
+                <Sparkles size={16} /> Avatar Director
+              </span>
+              <h1>Tell the character what to do.</h1>
+            </div>
+            <form
+              className="motion-prompt"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void direct();
+              }}
+            >
+              <textarea
+                aria-label="Direction"
+                placeholder="Wiggle only the left index finger 65 degrees"
+                value={instruction}
+                onChange={(event) => setInstruction(event.target.value)}
+                maxLength={400}
+                rows={3}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void direct();
                   }
                 }}
+              />
+              <button
+                className="motion-primary"
+                disabled={busy || !instruction.trim()}
               >
-                Apply program
+                {busy ? (
+                  <Loader2 size={17} className="motion-spin" />
+                ) : (
+                  <Play size={17} fill="currentColor" />
+                )}
+                {busy ? "Directing…" : "Direct"}
               </button>
+            </form>
+            {sequenceProgress && (
+              <div
+                className="motion-sequence-progress"
+                role="status"
+                aria-label="Sequence progress"
+              >
+                <Loader2 size={14} className="motion-spin" />
+                <span>{sequenceProgress}</span>
+                <button onClick={cancelInference}>Cancel</button>
+              </div>
+            )}
+            {error && (
+              <div className="motion-error" role="alert">
+                {error}
+                <button aria-label="Dismiss error" onClick={() => setError("")}>
+                  <X size={15} />
+                </button>
+              </div>
+            )}
+
+            <div className="motion-quick-examples" aria-label="Example motions">
+              <p>Try an example</p>
+              <div className="motion-example-buttons">
+                <button onClick={oneFinger}>One finger</button>
+                <button
+                  aria-pressed={dexterity === "finger_touches"}
+                  onClick={() => dexterityStudy("finger_touches")}
+                >
+                  Fingertip touches
+                </button>
+                <button
+                  aria-pressed={dexterity === "coin_roll"}
+                  onClick={() => dexterityStudy("coin_roll")}
+                >
+                  Coin roll
+                </button>
+              </div>
+            </div>
+            <button
+              className="motion-sequence-play"
+              aria-pressed={sequenceCues.length > 0}
+              onClick={() => previewSequence()}
+            >
+              <Play size={16} /> Play full sequence
+            </button>
+            <details className="motion-disclosure motion-more">
+              <summary>More motions</summary>
+              <div className="motion-example-buttons">
+                <button onClick={() => study("salsa")}>Salsa</button>
+                <button onClick={() => study("cha_cha")}>Cha-cha</button>
+                <button onClick={() => study("robot")}>Robot</button>
+                {DEXTERITY_STUDIES.filter(
+                  ({ id }) => id === "finger_ripple" || id === "arm_wave",
+                ).map(({ id, label }) => (
+                  <button
+                    key={id}
+                    aria-pressed={dexterity === id}
+                    onClick={() => dexterityStudy(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
+                <button
+                  disabled={!findNode(program.root, "arms")}
+                  onClick={() => {
+                    edit(replaceArms(program, "robot"));
+                    setCaption("Same footwork. Robot arms.");
+                  }}
+                >
+                  Robot arms only
+                </button>
+              </div>
+              <div className="motion-dexterity-options">
+                <label>
+                  Hand
+                  <select
+                    aria-label="Dexterity hand"
+                    value={hand}
+                    onChange={(event) => {
+                      const side = event.target.value as Hand;
+                      if (sequenceCues.length) previewSequence(side);
+                      else if (dexterity) dexterityStudy(dexterity, side);
+                      else setHand(side);
+                    }}
+                  >
+                    <option value="left">Left</option>
+                    <option value="right">Right</option>
+                  </select>
+                </label>
+                <button
+                  aria-label="Reverse dexterity motion"
+                  aria-pressed={reverse}
+                  disabled={sequenceCues.length > 0}
+                  onClick={() => {
+                    if (dexterity) dexterityStudy(dexterity, hand, !reverse);
+                    else setReverse(!reverse);
+                  }}
+                >
+                  <RotateCcw size={14} /> Reverse
+                </button>
+              </div>
+              <button
+                className="motion-sequence-direct"
+                disabled={busy}
+                onClick={() => void directSequence()}
+              >
+                <Sparkles size={15} /> Direct sequence with PAW
+              </button>
+            </details>
+            <details className="motion-disclosure motion-editor">
+              <summary>
+                <SlidersHorizontal size={15} /> Edit motion
+              </summary>
+              <aside className="motion-inspector">
+                <div className="motion-panel-title">
+                  <GitBranch size={16} />
+                  <h2>Motion tree</h2>
+                  <button
+                    aria-label="Edit motion JSON"
+                    title="Edit / import motion JSON"
+                    onClick={() => {
+                      setJson(JSON.stringify(program, null, 2));
+                      setJsonError("");
+                    }}
+                  >
+                    <Code2 size={17} />
+                  </button>
+                  <button
+                    aria-label="Export motion JSON"
+                    title="Export editable motion"
+                    onClick={() =>
+                      download(
+                        new Blob([JSON.stringify(program, null, 2)], {
+                          type: "application/json",
+                        }),
+                        "avatar-motion.json",
+                      )
+                    }
+                  >
+                    <Download size={16} />
+                  </button>
+                </div>
+                <p className="motion-panel-hint">
+                  Open a branch. Follow it down to a joint.
+                </p>
+                <div className="motion-tree">
+                  <TreeNode
+                    node={program.root}
+                    selected={selected}
+                    active={active}
+                    onSelect={setSelected}
+                  />
+                </div>
+                <div className="motion-global-controls">
+                  <label>
+                    Tempo{" "}
+                    <span>
+                      {program.bpm} <small>BPM</small>
+                    </span>
+                    <input
+                      aria-label="Tempo"
+                      type="range"
+                      min="30"
+                      max="240"
+                      step="1"
+                      value={program.bpm}
+                      onChange={(event) =>
+                        edit(
+                          changeTempo(program, Number(event.target.value)),
+                          true,
+                        )
+                      }
+                    />
+                  </label>
+                  <label>
+                    Arm choreography
+                    <select
+                      aria-label="Arm choreography"
+                      disabled={!findNode(program.root, "arms")}
+                      value={
+                        program.root.kind !== "curve"
+                          ? (findNode(program.root, "arms")?.label.split(
+                              " · ",
+                            )[1] ?? "natural")
+                          : "natural"
+                      }
+                      onChange={(event) =>
+                        edit(
+                          replaceArms(program, event.target.value as ArmStyle),
+                        )
+                      }
+                    >
+                      <option value="natural">Natural</option>
+                      <option value="robot">Robot</option>
+                      <option value="wave">Right-hand wave</option>
+                      <option value="still">Still</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="motion-joint-editor">
+                  <div className="motion-panel-title">
+                    <SlidersHorizontal size={15} />
+                    <h2>Joint detail</h2>
+                  </div>
+                  <div className="motion-joint-select">
+                    <select
+                      aria-label="Joint"
+                      value={joint}
+                      onChange={(event) => {
+                        setJoint(event.target.value);
+                        setFocus(
+                          /_(index|thumb|middle|ring|pinky)_/.test(
+                            event.target.value,
+                          )
+                            ? event.target.value.startsWith("left")
+                              ? "left_hand"
+                              : "right_hand"
+                            : "body",
+                        );
+                      }}
+                    >
+                      {Object.keys(JOINTS).map((id) => (
+                        <option key={id} value={id}>
+                          {JOINT_LABEL(id)}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      aria-label="Joint axis"
+                      value={axis}
+                      onChange={(event) => setAxis(event.target.value as Axis)}
+                    >
+                      <option>x</option>
+                      <option>y</option>
+                      <option>z</option>
+                    </select>
+                  </div>
+                  <label className="motion-angle">
+                    <span>Rotation offset</span>
+                    <output>{angle}°</output>
+                    <input
+                      aria-label="Joint angle"
+                      type="range"
+                      min="-180"
+                      max="180"
+                      step="1"
+                      value={angle}
+                      onChange={(event) =>
+                        setJointAngle(Number(event.target.value))
+                      }
+                    />
+                  </label>
+                  <p>Local axes for fingers. Body axes for larger joints.</p>
+                </div>
+                {selectedNode?.kind === "curve" && (
+                  <div className="motion-leaf-editor">
+                    <div className="motion-leaf-heading">
+                      <span>{selectedNode.curve.kind.toUpperCase()} CURVE</span>
+                      <code>
+                        {selectedNode.target}.{selectedNode.axis}
+                      </code>
+                    </div>
+                    <CurvePlot curve={selectedNode.curve} />
+                    <CurveEditor
+                      node={selectedNode}
+                      onChange={(curve) =>
+                        edit({
+                          ...program,
+                          root: updateNode(program.root, selected, (node) =>
+                            node.kind === "curve" ? { ...node, curve } : node,
+                          ),
+                        })
+                      }
+                    />
+                    <button
+                      onClick={() => {
+                        setJson(JSON.stringify(program, null, 2));
+                        setJsonError("");
+                      }}
+                    >
+                      Edit keyframes <ArrowUpRight size={12} />
+                    </button>
+                    <button
+                      onClick={() =>
+                        edit({
+                          ...program,
+                          root: updateNode(program.root, selected, (node) =>
+                            node.kind === "curve"
+                              ? {
+                                  ...node,
+                                  curve: { kind: "constant", value: 0 },
+                                }
+                              : node,
+                          ),
+                        })
+                      }
+                    >
+                      Zero this curve
+                    </button>
+                  </div>
+                )}
+                {selectedNode?.kind === "contact" && (
+                  <div
+                    className="motion-leaf-editor motion-contact-editor"
+                    aria-label="Contact detail"
+                  >
+                    <div className="motion-leaf-heading">
+                      <span>
+                        {selectedNode.mode === "fingertips"
+                          ? "FINGERTIP CONTACT"
+                          : "PROP TRANSFER"}
+                      </span>
+                      <code>{selectedNode.duration.toFixed(2)}s</code>
+                    </div>
+                    <p>
+                      {selectedNode.mode === "fingertips" ? (
+                        <>
+                          {JOINT_LABEL(selectedNode.effector)} →{" "}
+                          {JOINT_LABEL(selectedNode.target)}
+                        </>
+                      ) : (
+                        <>
+                          {JOINT_LABEL(selectedNode.prop)} ·{" "}
+                          {JOINT_LABEL(selectedNode.from)} →{" "}
+                          {JOINT_LABEL(selectedNode.to)}
+                        </>
+                      )}
+                    </p>
+                    <CurvePlot
+                      curve={
+                        selectedNode.mode === "fingertips"
+                          ? selectedNode.weight
+                          : selectedNode.progress
+                      }
+                    />
+                    <p className="motion-contact-hint">
+                      {selectedNode.mode === "fingertips"
+                        ? "The curve controls how closely the fingertips meet."
+                        : "The curve controls the transfer between finger contacts."}{" "}
+                      Edit its timing and curve in Motion JSON.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setJson(JSON.stringify(program, null, 2));
+                        setJsonError("");
+                      }}
+                    >
+                      Edit contact in Motion JSON <ArrowUpRight size={12} />
+                    </button>
+                  </div>
+                )}
+              </aside>{" "}
+              {sequenceCues.length > 0 && (
+                <nav
+                  className="motion-sequence-chapters"
+                  aria-label="Sequence chapters"
+                >
+                  {sequenceCues.map((cue) => (
+                    <button
+                      key={cue.id}
+                      aria-current={
+                        activeCue?.id === cue.id ? "step" : undefined
+                      }
+                      onClick={() => seek(cue.start)}
+                    >
+                      <span>{cue.label}</span>
+                      <small>{cue.start.toFixed(1)}s</small>
+                    </button>
+                  ))}
+                </nav>
+              )}
+              <footer className="motion-footer">
+                <span>
+                  <Check size={13} /> {timeline.tracks.length} editable curves
+                  {timeline.contacts?.length
+                    ? ` · ${timeline.contacts.length} contacts`
+                    : ""}{" "}
+                  · foot targets + inverse kinematics
+                </span>
+                <span>
+                  PAW interprets language. The motion engine moves the rig.{" "}
+                  <a
+                    href={`${import.meta.env.BASE_URL}assets/character.glb`}
+                    download
+                  >
+                    Character ↗
+                  </a>
+                </span>
+              </footer>
+              {raw && (
+                <details className="motion-commands">
+                  <summary>Last PAW command program</summary>
+                  <pre>{raw}</pre>
+                </details>
+              )}
+            </details>
+            <div className="motion-links">
+              <a
+                href="https://github.com/programasweights/avatar/blob/main/MOTION.md"
+                target="_blank"
+                rel="noreferrer"
+              >
+                How is it built? <ArrowUpRight size={14} />
+              </a>
+              <a
+                href="https://github.com/programasweights/avatar"
+                target="_blank"
+                rel="noreferrer"
+              >
+                GitHub <ArrowUpRight size={14} />
+              </a>
             </div>
           </section>
         </div>
-      )}
-    </main>
+        {json !== null && (
+          <div className="motion-modal-backdrop">
+            <section
+              className="motion-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Motion program JSON"
+            >
+              <div className="motion-panel-title">
+                <h2>Editable motion program</h2>
+                <button
+                  aria-label="Close JSON editor"
+                  onClick={() => setJson(null)}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <p>
+                Sequence, parallel, repeat → rotation / position → constant,
+                sine or keyframe curves. Times in seconds; rotations in degrees.
+              </p>
+              <textarea
+                aria-label="Motion JSON"
+                value={json}
+                onChange={(event) => setJson(event.target.value)}
+                spellCheck={false}
+              />
+              {jsonError && (
+                <p role="alert" className="motion-json-error">
+                  {jsonError}
+                </p>
+              )}
+              <div className="motion-modal-actions">
+                <button onClick={() => setJson(null)}>Cancel</button>
+                <button
+                  className="motion-primary"
+                  onClick={() => {
+                    try {
+                      const next = JSON.parse(json) as MotionProgram;
+                      validateRigProgram(next);
+                      edit(next);
+                      setJson(null);
+                      setSelected(next.root.id);
+                    } catch (e) {
+                      setJsonError(
+                        e instanceof Error ? e.message : "Invalid motion JSON.",
+                      );
+                    }
+                  }}
+                >
+                  Apply program
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
+      </main>
+    </>
   );
 }

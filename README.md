@@ -49,8 +49,9 @@ No API key or recompilation is required. The example buttons play authored
 motions; **Direct** interprets your text with PAW.
 
 Try “Wiggle only the left index finger 65 degrees,” or start salsa and then
-change an arm or finger. Use the tree and curve controls to change timing,
-angles and repetition. Motion JSON can be exported, edited and imported.
+change an arm or finger. Open **Edit motion** for the tree, joint and curve
+controls to change timing, angles and repetition. Motion JSON can be exported, edited and imported.
+**More motions** contains the other studies, hand selection and sequence direction.
 
 ## Render an MP4
 
