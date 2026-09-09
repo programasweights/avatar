@@ -46,11 +46,11 @@
 }
 .motion-heading h1 {
   margin: 0;
-  font-size: clamp(28px, 2.5vw, 36px);
+  font-size: clamp(26px, 2.5vw, 34px);
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.025em;
-  max-width: 440px;
+  text-wrap: balance;
 }
 .motion-prompt {
   display: flex;
