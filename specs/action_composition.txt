@@ -1,10 +1,15 @@
 Translate a basic whole-body action instruction into an ordered program. Output ONLY lines in this exact form:
-action NAME COUNT
-NAME is one of walk, run, jump, bow, crouch, sit, turn_left, turn_right, spin, kick_left, kick_right, walk_wave, run_wave. COUNT is an integer1 through8, default1. Output unsupported if the entire instruction cannot be represented. Do not silently omit any requested action.
+action NAME COUNT [SUPPORT]
+Optionally append one final line: arms still
 
-Walk/stroll/march means walk; run/jog/sprint means run, performed in place. Jump/hop/leap means jump (two feet). Bow/take a bow means bow. Squat/duck/crouch means crouch, lowering and returning upright. Sit/sit down means sit, holding a low seated pose with no chair. Turn left/right means quarter-turn of the entire body. Spin/turn around means spin, one complete turn. Kick with left/right leg means kick_left/kick_right; unspecified kick means kick_right. Walking while waving or walk and wave means walk_wave: walk with a right-handed greeting. Running while waving or run and wave means run_wave. These two simultaneous combinations are supported; unspecified waving hand means right. An explicit left-handed waving gait is unsupported. Reverse/backward walking, one-legged hops, balances, punches, clapping, emotional acting, acrobatics, new dances, props and other simultaneous combinations are unsupported.
+NAME is one of walk, run, jump, bow, crouch, sit, turn_left, turn_right, spin, kick_left, kick_right, walk_wave, run_wave. COUNT is an integer from 1 through 8, default 1. All counts 1, 2, 3, 4, 5, 6, 7, and 8 are supported, written as digits or words. SUPPORT is optional and allowed ONLY for jump: left, right, or both. Omitted SUPPORT means two-foot jumping. Preserve every requested support foot and arm constraint. Output unsupported if the entire instruction cannot be represented. Do not silently omit any requested action.
 
-Single action defaults to count1. Twice=2, three times=3; preserve explicit repeats. Consecutive actions joined by then, and, comma, followed by, or after that are separate lines in requested order. At most4 lines and at most16 total repetitions. An entire repeated sequence is expanded in order if within these limits. Do not confuse repetitions with degrees or speed. Unsupported numbers, zero/negative counts, forever, time durations and incomplete instructions are unsupported. Requests to change an existing motion, body-part edits, explanations, questions about meaning, and descriptions of past actions are unsupported. A polite request to perform a supported action is allowed.
+Walk/stroll/march means walk; run/jog/sprint means run, performed in place. Jump/hop/leap defaults to jump (two feet). On the left/right foot or leg means jump with SUPPORT left/right. On one foot/one leg without a named side defaults to SUPPORT left. Each jump step can have its own support foot. Bow/take a bow means bow. Squat/duck/crouch means crouch, lowering and returning upright. Sit/sit down means sit, holding a low seated pose with no chair. An explicitly left/right turn means a 90-degree quarter-turn of the entire body: turn_left/turn_right. A directionless turn, full turn, turn around, or spin means spin, one complete 360-degree turn. Do not invent a left/right direction. This default also applies inside sequences: turn and sit means spin then sit. Kick with left/right leg means kick_left/kick_right; unspecified kick means kick_right. Walking while waving or walk and wave means walk_wave: walk with a right-handed greeting. Running while waving or run and wave means run_wave. These two simultaneous combinations are supported; unspecified waving hand means right. The companion movement must be an ordinary HELLO/GOODBYE hand wave. Juggling, throwing, catching, carrying, holding, or manipulating objects while walking/running are unsupported prop activities, NEVER walk_wave or run_wave. Moving arms to juggle is not a greeting wave. Do not replace an unsupported simultaneous activity with waving, and do not drop that activity. An explicit left-handed waving gait is unsupported. Reverse/backward walking, balances, punches, clapping, emotional acting, acrobatics, new dances, props and other simultaneous combinations are unsupported.
+
+A single action defaults to count 1. Once/one=1, twice/two=2, three=3, four=4, five=5, six=6, seven=7, eight=8. Preserve explicit repeats in the COUNT field. Repeating ONE action produces ONE output line, never one line per repetition: five jumps means action jump 5, not five steps. Consecutive actions joined by then, and, comma, followed by, or after that are separate lines in requested order. There are two separate limits: at most 4 action LINES (steps), and at most 16 total REPETITIONS (the sum of their COUNT values), plus the optional final arms still line. The four-line limit does not limit COUNT to four. One line with COUNT 5, 6, 7, or 8 is valid; two lines with COUNT 8 each total 16 and are valid. Only repetitions of an entire MULTI-ACTION sequence expand into ordered lines, if within both limits. Do not confuse repetitions with degrees or speed. Unsupported numbers, zero/negative counts, forever, time durations and incomplete instructions are unsupported. Requests to change an existing motion, body-part edits, explanations, questions about meaning, and descriptions of past actions are unsupported. A polite request to perform a supported action is allowed. Hand or finger gestures are unsupported: making a fist, thumbs up, peace sign, showing a middle finger, or flipping someone off. "Flip me off" is a finger gesture, NEVER a full-body flip, spin, turn, or kick; output unsupported. Do not substitute a related whole-body action for a hand gesture.
+
+
+A request for still arms, no arm swing, arms at the sides, without moving arms, or keeping both arms motionless means append arms still after ALL action lines. This policy applies to the entire requested sequence. It removes active arm articulation while the arms follow the torso. Never silently omit this constraint. Requests for fixed world-space hands, a specific held hand pose, still legs during jumping, freezing other body parts, or different arm policies in separate steps are unsupported. Do not add arms still when no arm constraint is requested. Walking/running while waving conflicts with arms still and is unsupported. Starting a new body action with still arms is supported, not a contextual joint edit.
 
 Input: jump twice
 Output: action jump 2
@@ -24,6 +29,20 @@ Input: hop three times
 Output: action jump 3
 Input: jump 5 times
 Output: action jump 5
+Input: Jump four times
+Output: action jump 4
+Input: Do six bows
+Output: action bow 6
+Input: Kick seven times
+Output: action kick_right 7
+Input: Jump 8 times
+Output: action jump 8
+Input: Hop five times on the left foot with still arms
+Output: action jump 5 left
+arms still
+Input: Jump eight times then bow eight times
+Output: action jump 8
+action bow 8
 Input: take a bow
 Output: action bow 1
 Input: do two squats
@@ -36,6 +55,16 @@ Input: turn right twice
 Output: action turn_right 2
 Input: spin around
 Output: action spin 1
+Input: do a full turn
+Output: action spin 1
+Input: turn
+Output: action spin 1
+Input: turn and sit
+Output: action spin 1
+action sit 1
+Input: Turn left then sit
+Output: action turn_left 1
+action sit 1
 Input: kick left leg
 Output: action kick_left 1
 Input: kick
@@ -84,7 +113,7 @@ Output: unsupported
 Input: walk backwards
 Output: unsupported
 Input: jump on one leg
-Output: unsupported
+Output: action jump 1 left
 Input: lift the left leg
 Output: unsupported
 Input: roll a coin on your head
@@ -95,3 +124,60 @@ Input: dance salsa
 Output: unsupported
 Input: sit on a chair
 Output: unsupported
+
+Input: kick without moving arms
+Output: action kick_right 1
+arms still
+Input: Kick with the left leg without swinging your arms
+Output: action kick_left 1
+arms still
+Input: Run with your arms still
+Output: action run 1
+arms still
+Input: Walk without swinging either arm
+Output: action walk 1
+arms still
+Input: Jump twice then bow, keeping your arms still the whole time
+Output: action jump 2
+action bow 1
+arms still
+Input: jump on left foot
+Output: action jump 1 left
+Input: Hop twice on your right leg
+Output: action jump 2 right
+Input: Jump on the left foot three times with still arms
+Output: action jump 3 left
+arms still
+Input: Hop on your left foot, then hop on your right foot
+Output: action jump 1 left
+action jump 1 right
+Input: Jump on both feet twice
+Output: action jump 2
+Input: Jump without moving your legs
+Output: unsupported
+Input: Walk and wave but don't move your arms
+Output: unsupported
+
+Input: Flip me off
+Output: unsupported
+Input: Show me your middle finger
+Output: unsupported
+Input: Give me a thumbs up
+Output: unsupported
+Input: Make a fist
+Output: unsupported
+
+Input: run while juggling
+Output: unsupported
+Input: Walk while juggling balls
+Output: unsupported
+Input: Run while carrying a box
+Output: unsupported
+Input: Walk and catch a ball
+Output: unsupported
+Input: Jog while spinning a coin
+Output: unsupported
+Input: Run and wave hello
+Output: action run_wave 1
+Input: Walk while waving goodbye
+Output: action walk_wave 1

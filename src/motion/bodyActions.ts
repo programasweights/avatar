@@ -26,6 +26,7 @@ export const BODY_ACTIONS = [
   "kick_right",
 ] as const;
 export type BodyAction = (typeof BODY_ACTIONS)[number];
+export type JumpSupport = "both" | "left" | "right";
 const LABELS: Record<BodyAction, string> = {
   walk: "Walk in place",
   run: "Run in place",
@@ -76,6 +77,7 @@ export function createBodyAction(
   action: BodyAction,
   count = 1,
   bpm = 108,
+  support?: JumpSupport,
 ): MotionProgram {
   if (
     !BODY_ACTIONS.includes(action) ||
@@ -88,6 +90,11 @@ export function createBodyAction(
     );
   if (!Number.isFinite(bpm) || bpm < 30 || bpm > 240)
     throw new Error("Choose a tempo from 30 to 240 BPM.");
+  if (
+    support !== undefined &&
+    (action !== "jump" || !["both", "left", "right"].includes(support))
+  )
+    throw new Error("Choose both, left, or right support for a jump only.");
   if (action === "walk_wave" || action === "run_wave") {
     const program = waveHand(
       createBodyAction(action === "walk_wave" ? "walk" : "run", count, bpm),
@@ -576,7 +583,52 @@ export function createBodyAction(
             },
           ],
     );
-  const title = `${LABELS[action]}${count > 1 ? ` · ${count} times` : ""}`;
+  const singleFoot = action === "jump" && support && support !== "both";
+  const title = `${singleFoot ? `Jump on the ${support} foot` : LABELS[action]}${count > 1 ? ` · ${count} times` : ""}`;
+  const supportNodes: MotionNode[] = [];
+  if (singleFoot) {
+    const freeSide = support === "left" ? "right" : "left";
+    // Prepare once, keep the free foot tucked between hops, then recover once.
+    // The repeated jump tracks still own takeoff/landing for the support foot.
+    const balance: Keys = [
+      [0, 0],
+      [0.13 / count, 1],
+      [(count - 0.12) / count, 1],
+      [1, 0],
+    ];
+    const continuous = (node: CurveNode): CurveNode => ({
+      ...node,
+      duration: duration * count,
+    });
+    supportNodes.push(
+      group("jump_support", `Balance over the ${support} foot`, [
+        continuous(
+          position(
+            "jump_support.weight",
+            "root",
+            "x",
+            scaled(balance, support === "left" ? 0.09 : -0.09),
+          ),
+        ),
+        continuous(
+          position(
+            "jump_support.free_foot.height",
+            `${freeSide}_foot_ik`,
+            "y",
+            scaled(balance, 0.24),
+          ),
+        ),
+        continuous(
+          position(
+            "jump_support.free_foot.tuck",
+            `${freeSide}_foot_ik`,
+            "z",
+            scaled(balance, -0.16),
+          ),
+        ),
+      ]),
+    );
+  }
   const program: MotionProgram = {
     version: 2,
     title,
@@ -593,6 +645,7 @@ export function createBodyAction(
       ),
       repeat("torso", "Body · weight and balance", torso),
       repeat("arms", "Arms · coordinated movement", arms),
+      ...supportNodes,
       group("details", "Joint details", [
         {
           ...rotation("details.neutral", "neck", "x", constant(0)),
@@ -608,6 +661,7 @@ export function createBodyAction(
 export interface BodyActionStep {
   action: BodyAction;
   count: number;
+  support?: JumpSupport;
 }
 
 function affineCurve(curve: Curve, scale = 1, offset = 0): Curve {
@@ -723,10 +777,18 @@ export function createBodySequence(
       "Use one to four body actions with at most sixteen repetitions in total.",
     );
   if (steps.length === 1)
-    return createBodyAction(steps[0].action, steps[0].count, bpm);
+    return createBodyAction(
+      steps[0].action,
+      steps[0].count,
+      bpm,
+      steps[0].support,
+    );
   let heading = 0;
-  const programs = steps.map(({ action, count }) => {
-    const program = withFacing(createBodyAction(action, count, bpm), heading);
+  const programs = steps.map(({ action, count, support }) => {
+    const program = withFacing(
+      createBodyAction(action, count, bpm, support),
+      heading,
+    );
     if (action === "turn_left") heading += 90 * count;
     if (action === "turn_right") heading -= 90 * count;
     if (action === "spin") heading += 360 * count;

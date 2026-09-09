@@ -1,4 +1,5 @@
 {
+  "playback_control": "48cfbbe4775ae2b7c9a7",
   "dispatch": "70b85902246e19853389",
   "joint": "b42df04b45eea1642ddb",
   "body": "bd42d81036de7429fb74",
@@ -8,11 +9,11 @@
   "edit_target": "8defb95ebb022c0787ec",
   "joint_motion": "6b0fee1223d7914dfc5c",
   "edit_intent": "d609040e86816e8091e1",
-  "current_control": "0072f07cd4943868d32c",
+  "current_control": "cb4385c9ffb5b69458ff",
   "motion_scope": "c8a98679429d14c1da87",
   "edit_fallback": "b11c8d47049a45e7149d",
-  "action": "18b922d7673f48ecacce",
+  "action": "80a0ebf322b330cfd7f5",
   "activity_scope": "68f0fa31420354136848",
-  "action_composition": "f053bee45e4762cfad60",
-  "activity_confirmation": "d06c109545b5c3cc415b"
+  "action_composition": "0d484b2692e563a280f1",
+  "activity_confirmation": "1f0e1d082c23d87a2262"
 }

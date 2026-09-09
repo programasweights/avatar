@@ -161,14 +161,19 @@ def validate_follow_up(raw: str) -> str:
 def validate_actions(raw: str) -> str:
     """Bound a sequential whole-body program before creating joint curves."""
     lines = raw.splitlines()
-    if not 1 <= len(lines) <= 4:
+    steps = lines[:-1] if lines and lines[-1] == "arms still" else lines
+    if not 1 <= len(steps) <= 4:
         raise ValueError("An action sequence needs 1–4 steps")
     total = 0
-    for line in lines:
+    for line in steps:
         parts = line.split(" ")
-        if (len(parts) != 3 or parts[0] != "action" or parts[1] not in BODY_ACTIONS
+        if (len(parts) not in {3, 4} or parts[0] != "action" or parts[1] not in BODY_ACTIONS
                 or not re.fullmatch(r"[1-8]", parts[2])):
             raise ValueError("Invalid whole-body action command")
+        if len(parts) == 4 and (parts[1] != "jump" or parts[3] not in {"both", "left", "right"}):
+            raise ValueError("A support-foot parameter requires a jump and a valid side")
+        if lines[-1] == "arms still" and parts[1] in {"walk_wave", "run_wave"}:
+            raise ValueError("A waving gait cannot keep both arms still")
         total += int(parts[2])
     if total > 16:
         raise ValueError("An action sequence is limited to 16 repetitions")
@@ -187,31 +192,70 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
     infer = infer or local_infer
     trace = {}
 
+    def finish(output: str, route: str | None = None) -> dict:
+        # route names the final handler; per-model fields preserve raw decisions.
+        return {"output": output, "trace": {
+            **trace, "route": "unsupported" if output == "unsupported" else route or trace["route"],
+        }}
+
     def ask(name: str, text: str = instruction) -> str:
         raw = infer(PROGRAMS[name], text)
         if not isinstance(raw, str):
             raise ValueError("PAW returned a non-text response")
         return raw.strip()
 
+    def finish_actions(raw: str) -> dict:
+        if raw == "unsupported":
+            return finish(raw)
+        try:
+            output = validate_actions(raw)
+        except ValueError as exc:
+            # Never run an invalid or partial program. Keep the model's output
+            # and validation reason for inspection, with a usable UI rejection.
+            trace["validation_error"] = str(exc)
+            return finish("unsupported")
+        return finish(output)
+
+    playback = ask("playback_control")
+    trace["playback_control"] = playback
+    if playback != "none":
+        if playback not in {"pause", "resume", "restart"}:
+            raise ValueError("Invalid playback control")
+        return finish(f"playback {playback}", "playback")
+
     activity = ask("activity_scope")
     trace["activity_scope"] = activity
+    confirmed_activity = None
+
+    def confirm_activity() -> str:
+        nonlocal confirmed_activity
+        if confirmed_activity is None:
+            confirmed_activity = ask("activity_confirmation")
+            trace["activity_confirmation"] = confirmed_activity
+            if confirmed_activity not in {"basic", "dance", "other"}:
+                raise ValueError("Invalid activity confirmation")
+        return confirmed_activity
+
+    # Preserve the proven dance/joint router. A second opinion can recognize a
+    # constrained body action it missed, without overriding a joint edit as dance.
+    if activity == "other" and confirm_activity() == "basic":
+        activity = "basic"
     if activity == "basic":
         raw = ask("action")
         trace.update(action=raw, route="action")
         if raw != "unsupported":
-            return {"output": validate_actions(raw), "trace": trace}
+            return finish_actions(raw)
         # Confirm an abstention before extending to coordinated actions. A coin
         # can "walk" and an animation can "run backward" without locomotion.
-        activity = ask("activity_confirmation")
-        trace["activity_confirmation"] = activity
+        activity = confirm_activity()
         if activity == "basic":
             raw = ask("action_composition")
             trace["action_composition"] = raw
-            return {"output": "unsupported" if raw == "unsupported" else validate_actions(raw), "trace": trace}
+            return finish_actions(raw)
     if activity == "dance":
         raw = ask("body_fallback")
         trace.update(body_fallback=raw, route="body")
-        return {"output": "unsupported" if raw == "unsupported" else validate_body(raw), "trace": trace}
+        return finish("unsupported" if raw == "unsupported" else validate_body(raw))
     if activity != "other":
         raise ValueError("Invalid activity scope")
 
@@ -219,7 +263,7 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
     trace["dispatch"] = domain
     trace["route"] = domain
     if domain == "unsupported":
-        return {"output": "unsupported", "trace": trace}
+        return finish("unsupported")
     intent = "none"
     if domain in {"edit", "control", "motion"}:
         intent = ask("edit_intent")
@@ -241,15 +285,15 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
             trace["edit_confirmation"] = confirmation
             command = validate_edit(confirmation)
             if command == "none":
-                return {"output": "unsupported", "trace": trace}
+                return finish("unsupported")
             trace["edit_target_source"] = "edit_confirmation"
-        return {"output": f"{intent} {command.split()[1]}", "trace": trace}
+        return finish(f"{intent} {command.split()[1]}", "edit")
     if domain == "edit":
-        return {"output": "unsupported", "trace": trace}
+        return finish("unsupported")
     if domain == "control":
         raw = ask("current_control")
         trace["current_control"] = raw
-        return {"output": "unsupported" if raw == "unsupported" else validate_follow_up(raw), "trace": trace}
+        return finish("unsupported" if raw == "unsupported" else validate_follow_up(raw))
     if domain == "motion":
         route = ask("motion_scope")
         trace["motion_scope"] = route
@@ -266,7 +310,7 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
         # A skill specialist can abstain; never reinterpret an unsupported prop
         # or gesture as a related body-part motion.
         output = "unsupported" if raw == "legacy" else validate_dexterity(raw)
-        return {"output": output, "trace": trace}
+        return finish(output)
 
     output = []
     if route in {"body", "mixed"}:
@@ -276,13 +320,13 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
             raw = ask("body_fallback")
             trace["body_fallback"] = raw
         if raw == "unsupported":
-            return {"output": "unsupported", "trace": trace}
+            return finish("unsupported")
         output.append(validate_body(raw))
     if route in {"joint", "mixed"}:
         raw = ask("joint_motion")
         trace["joint_motion"] = raw
         if raw == "unsupported":
-            return {"output": "unsupported", "trace": trace}
+            return finish("unsupported")
         parts = raw.split()
         if len(parts) != 4 or "\n" in raw or "\r" in raw:
             raise ValueError("Invalid joint motion command")
@@ -298,4 +342,4 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
             joint = refined
         trace.update(joint=joint, transform=transform)
         output.append(joint_commands(joint, transform))
-    return {"output": "\n".join(output), "trace": trace}
+    return finish("\n".join(output))

@@ -15,6 +15,16 @@ import { sampleContacts, sampleTimeline } from "./engine";
 import { MotionRig } from "./rig";
 import { frameHand, frameHandOrbit } from "./handCamera";
 import { JointSelection } from "./stageSelection";
+import { retryCharacterDownloads } from "./characterLoader";
+import StageBoundary from "./StageBoundary";
+
+function characterUrl() {
+  const character =
+    new URLSearchParams(window.location.search).get("character") === "mixamo"
+      ? "local-assets/character.glb"
+      : "assets/character.glb";
+  return `${import.meta.env.BASE_URL}${character}`;
+}
 
 export interface Transport {
   time: number;
@@ -109,11 +119,7 @@ function Actor({
   onTick,
   onReady,
 }: Omit<Props, "onCanvas">) {
-  const character =
-    new URLSearchParams(window.location.search).get("character") === "mixamo"
-      ? "local-assets/character.glb"
-      : "assets/character.glb";
-  const gltf = useGLTF(`${import.meta.env.BASE_URL}${character}`);
+  const gltf = useGLTF(characterUrl(), true, true, retryCharacterDownloads);
   const scene = useMemo(() => clone(gltf.scene), [gltf.scene]);
   const rig = useMemo(
     () => new MotionRig(scene, gltf.animations),
@@ -277,56 +283,58 @@ export default function MotionStage(props: Props) {
   const lowQuality =
     new URLSearchParams(window.location.search).get("quality") === "low";
   return (
-    <Canvas
-      shadows={!lowQuality}
-      dpr={lowQuality ? 1 : [1, 1.5]}
-      gl={{ antialias: true, preserveDrawingBuffer: true }}
-      camera={{ position: [2.5, 1.8, 4.5], fov: 30 }}
-      onCreated={({ gl }) => props.onCanvas(gl.domElement)}
-    >
-      <color attach="background" args={["#12121a"]} />
-      <fog attach="fog" args={["#12121a", 6, 13]} />
-      <hemisphereLight args={["#fff9f2", "#343442", 1.35]} />
-      <directionalLight
-        position={[3, 6, 4]}
-        color="#fff6ea"
-        intensity={2.5}
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-bias={-0.0002}
-      />
-      <directionalLight
-        position={[-3, 3, 1]}
-        color="#e7e9ff"
-        intensity={1.35}
-      />
-      <directionalLight position={[0, 3, -4]} color="#e4dcff" intensity={2} />
-      {props.focus === "body" && (
-        <Grid
-          position={[0, -0.014, 0]}
-          args={[16, 16]}
-          cellSize={0.25}
-          sectionSize={1}
-          cellColor="#20202a"
-          sectionColor="#2d2c39"
-          fadeDistance={5}
-          fadeStrength={3}
-          infiniteGrid
+    <StageBoundary onRetry={() => useGLTF.clear(characterUrl())}>
+      <Canvas
+        shadows={!lowQuality}
+        dpr={lowQuality ? 1 : [1, 1.5]}
+        gl={{ antialias: true, preserveDrawingBuffer: true }}
+        camera={{ position: [2.5, 1.8, 4.5], fov: 30 }}
+        onCreated={({ gl }) => props.onCanvas(gl.domElement)}
+      >
+        <color attach="background" args={["#12121a"]} />
+        <fog attach="fog" args={["#12121a", 6, 13]} />
+        <hemisphereLight args={["#fff9f2", "#343442", 1.35]} />
+        <directionalLight
+          position={[3, 6, 4]}
+          color="#fff6ea"
+          intensity={2.5}
+          castShadow
+          shadow-mapSize={[2048, 2048]}
+          shadow-bias={-0.0002}
         />
-      )}
-      {!lowQuality && (
-        <ContactShadows
-          position={[0, -0.01, 0]}
-          opacity={0.45}
-          scale={7}
-          blur={2.8}
-          far={3}
-          resolution={512}
+        <directionalLight
+          position={[-3, 3, 1]}
+          color="#e7e9ff"
+          intensity={1.35}
         />
-      )}
-      <Suspense fallback={null}>
-        <Actor {...props} />
-      </Suspense>
-    </Canvas>
+        <directionalLight position={[0, 3, -4]} color="#e4dcff" intensity={2} />
+        {props.focus === "body" && (
+          <Grid
+            position={[0, -0.014, 0]}
+            args={[16, 16]}
+            cellSize={0.25}
+            sectionSize={1}
+            cellColor="#20202a"
+            sectionColor="#2d2c39"
+            fadeDistance={5}
+            fadeStrength={3}
+            infiniteGrid
+          />
+        )}
+        {!lowQuality && (
+          <ContactShadows
+            position={[0, -0.01, 0]}
+            opacity={0.45}
+            scale={7}
+            blur={2.8}
+            far={3}
+            resolution={512}
+          />
+        )}
+        <Suspense fallback={null}>
+          <Actor {...props} />
+        </Suspense>
+      </Canvas>
+    </StageBoundary>
   );
 }

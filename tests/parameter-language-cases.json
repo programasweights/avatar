@@ -1,0 +1,389 @@
+{
+  "cases": [
+    {
+      "id": "parameter_00",
+      "instruction": "kick without moving arms",
+      "expected": [
+        "action kick_right 1\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_01",
+      "instruction": "Kick with the left leg without swinging your arms.",
+      "expected": [
+        "action kick_left 1\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_02",
+      "instruction": "Kick twice with your right leg and keep both arms still.",
+      "expected": [
+        "action kick_right 2\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_03",
+      "instruction": "Run with your arms still",
+      "expected": [
+        "action run 1\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_04",
+      "instruction": "Walk without swinging either arm",
+      "expected": [
+        "action walk 1\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_05",
+      "instruction": "Bow with your arms at your sides.",
+      "expected": [
+        "action bow 1\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_06",
+      "instruction": "Crouch while keeping the arms motionless.",
+      "expected": [
+        "action crouch 1\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_07",
+      "instruction": "Jump twice without moving your arms.",
+      "expected": [
+        "action jump 2\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_08",
+      "instruction": "Jump twice then bow, keeping your arms still the whole time",
+      "expected": [
+        "action jump 2\naction bow 1\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_09",
+      "instruction": "jump on left foot",
+      "expected": [
+        "action jump 1 left"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_10",
+      "instruction": "jump on right foot",
+      "expected": [
+        "action jump 1 right"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_11",
+      "instruction": "Hop twice on your right leg",
+      "expected": [
+        "action jump 2 right"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_12",
+      "instruction": "Jump on your left foot three times.",
+      "expected": [
+        "action jump 3 left"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_13",
+      "instruction": "Hop eight times on your right foot.",
+      "expected": [
+        "action jump 8 right"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_14",
+      "instruction": "Hop on one leg",
+      "expected": [
+        "action jump 1 left"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_15",
+      "instruction": "Jump on the left foot three times with still arms",
+      "expected": [
+        "action jump 3 left\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_16",
+      "instruction": "Hop twice on your right foot without swinging your arms.",
+      "expected": [
+        "action jump 2 right\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_17",
+      "instruction": "Hop on your left foot, then hop on your right foot",
+      "expected": [
+        "action jump 1 left\naction jump 1 right"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_18",
+      "instruction": "Jump twice on your left foot, then take a bow.",
+      "expected": [
+        "action jump 2 left\naction bow 1"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_19",
+      "instruction": "Jump on the right foot then kick with the left leg, arms still.",
+      "expected": [
+        "action jump 1 right\naction kick_left 1\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_20",
+      "instruction": "Can you hop on your left leg?",
+      "expected": [
+        "action jump 1 left"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_21",
+      "instruction": "Please do three right-foot hops.",
+      "expected": [
+        "action jump 3 right"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_22",
+      "instruction": "Jump once on each foot, left then right.",
+      "expected": [
+        "action jump 1 left\naction jump 1 right"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "parameter_23",
+      "instruction": "Jump without moving your legs",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "parameter_boundary"
+    },
+    {
+      "id": "parameter_24",
+      "instruction": "Walk and wave but do not move your arms",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "parameter_boundary"
+    },
+    {
+      "id": "parameter_25",
+      "instruction": "Jump on the left foot nine times",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "parameter_boundary"
+    },
+    {
+      "id": "parameter_26",
+      "instruction": "Hop on your left foot then do a backflip",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "parameter_boundary"
+    },
+    {
+      "id": "parameter_both",
+      "instruction": "Jump on both feet twice",
+      "expected": [
+        "action jump 2",
+        "action jump 2 both"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_jump_1",
+      "instruction": "jump 1 times",
+      "expected": [
+        "action jump 1"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_jump_2",
+      "instruction": "jump 2 times",
+      "expected": [
+        "action jump 2"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_jump_3",
+      "instruction": "jump 3 times",
+      "expected": [
+        "action jump 3"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_jump_4",
+      "instruction": "jump 4 times",
+      "expected": [
+        "action jump 4"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_jump_6",
+      "instruction": "jump 6 times",
+      "expected": [
+        "action jump 6"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_jump_7",
+      "instruction": "jump 7 times",
+      "expected": [
+        "action jump 7"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_jump_8",
+      "instruction": "jump 8 times",
+      "expected": [
+        "action jump 8"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_bow_1",
+      "instruction": "bow 1 times",
+      "expected": [
+        "action bow 1"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_bow_2",
+      "instruction": "bow 2 times",
+      "expected": [
+        "action bow 2"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_bow_3",
+      "instruction": "bow 3 times",
+      "expected": [
+        "action bow 3"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_bow_4",
+      "instruction": "bow 4 times",
+      "expected": [
+        "action bow 4"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_bow_5",
+      "instruction": "bow 5 times",
+      "expected": [
+        "action bow 5"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_bow_6",
+      "instruction": "bow 6 times",
+      "expected": [
+        "action bow 6"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_bow_7",
+      "instruction": "bow 7 times",
+      "expected": [
+        "action bow 7"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_bow_8",
+      "instruction": "bow 8 times",
+      "expected": [
+        "action bow 8"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_turn_probe_1",
+      "instruction": "turn",
+      "expected": [
+        "action spin 1"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_turn_probe_3",
+      "instruction": "turn left then sit",
+      "expected": [
+        "action turn_left 1\naction sit 1"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_turn_probe_5",
+      "instruction": "Jump five times on your left foot with still arms",
+      "expected": [
+        "action jump 5 left\narms still"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_turn_probe_7",
+      "instruction": "Jump eight times then bow eight times",
+      "expected": [
+        "action jump 8\naction bow 8"
+      ],
+      "category": "action_parameters"
+    },
+    {
+      "id": "count_turn_probe_10",
+      "instruction": "Jump eight times then bow eight times then kick",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "parameter_boundary"
+    }
+  ]
+}

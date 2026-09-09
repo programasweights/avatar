@@ -135,7 +135,7 @@ test("a typed skill replaces the showcase using a mocked PAW response", async ({
   await page.getByLabel("Direction", { exact: true }).fill(instruction);
   await page.getByRole("button", { name: "Apply direction", exact: true }).click();
   await expect(page.locator(".motion-stage-label")).toHaveText(
-    "PAW · neural commands",
+    "Your motion",
   );
   await expect(
     page.getByRole("navigation", { name: "Sequence chapters" }),
@@ -202,7 +202,7 @@ test("cancelling a sequence ignores a late mocked response and keeps the next sc
   });
   await openSection(page, "More motions");
   await page
-    .getByRole("button", { name: "Load hand demo through PAW", exact: true })
+    .getByRole("button", { name: "Recreate demo from prompts", exact: true })
     .click();
   await expect.poll(() => requests.length).toBe(2);
   await expect(

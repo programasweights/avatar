@@ -533,12 +533,12 @@
       "source": "authored held-out phrasing"
     },
     {
-      "id": "action_boundary_8",
+      "id": "common_single_foot_default",
       "instruction": "jump on one leg",
       "expected": [
-        "unsupported"
+        "action jump 1 left"
       ],
-      "category": "action_boundary",
+      "category": "everyday_parameters",
       "source": "authored held-out phrasing"
     },
     {

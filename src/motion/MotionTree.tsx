@@ -209,7 +209,7 @@ export default function MotionTree({
           {full ? "Motion branches" : "Full tree"}
         </button>
       </div>
-      <p className="live-tree-hint">Select a finger. Change just that part.</p>
+      <p className="live-tree-hint">Select a joint. Change just that part.</p>
       <div
         ref={scroll}
         className="live-tree-scroll"

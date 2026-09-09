@@ -358,11 +358,11 @@ test("the PAW sequence button makes four real sequential calls and reproduces th
     await ready(page);
     await page.locator("summary").filter({ hasText: "More motions" }).click();
     await page
-      .getByRole("button", { name: "Load hand demo through PAW", exact: true })
+      .getByRole("button", { name: "Recreate demo from prompts", exact: true })
       .click();
     await expect
       .poll(async () => (await studio(page)).origin, { timeout: 480_000 })
-      .toBe("PAW · four directions");
+      .toBe("Your motion");
     await expect(page.getByRole("alert")).toHaveCount(0);
     await evidence.complete();
     expect(evidence.calls).toHaveLength(4);

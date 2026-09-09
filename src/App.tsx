@@ -57,6 +57,7 @@ import {
 import type { ArmStyle, DanceStyle } from "./motion/skills";
 import { JOINT_LABEL, JOINTS } from "./motion/rig";
 import "./motion/studio.css";
+import "./motion/stageRecovery.css";
 
 type DexterityStudy =
   | "finger_ripple"
@@ -472,7 +473,7 @@ export default function App() {
     accept(next);
     setSequenceCues([]);
     setCaption(text);
-    setOrigin("PAW · neural commands");
+    setOrigin("Your motion");
     // Select the smallest existing branch that represents the requested joints.
     const search = (
       node: import("./motion/types").MotionNode,
@@ -606,8 +607,22 @@ export default function App() {
   function applyMotionCommands(
     commands: string,
     text: string,
-    source = "PAW · neural commands",
+    source = "Your motion",
   ) {
+    const playback = /^playback (pause|resume|restart)$/.exec(commands.trim());
+    if (playback) {
+      // Transport commands keep the current scene, edits, and sequence intact.
+      // A global pause does not create or restore individual joint freezes.
+      if (playback[1] === "pause") {
+        transport.current.playing = false;
+        setPlaying(false);
+        setTime(transport.current.time);
+      } else if (playback[1] === "restart") restart();
+      else resumeCurrentMotion();
+      setError("");
+      setRaw(commands);
+      return;
+    }
     const motionEdit = /^(freeze|restore) (\S+)$/.exec(commands.trim());
     if (motionEdit) {
       applyLanguageEdit(motionEdit[1], motionEdit[2], text);
@@ -640,11 +655,12 @@ export default function App() {
     const next = applyCommands(restored, commands);
     if (!newScene) rememberEdit();
     accept(next, newScene);
-    if (lines.some((line) => line.startsWith("action "))) {
-      // A lone gait repeats; counted actions and sequences finish once.
+    const actionLines = lines.filter((line) => line.startsWith("action "));
+    if (actionLines.length) {
+      // Arm modifiers do not turn a lone gait into a finite sequence.
       const cyclic =
-        lines.length === 1 &&
-        /^action (walk|run|walk_wave|run_wave) 1$/.test(lines[0]);
+        actionLines.length === 1 &&
+        /^action (walk|run|walk_wave|run_wave) 1$/.test(actionLines[0]);
       transport.current.loop = cyclic;
       setLoop(cyclic);
     }
@@ -827,7 +843,7 @@ export default function App() {
     setJoint(`${side}_index_1`);
     setAxis("z");
     setFocus(`${side}_hand`);
-    setOrigin(commands ? "PAW · four directions" : "Example · Hand sequence");
+    setOrigin(commands ? "Your motion" : "Example · Hand sequence");
     setRaw(commands?.join("\n") ?? "");
   }
   function previewSequence(side = performedHand ?? hand) {
@@ -1380,7 +1396,7 @@ export default function App() {
                 disabled={busy}
                 onClick={() => void directSequence()}
               >
-                <Sparkles size={15} /> Load hand demo through PAW
+                <Sparkles size={15} /> Recreate demo from prompts
               </button>
             </details>
             <details className="motion-disclosure motion-editor">

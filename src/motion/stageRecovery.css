@@ -1,0 +1,33 @@
+.motion-stage-recovery {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: #12121a;
+  text-align: center;
+}
+.motion-stage-recovery p {
+  margin: 0 0 8px;
+}
+.motion-stage-recovery p + p {
+  color: #9ca3af;
+}
+.motion-stage-recovery button {
+  margin-top: 12px;
+  border: 1px solid #a78bfa66;
+  border-radius: 8px;
+  padding: 10px 16px;
+  color: #ddd6fe;
+  background: #292239;
+  cursor: pointer;
+}
+.motion-stage-recovery button:hover {
+  background: #362c4d;
+}
+.motion-stage:has(.motion-stage-recovery) .motion-loading {
+  display: none;
+}

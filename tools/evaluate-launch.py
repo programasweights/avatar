@@ -42,6 +42,7 @@ def main() -> int:
         cases = [case for case in cases if case["id"] in args.case_ids]
     director = None
     infer = None
+    inference_calls = []
     if args.local or args.infer_url:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
         from director import direct
@@ -60,10 +61,13 @@ def main() -> int:
                 "program_id": program_id, "input": instruction, "temperature": 0, "max_tokens": 80,
             }).encode(), headers=headers, method="POST")
             with urllib.request.urlopen(request, timeout=args.timeout) as result:
-                return json.load(result)["output"]
+                output = json.load(result)["output"]
+            inference_calls.append({"program_id": program_id, "output": output})
+            return output
     report = {"endpoint": args.url or args.infer_url or "local", "started_at": datetime.now(timezone.utc).isoformat(), "results": []}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     for case in cases:
+        inference_calls.clear()
         started = time.monotonic()
         status, response = None, None
         try:
@@ -100,7 +104,8 @@ def main() -> int:
             matches = matches and response.get("trace", {}).get("route") == case["expected_route"]
         passed = status == 200 and matches
         if passed:
-            outcome = "honest_unsupported" if output == "unsupported" else "supported"
+            outcome = ("guarded_rejection" if response.get("trace", {}).get("validation_error")
+                       else "honest_unsupported" if output == "unsupported" else "supported")
         elif status == 422:
             outcome = "validation_rejection"
         elif status != 200:
@@ -110,6 +115,10 @@ def main() -> int:
         else:
             outcome = "incorrect_command"
         row = {**case, "status": status, "elapsed_seconds": round(time.monotonic() - started, 3), "passed": passed, "outcome": outcome, "response": response}
+        if args.infer_url:
+            # Keep model evidence even when command validation raises before
+            # the director can return its completed trace.
+            row["inference_calls"] = inference_calls.copy()
         report["results"].append(row)
         report["passed"] = sum(item["passed"] for item in report["results"])
         report["failed"] = len(report["results"]) - report["passed"]

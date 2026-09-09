@@ -16,6 +16,7 @@ import {
   createBodySequence,
   type BodyAction,
   type BodyActionStep,
+  type JumpSupport,
 } from "./bodyActions";
 import {
   changeMotionHand,
@@ -101,17 +102,25 @@ export function applyCommands(
         cursor < lines.length && lines[cursor].startsWith("action ");
         cursor++
       ) {
-        const [kind, action, count, extra] = lines[cursor].split(/\s+/);
+        const [kind, action, count, support, extra] =
+          lines[cursor].split(/\s+/);
         if (
           kind !== "action" ||
           !BODY_ACTIONS.includes(action as BodyAction) ||
           !/^[1-8]$/.test(count) ||
+          (support !== undefined &&
+            (action !== "jump" ||
+              !["both", "left", "right"].includes(support))) ||
           extra !== undefined
         )
           throw new Error(
             `PAW returned an invalid body action: ${lines[cursor]}`,
           );
-        steps.push({ action: action as BodyAction, count: Number(count) });
+        steps.push({
+          action: action as BodyAction,
+          count: Number(count),
+          ...(support ? { support: support as JumpSupport } : {}),
+        });
       }
       next = createBodySequence(steps, next.bpm);
       index = cursor - 1;

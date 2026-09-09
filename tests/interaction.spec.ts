@@ -384,7 +384,7 @@ test("new skills and JSON replacement release old pauses without hidden frozen r
     .fill("Make a finger ripple");
   await page.getByRole("button", { name: "Apply direction", exact: true }).click();
   await expect(page.locator(".motion-stage-label")).toHaveText(
-    "PAW · neural commands",
+    "Your motion",
   );
   expect(
     await page.evaluate(() => (window as any).__motionStudio.snapshot().frozen),
@@ -460,6 +460,107 @@ test("an implicit language pause follows the selected right hand and preserves t
       baseline[sample].left_index_1,
       "Left finger preserved",
     );
+  });
+  expect(errors).toEqual([]);
+});
+
+test("global stop, pause, resume and replay control the visible scene without replacing its motion", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const errors = await ready(page, false);
+  const original = await page.evaluate(() => (window as any).__motionStudio.snapshot());
+  const outputs: Record<string, string> = {
+    stop: "playback pause",
+    pause: "playback pause",
+    resume: "playback resume",
+    replay: "playback restart",
+  };
+  await page.route("**/api/direct", (route) => {
+    const { instruction } = route.request().postDataJSON();
+    return route.fulfill({ json: { output: outputs[instruction] } });
+  });
+  async function direct(instruction: string) {
+    await page.getByLabel("Direction", { exact: true }).fill(instruction);
+    await page.getByRole("button", { name: "Apply direction", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Apply direction", exact: true })).toBeEnabled();
+    await expect(page.locator(".motion-error")).not.toBeVisible();
+  }
+  const time = () => page.evaluate(() => (window as any).__motionStudio.snapshot().time);
+  await seek(page, 1);
+  await page.getByRole("button", { name: "Play current motion", exact: true }).click();
+  await expect.poll(time).toBeGreaterThan(1);
+  await direct("stop");
+  await expect(page.getByRole("button", { name: "Play current motion", exact: true })).toBeVisible();
+  const stoppedTime = await time();
+  const stoppedPoses: Pose[] = await page.evaluate(async () => {
+    const first = (window as any).__motion.snapshot();
+    for (let frame = 0; frame < 12; frame++) await new Promise(requestAnimationFrame);
+    return [first, (window as any).__motion.snapshot()];
+  });
+  expect(await time()).toBe(stoppedTime);
+  for (const target of ["left_index_1", "left_middle_1", "left_wrist"])
+    sameJoint(stoppedPoses[1][target], stoppedPoses[0][target], `${target} stopped`);
+  await direct("pause");
+  expect(await time()).toBe(stoppedTime);
+  await direct("resume");
+  await expect(page.getByRole("button", { name: "Pause current motion", exact: true })).toBeVisible();
+  await expect.poll(time).toBeGreaterThan(stoppedTime);
+  await seek(page, 12);
+  await direct("replay");
+  await expect(page.getByRole("button", { name: "Pause current motion", exact: true })).toBeVisible();
+  await expect.poll(time).toBeLessThan(3);
+  await seek(page, compileMotion(original.program).duration);
+  await direct("resume");
+  await expect(page.getByRole("button", { name: "Pause current motion", exact: true })).toBeVisible();
+  await expect.poll(time).toBeLessThan(3);
+  const resumed = await page.evaluate(() => (window as any).__motionStudio.snapshot());
+  for (const key of ["program", "selected", "focus", "frozen", "cues", "origin", "loop"])
+    expect(resumed[key], `${key} survives transport commands`).toEqual(original[key]);
+  expect(errors).toEqual([]);
+});
+
+test("global resume leaves a selected finger frozen and a new joint direction resumes playback", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const errors = await ready(page);
+  await selected(page, "test.left.index").click();
+  await seek(page, 1);
+  await page.getByRole("button", { name: "Pause finger", exact: true }).click();
+  const frozen = await page.evaluate(() => (window as any).__motionStudio.snapshot());
+  const outputs: Record<string, string> = {
+    resume: "playback resume",
+    stop: "playback pause",
+    "Bend your right elbow 30 degrees": "joint right_elbow x 30",
+  };
+  await page.route("**/api/direct", (route) => {
+    const { instruction } = route.request().postDataJSON();
+    return route.fulfill({ json: { output: outputs[instruction] } });
+  });
+  async function direct(instruction: string) {
+    await page.getByLabel("Direction", { exact: true }).fill(instruction);
+    await page.getByRole("button", { name: "Apply direction", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Apply direction", exact: true })).toBeEnabled();
+  }
+  await direct("resume");
+  await expect(page.getByRole("button", { name: "Pause current motion", exact: true })).toBeVisible();
+  const resumed = await page.evaluate(() => (window as any).__motionStudio.snapshot());
+  expect(resumed.program).toEqual(frozen.program);
+  expect(resumed.frozen).toEqual(frozen.frozen);
+  expect(resumed.selected).toBe(frozen.selected);
+  const samples = await poses(page, [0.2, 2.2]);
+  for (const target of indexTargets)
+    sameJoint(samples[0][target], samples[1][target], `${target} remains individually frozen`);
+  expect(rotationDifference(samples[0].left_middle_1, samples[1].left_middle_1)).toBeGreaterThan(0.001);
+  await direct("stop");
+  await expect(page.getByRole("button", { name: "Play current motion", exact: true })).toBeVisible();
+  await direct("Bend your right elbow 30 degrees");
+  await expect(page.getByRole("button", { name: "Pause current motion", exact: true })).toBeVisible();
+  const edited = await page.evaluate(() => (window as any).__motionStudio.snapshot());
+  expect(edited.frozen).toEqual(frozen.frozen);
+  expect(node(edited.program.root, "detail.right_elbow.x")).toMatchObject({
+    target: "right_elbow", axis: "x", curve: { kind: "constant", value: 30 },
   });
   expect(errors).toEqual([]);
 });

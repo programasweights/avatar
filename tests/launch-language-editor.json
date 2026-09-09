@@ -117,7 +117,7 @@
       "id": "editor-cases-14",
       "instruction": "Resume",
       "expected": [
-        "restore selected"
+        "playback resume"
       ],
       "category": "editor_targets"
     },
@@ -334,32 +334,26 @@
     {
       "id": "editor-cases-41",
       "instruction": "Stop the whole animation",
-      "expected": [],
-      "category": "editor_preservation",
-      "excluded_prefixes": [
-        "freeze ",
-        "restore "
-      ]
+      "expected": [
+        "playback pause"
+      ],
+      "category": "editor_preservation"
     },
     {
       "id": "editor-cases-42",
       "instruction": "Pause",
-      "expected": [],
-      "category": "editor_preservation",
-      "excluded_prefixes": [
-        "freeze ",
-        "restore "
-      ]
+      "expected": [
+        "playback pause"
+      ],
+      "category": "editor_preservation"
     },
     {
       "id": "editor-cases-43",
       "instruction": "Stop",
-      "expected": [],
-      "category": "editor_preservation",
-      "excluded_prefixes": [
-        "freeze ",
-        "restore "
-      ]
+      "expected": [
+        "playback pause"
+      ],
+      "category": "editor_preservation"
     },
     {
       "id": "editor-cases-44",
@@ -394,12 +388,10 @@
     {
       "id": "editor-cases-47",
       "instruction": "Keep the wave going and slow it down",
-      "expected": [],
-      "category": "editor_preservation",
-      "excluded_prefixes": [
-        "freeze ",
-        "restore "
-      ]
+      "expected": [
+        "tempo_scale 0.8"
+      ],
+      "category": "editor_preservation"
     },
     {
       "id": "editor-cases-48",
@@ -594,12 +586,10 @@
     {
       "id": "editor-cases-67",
       "instruction": "Stop moving the entire character.",
-      "expected": [],
-      "category": "editor_preservation",
-      "excluded_prefixes": [
-        "freeze ",
-        "restore "
-      ]
+      "expected": [
+        "playback pause"
+      ],
+      "category": "editor_preservation"
     },
     {
       "id": "editor-heldout-0",
@@ -654,32 +644,26 @@
     {
       "id": "editor-heldout-5",
       "instruction": "Pause the playback.",
-      "expected": [],
-      "category": "editor_preservation",
-      "excluded_prefixes": [
-        "freeze ",
-        "restore "
-      ]
+      "expected": [
+        "playback pause"
+      ],
+      "category": "editor_preservation"
     },
     {
       "id": "editor-heldout-6",
       "instruction": "Please pause.",
-      "expected": [],
-      "category": "editor_preservation",
-      "excluded_prefixes": [
-        "freeze ",
-        "restore "
-      ]
+      "expected": [
+        "playback pause"
+      ],
+      "category": "editor_preservation"
     },
     {
       "id": "editor-heldout-7",
       "instruction": "Stop all movement.",
-      "expected": [],
-      "category": "editor_preservation",
-      "excluded_prefixes": [
-        "freeze ",
-        "restore "
-      ]
+      "expected": [
+        "playback pause"
+      ],
+      "category": "editor_preservation"
     },
     {
       "id": "editor-heldout-8",

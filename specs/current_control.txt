@@ -1,13 +1,4 @@
-Choose how to interpret ONE avatar instruction. Return exactly one permitted output. Do not explain. This function has no conversation history; contextual commands name an operation on the current scene rather than guessing its action.
-
-Permitted outputs:
-body
-joint
-mixed
-dexterity
-freeze
-restore
-unsupported
+Interpret ONE direction as an operation on the current avatar motion. Return exactly one permitted command, with no explanation:
 reverse current
 hand left
 hand right
@@ -15,97 +6,40 @@ hand other
 tempo_scale FACTOR
 wave left
 wave right
+unsupported
 
-joint: head looking up/down/left/right, nodding yes, shaking the head no, or a new angle, bend, straighten, wiggle, turn, lift or generic movement of one named joint/finger, or the same joint on both sides. A thumb is a finger. Polite requests such as "could you move just your thumb" are NEW movement, never freeze. If an explicit new BPM/tempo also appears, use mixed even with keep/continue. Otherwise preserving an existing dance/wave/rest does not request a new dance: "keep dancing salsa and wiggle a finger" is joint.
-body: start/change salsa, Latin (=salsa), cha-cha, robot or idle; stop dancing, stand still, stop all movement, or resume a named dance; change arm style to natural, robot, wave or still; or set an explicit absolute tempo/BPM. Unsupported dances are unsupported.
-mixed: actually START, CHANGE or STOP a supported dance, or SET an absolute tempo, AND request a specific joint movement. Merely keeping/continuing a named dance is NOT a new dance. A requested dance change plus joint movement is mixed even if the joint has no angle.
-dexterity: one finger ripple across one hand; sequential thumb-to-fingertip touches; a traveling wave through both arms; or rolling a coin across one hand's knuckles. "Roll a coin", "do a coin roll", "show the coin trick" and requests to demonstrate a coin roll default to that knuckle trick. "Show me" a supported action means perform it, not explain it. Named side and reversed order are allowed. Preserving existing footwork/dance is allowed. Rolling the coin on a head, face, nose, arm, leg, table or another surface is unsupported; do not drop the object or requested location. Coin flipping/tossing/spinning/catching/balancing is unsupported. Simultaneous tricks in both hands or multiple different skills are unsupported.
-freeze: pause a named/selected joint or whole finger at its CURRENT pose. It must actually ask to stop/pause/freeze/disable/keep still. "Move only X" is joint. Holding a NEW angle is joint. Bare Freeze refers to the selected part. Stopping dancing, standing still or stopping the whole character is body, never freeze. Bare pause and camera/playback controls are unsupported. Freezing at a NEW angle is joint.
-restore: restore saved motion of a named/selected joint/finger, including let it move AGAIN, resume, unfreeze, or re-enable. A new movement without "again" is joint. Resuming a named dance is body. Bare Restore/Resume/Unfreeze refers to the selected part.
-wave left/right: an ordinary greeting, waving hello or goodbye with one hand. Use the named side; default right when no side is given. Preserving the current dance is allowed. This is not a traveling arm wave.
-reverse current: reverse the current motion, without specifying a new named skill. "Reverse the left finger ripple" is dexterity.
-hand left/right/other: perform the CURRENT action with the explicitly named hand or opposite hand. Do not guess which action is current. A fully named new skill goes to dexterity instead.
-tempo_scale FACTOR: relative whole-motion speed, where FACTOR multiplies current speed. Faster/speed up=1.25; slower/slow down=0.8; twice/double speed=2; half speed=0.5; three times speed=3. Preserve an explicitly requested numeric multiplier, from 0.25 to 4. Requests outside that range are unsupported. Absolute BPM is body.
-unsupported: all other requests, including new authored gestures such as fist, thumbs up, peace sign, middle-finger gesture, clap, moonwalk, ballet, acrobatics; facial expression; arbitrary prop tricks; explanations; or multiple unrelated requested changes. Do not reduce a gesture or prop interaction to one related joint movement.
+This function does NOT choose new body actions, dances, joint angles, hand skills, or edit routes. Never output body, joint, mixed, dexterity, freeze, or restore. The caller has separate functions for those requests. This function has no history and must not guess which action is currently playing.
 
-Input: Roll a coin
-Output: dexterity
-Input: Could you please roll a coin over the knuckles of your right hand?
-Output: dexterity
-Input: Roll a coin on your head
-Output: unsupported
-Input: Balance a coin on your left knuckles
-Output: unsupported
-Input: Roll coins across both hands simultaneously
-Output: unsupported
-Input: Make a ripple from thumb to pinky on the right hand
-Output: dexterity
-Input: Keep salsa feet and roll a coin across the left knuckles
-Output: dexterity
-Input: Dance salsa and roll a coin
-Output: unsupported
-Input: Could you move just your left thumb?
-Output: joint
-Input: Can you please wiggle only your right pinky?
-Output: joint
-Input: Hold your left ring finger at 30 degrees
-Output: joint
-Input: Keep dancing salsa and wiggle your left index finger 35 degrees
-Output: joint
-Input: Continue cha-cha and lift the right leg
-Output: joint
-Input: Dance salsa and wiggle your left index finger 35 degrees
-Output: mixed
-Input: Stop dancing and raise the left leg
-Output: mixed
-Input: Set 100 BPM and bend your left elbow 20 degrees
-Output: mixed
-Input: Keep the wave going. Stop just the ring finger
-Output: freeze
-Input: Please keep your left thumb still while the rest moves
-Output: freeze
-Input: Could you stop moving your left thumb?
-Output: freeze
-Input: Could you let your left thumb move again?
-Output: restore
-Input: Restore the ring finger
-Output: restore
-Input: Move your left thumb
-Output: joint
-Input: Lift your left leg
-Output: joint
-Input: Turn your head 30 degrees right
-Output: joint
-Input: Dance Latin
-Output: body
-Input: Keep salsa footwork. Make the arms robotic
-Output: body
-Input: Wave hello
-Output: wave right
-Input: Make a fist with your left hand
-Output: unsupported
-Input: Give me a thumbs up
-Output: unsupported
-Input: Flip me off
-Output: unsupported
-Input: Clap your hands
-Output: unsupported
-Input: Do the moonwalk
-Output: unsupported
+reverse current: reverse the current motion, without naming a new skill. Reverse it, do that backwards, run this animation backward, and reverse the motion mean reverse current. Naming a particular finger ripple or coin roll is a new skill request and is unsupported here.
+
+hand left/right/other: perform the CURRENT motion with the named hand or opposite hand. Preserve an explicit side. Switch to your left hand, do the same with your right hand, use the other hand, and do that with the opposite hand are hand changes. A new named action or contact between body parts is not a hand change. A request for one hand to touch, hold, grasp, squeeze, or support the other hand or a finger is unsupported.
+
+tempo_scale FACTOR: change the speed of the CURRENT motion by multiplying its existing speed. Faster/speed up=1.25; slower/slow down=0.8; twice/double speed=2; half speed=0.5; three times speed=3; quarter speed=0.25. Preserve explicit numeric multipliers from 0.25 through 4 inclusive. Outside that range is unsupported. Run it faster refers to playback speed, not running. Absolute BPM or tempo settings are unsupported here.
+
+wave left/right: an ordinary greeting with one hand, including waving hello or goodbye or changing the arms to waving. Use the explicit side; default right if no side is named. Keeping the current dance or footwork is allowed. A traveling wave through the arms, a finger ripple, or waving BOTH hands is unsupported here.
+
+unsupported: every other request. Includes a new walk/run/jump/kick/bow, dance choice or arm style, joint movement or angle, finger skill, prop trick, whole hand gesture, body-part contact, freeze/restore, global playback stop/pause/resume/restart, camera or file command, explanation, description of past actions, or multiple different changes. A polite request to perform an allowed control is supported; a question asking how that control works is unsupported. Do not silently omit a named new action, body part, unsupported multiplier, or extra requested change.
+
 Input: Reverse it
 Output: reverse current
 Input: Do that backwards
 Output: reverse current
-Input: Reverse the left coin roll
-Output: dexterity
+Input: Run this motion backward
+Output: reverse current
+Input: Reverse the current animation
+Output: reverse current
 Input: Do it with your right hand
 Output: hand right
-Input: Use the other hand
-Output: hand other
 Input: Switch to your left hand
 Output: hand left
-Input: Roll a coin across your right knuckles
-Output: dexterity
+Input: Use the other hand
+Output: hand other
+Input: Same motion with the left hand
+Output: hand left
+Input: Could you do the same thing using your right hand?
+Output: hand right
+Input: Try that with the opposite hand
+Output: hand other
 Input: Make it twice as fast
 Output: tempo_scale 2
 Input: Half speed please
@@ -114,110 +48,76 @@ Input: Slower
 Output: tempo_scale 0.8
 Input: Faster
 Output: tempo_scale 1.25
-Input: Set the tempo to 140 BPM
-Output: body
-
-Input: Wave hello with your right hand
+Input: Run it faster
+Output: tempo_scale 1.25
+Input: Play at three times the current speed
+Output: tempo_scale 3
+Input: Run this at a quarter of its current speed
+Output: tempo_scale 0.25
+Input: Make it 1.5 times as fast
+Output: tempo_scale 1.5
+Input: Four times faster
+Output: tempo_scale 4
+Input: Wave hello
 Output: wave right
-Input: Wave hello with your left hand
+Input: Wave goodbye with the left hand
 Output: wave left
-
-Input: Freeze the ring finger at 30 degrees
-Output: joint
-Input: Explain how to pause a finger
-Output: unsupported
-Input: Freeze the camera
-Output: unsupported
-Input: Pause
-Output: unsupported
-Input: Stop all movement
-Output: body
-Input: Freeze the ring finger and restore the pinky
-Output: unsupported
+Input: Wave with the right arm
+Output: wave right
+Input: Keep dancing salsa and wave hello with your left hand
+Output: wave left
 Input: Continue the salsa, change only the arms to waving
 Output: wave right
 
-Input: Look up 20 degrees
-Output: joint
-Input: Look down
-Output: joint
-Input: Nod yes
-Output: joint
-Input: Shake your head no
-Output: joint
+Input: right hand hold left index finger
+Output: unsupported
+Input: Hold your hands together
+Output: unsupported
+Input: Touch your right palm to your left palm
+Output: unsupported
+Input: Snap with your thumb and middle finger
+Output: unsupported
+Input: Close your right hand into a fist
+Output: unsupported
+Input: Move your left thumb
+Output: unsupported
+Input: Hold the left index finger at 30 degrees
+Output: unsupported
+Input: Freeze the middle finger
+Output: unsupported
+Input: Restore the right pinky
+Output: unsupported
+Input: Keep the wave going, stop just the ring finger
+Output: unsupported
 Input: Stop dancing
-Output: body
-Input: Stand still
-Output: body
-Input: Resume salsa
-Output: body
-Input: Show me the coin trick
-Output: dexterity
-Input: Can you demonstrate rolling a coin?
-Output: dexterity
-Input: Do a coin roll
-Output: dexterity
-Input: Keep doing the robot at 110 BPM and bend your left elbow 35 degrees
-Output: mixed
-Input: Continue salsa and wiggle the right thumb, but set tempo to 95
-Output: mixed
-Input: Show me how to freeze a finger
 Output: unsupported
-
-Input: Hold the left ring finger at 45 degrees
-Output: joint
-Input: Freeze the left thumb at a new 25 degree angle
-Output: joint
-Input: Start a new finger ripple
-Output: dexterity
-Input: Pause the playback
+Input: Dance salsa
 Output: unsupported
-Input: Please pause
+Input: Keep the footwork, make the arms robotic
 Output: unsupported
-Input: Tell me what freezing a joint means
+Input: Roll a coin across your right knuckles
 Output: unsupported
-Input: How do I restore the middle finger?
+Input: Reverse the left finger ripple
 Output: unsupported
-
-Input: Dance Latin.
-Output: body
-Input: Do Latin dancing
-Output: body
-Input: Start a Latin dance at 90 BPM
-Output: body
-Input: Keep dancing salsa but make the arms robotic
-Output: body
-Input: Continue the cha-cha with robot arms instead
-Output: body
-Input: Leave the feet unchanged, relax both arms
-Output: body
-Input: Keep dancing salsa at 100 BPM and wiggle the left index finger 35 degrees
-Output: mixed
-Input: Keep the robot at 85 BPM and turn the head left 30 degrees
-Output: mixed
-Input: Leave the cha-cha as it is and bend your left elbow 40 degrees
-Output: joint
-Input: Leave the dance unchanged and curl your left thumb
-Output: joint
-Input: Hold the right pinky at 60 degrees
-Output: joint
-Input: Freeze the ring finger at 30 degrees
-Output: joint
-Input: Keep the camera still
+Input: Wave both hands
 Output: unsupported
-Input: Freeze the camera
+Input: Send a wave through both arms
 Output: unsupported
-Input: Restore the JSON file
+Input: Jump twice
 Output: unsupported
-Input: Pause the video player
+Input: Set the tempo to 140 BPM
 Output: unsupported
-Input: Freeze the ring finger and restore the pinky
+Input: Make it five times as fast
 Output: unsupported
-Input: How can I freeze the right index finger?
+Input: Make it one tenth as fast
 Output: unsupported
-Input: What does restore the pinky mean?
+Input: Reverse it and switch hands
 Output: unsupported
-Input: Describe how to freeze a thumb
+Input: How do I reverse the animation?
 Output: unsupported
-Input: Show me instructions for resuming a knuckle
+Input: I waved yesterday
+Output: unsupported
+Input: Pause the animation
+Output: unsupported
+Input: Resume
 Output: unsupported

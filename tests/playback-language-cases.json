@@ -1,0 +1,255 @@
+{
+  "description": "Real-inference playback controls and regression checks separating whole-animation playback from joint edits and new motions. Global stop holds the current pose; resume continues it; restart plays from the beginning. Rendered state preservation is verified separately in browser tests.",
+  "cases": [
+    {
+      "id": "playback_stop",
+      "instruction": "stop",
+      "expected": ["playback pause"],
+      "category": "playback_pause",
+      "source": "User-reported regression"
+    },
+    {
+      "id": "playback_pause",
+      "instruction": "pause",
+      "expected": ["playback pause"],
+      "category": "playback_pause"
+    },
+    {
+      "id": "playback_stop_moving",
+      "instruction": "Stop moving.",
+      "expected": ["playback pause"],
+      "category": "playback_pause"
+    },
+    {
+      "id": "playback_stop_animation",
+      "instruction": "Stop the whole animation",
+      "expected": ["playback pause"],
+      "category": "playback_pause"
+    },
+    {
+      "id": "playback_stop_all",
+      "instruction": "Stop all movement.",
+      "expected": ["playback pause"],
+      "category": "playback_pause"
+    },
+    {
+      "id": "playback_pause_animation",
+      "instruction": "Pause the animation.",
+      "expected": ["playback pause"],
+      "category": "playback_pause"
+    },
+    {
+      "id": "playback_pause_playback",
+      "instruction": "Pause the playback.",
+      "expected": ["playback pause"],
+      "category": "playback_pause"
+    },
+    {
+      "id": "playback_stop_character",
+      "instruction": "Stop moving the entire character.",
+      "expected": ["playback pause"],
+      "category": "playback_pause"
+    },
+    {
+      "id": "playback_pause_polite",
+      "instruction": "Could you pause everything for a moment?",
+      "expected": ["playback pause"],
+      "category": "playback_pause",
+      "source": "Authored held-out phrasing"
+    },
+    {
+      "id": "playback_stop_right_there",
+      "instruction": "Please stop right there.",
+      "expected": ["playback pause"],
+      "category": "playback_pause",
+      "source": "Authored held-out phrasing"
+    },
+    {
+      "id": "playback_resume",
+      "instruction": "resume",
+      "expected": ["playback resume"],
+      "category": "playback_resume"
+    },
+    {
+      "id": "playback_play",
+      "instruction": "play",
+      "expected": ["playback resume"],
+      "category": "playback_resume"
+    },
+    {
+      "id": "playback_continue",
+      "instruction": "continue",
+      "expected": ["playback resume"],
+      "category": "playback_resume"
+    },
+    {
+      "id": "playback_play_again",
+      "instruction": "Play again.",
+      "expected": ["playback resume"],
+      "category": "playback_resume",
+      "notes": "Continue the current timeline unless the direction explicitly requests a restart."
+    },
+    {
+      "id": "playback_resume_animation",
+      "instruction": "Resume the animation.",
+      "expected": ["playback resume"],
+      "category": "playback_resume"
+    },
+    {
+      "id": "playback_resume_from_pause",
+      "instruction": "Keep it going from where we left off.",
+      "expected": ["playback resume"],
+      "category": "playback_resume",
+      "source": "Authored held-out phrasing"
+    },
+    {
+      "id": "playback_restart",
+      "instruction": "restart",
+      "expected": ["playback restart"],
+      "category": "playback_restart"
+    },
+    {
+      "id": "playback_replay",
+      "instruction": "replay",
+      "expected": ["playback restart"],
+      "category": "playback_restart"
+    },
+    {
+      "id": "playback_from_beginning",
+      "instruction": "Play from the beginning.",
+      "expected": ["playback restart"],
+      "category": "playback_restart"
+    },
+    {
+      "id": "playback_restart_animation",
+      "instruction": "Restart the animation.",
+      "expected": ["playback restart"],
+      "category": "playback_restart"
+    },
+    {
+      "id": "playback_take_back_and_play",
+      "instruction": "Take the animation back to the beginning and play it.",
+      "expected": ["playback restart"],
+      "category": "playback_restart",
+      "source": "Authored held-out phrasing"
+    },
+    {
+      "id": "playback_preserve_selected_freeze",
+      "instruction": "Freeze",
+      "expected": ["freeze selected"],
+      "category": "playback_preservation",
+      "notes": "Bare Freeze retains the existing selected-joint meaning."
+    },
+    {
+      "id": "playback_preserve_selected_restore",
+      "instruction": "Restore",
+      "expected": ["restore selected"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_named_resume",
+      "instruction": "Resume the right ring finger.",
+      "expected": ["restore right_ring"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_selected_pause",
+      "instruction": "Pause this finger.",
+      "expected": ["freeze selected"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_paired_knees",
+      "instruction": "Stop moving both knees.",
+      "expected": ["freeze both_knee"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_wave_and_finger",
+      "instruction": "Keep the wave going. Stop just the ring finger.",
+      "expected": ["freeze ring"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_unfreeze_foot",
+      "instruction": "Unfreeze the left foot.",
+      "expected": ["restore left_ankle"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_stop_dance",
+      "instruction": "Stop dancing.",
+      "expected": ["dance idle"],
+      "category": "playback_preservation",
+      "notes": "Explicitly ending the dance retains the existing idle-motion behavior."
+    },
+    {
+      "id": "playback_preserve_stand_still",
+      "instruction": "Stand still.",
+      "expected": ["dance idle"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_stop_dance_and_leg",
+      "instruction": "Stop dancing and raise the left leg 45 degrees.",
+      "expected": ["dance idle\njoint left_hip x -45"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_dance_and_head_pause",
+      "instruction": "Keep dancing and pause the head.",
+      "expected": ["freeze head"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_coin",
+      "instruction": "Roll a coin across your knuckles.",
+      "expected": ["skill coin_roll left forward"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_finger_wiggle",
+      "instruction": "Wiggle only the left index finger 65 degrees.",
+      "expected": ["wiggle left_index_1 z 65"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_counted_jump",
+      "instruction": "jump twice",
+      "expected": ["action jump 2"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_run",
+      "instruction": "run",
+      "expected": ["action run 1"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_preserve_reversal",
+      "instruction": "Reverse it",
+      "expected": ["reverse current"],
+      "category": "playback_preservation",
+      "notes": "Reversal changes motion direction; it is not a playback restart."
+    },
+    {
+      "id": "playback_preserve_relative_speed",
+      "instruction": "Faster",
+      "expected": ["tempo_scale 1.25"],
+      "category": "playback_preservation"
+    },
+    {
+      "id": "playback_boundary_coin_head",
+      "instruction": "Roll a coin on your head.",
+      "expected": ["unsupported"],
+      "category": "playback_boundary"
+    },
+    {
+      "id": "playback_boundary_pause_explanation",
+      "instruction": "Explain how to pause a finger",
+      "expected": ["unsupported"],
+      "category": "playback_boundary",
+      "notes": "An explanation request must not silently pause the character."
+    }
+  ]
+}

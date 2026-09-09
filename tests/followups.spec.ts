@@ -138,11 +138,14 @@ test("example loaders use the same hand shown in their control after inspecting 
     "left",
   );
   await page
-    .getByRole("button", { name: "Load hand demo through PAW", exact: true })
+    .getByRole("button", { name: "Recreate demo from prompts", exact: true })
     .click();
   await expect
+    .poll(async () => (await snapshot(page)).program)
+    .toEqual(createDexteritySequence().program);
+  await expect
     .poll(async () => (await snapshot(page)).origin)
-    .toBe("PAW · four directions");
+    .toBe("Your motion");
   await expect(page.getByRole("alert")).toHaveCount(0);
   expect((await snapshot(page)).program).toEqual(
     createDexteritySequence().program,

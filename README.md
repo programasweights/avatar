@@ -57,8 +57,8 @@ same creation. To reload the original example, open **More motions → Load hand
 demo**. New directions resume playback; Replay starts the current motion from
 the beginning without replacing it.
 
-To reproduce the showcase through language, open **More motions → Load hand
-demo through PAW**. It sends the four quoted directions sequentially and uses
+To reproduce the showcase through language, open **More motions → Recreate
+demo from prompts**. It sends the four quoted directions sequentially and uses
 their validated outputs to build the same timed sequence. You can also press
 **Start over** and apply each phrase yourself; each direction runs its gesture
 until you give the next one.
@@ -95,6 +95,16 @@ actions and sequences play once and stop. Sitting holds a floor-seated pose.
 These motions use editable joint curves and foot targets, just like the hand
 sequence. Short action sequences support up to four steps and sixteen total
 repetitions, with one to eight repetitions per step.
+
+Add constraints such as “Kick without moving arms” or “Jump on your left foot
+twice, then hop on your right foot.” Still arms remove arm swing while following
+the torso. A support-foot parameter keeps the opposite foot tucked between hops.
+Bilateral hand grasps and finger snaps are not implemented; those require
+additional reach and contact choreography.
+
+“Stop” or “Pause” holds the current pose. “Resume” continues the animation;
+“Replay” plays it from the beginning. These keep your motion and edits.
+To pause only one part, name it: “Stop just the ring finger.”
 
 **More motions** contains the other studies and hand selection. **Edit motion**
 contains detailed curves, joint axes, skeleton inspection and JSON import/export.

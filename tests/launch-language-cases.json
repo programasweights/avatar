@@ -500,6 +500,36 @@
       "category": "named",
       "priority": "core",
       "notes": "Global stop-dance must not freeze a selected joint."
+    },
+    {
+      "id": "hands_together",
+      "instruction": "hold hands together",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "boundary",
+      "priority": "extension",
+      "notes": "Bilateral hand contact is not implemented."
+    },
+    {
+      "id": "hand_grasp_finger",
+      "instruction": "right hand hold left index finger",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "boundary",
+      "priority": "extension",
+      "notes": "A cross-hand grasp needs a reach target and finger contacts."
+    },
+    {
+      "id": "finger_snap",
+      "instruction": "snap with thumb and middle finger",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "boundary",
+      "priority": "extension",
+      "notes": "A snap needs thumb-middle contact, release timing and a coordinated pose."
     }
   ]
 }
