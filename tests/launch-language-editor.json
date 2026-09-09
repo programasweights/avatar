@@ -1,0 +1,861 @@
+{
+  "description": "Explicit freeze/restore requests must identify the exact operation and target. Other directions only check that the editor does not pause or restore a part; their full movement semantics are checked in the other launch language suites. These non-editor cases use excluded_prefixes, not an expected literal none command.",
+  "cases": [
+    {
+      "id": "editor-cases-0",
+      "instruction": "Keep the wave going. Stop just the ring finger.",
+      "expected": [
+        "freeze ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-1",
+      "instruction": "Pause only the ring finger.",
+      "expected": [
+        "freeze ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-2",
+      "instruction": "Keep everything else moving, freeze the ring finger.",
+      "expected": [
+        "freeze ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-3",
+      "instruction": "Restore the ring finger.",
+      "expected": [
+        "restore ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-4",
+      "instruction": "Let the ring finger move again.",
+      "expected": [
+        "restore ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-5",
+      "instruction": "Re-enable the ring finger.",
+      "expected": [
+        "restore ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-6",
+      "instruction": "Freeze only the left ring finger.",
+      "expected": [
+        "freeze left_ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-7",
+      "instruction": "Keep dancing, but stop moving your left ring finger.",
+      "expected": [
+        "freeze left_ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-8",
+      "instruction": "Resume the right ring finger.",
+      "expected": [
+        "restore right_ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-9",
+      "instruction": "Unfreeze my right ring finger.",
+      "expected": [
+        "restore right_ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-10",
+      "instruction": "Pause this finger.",
+      "expected": [
+        "freeze selected"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-11",
+      "instruction": "Freeze that joint.",
+      "expected": [
+        "freeze selected"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-12",
+      "instruction": "Freeze",
+      "expected": [
+        "freeze selected"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-13",
+      "instruction": "Restore",
+      "expected": [
+        "restore selected"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-14",
+      "instruction": "Resume",
+      "expected": [
+        "restore selected"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-15",
+      "instruction": "Unfreeze this",
+      "expected": [
+        "restore selected"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-16",
+      "instruction": "Let it move again.",
+      "expected": [
+        "restore selected"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-17",
+      "instruction": "Freeze the thumb finger.",
+      "expected": [
+        "freeze thumb"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-18",
+      "instruction": "Restore my right thumb finger.",
+      "expected": [
+        "restore right_thumb"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-19",
+      "instruction": "Freeze the index finger.",
+      "expected": [
+        "freeze index"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-20",
+      "instruction": "Restore my right index finger.",
+      "expected": [
+        "restore right_index"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-21",
+      "instruction": "Freeze the middle finger.",
+      "expected": [
+        "freeze middle"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-22",
+      "instruction": "Restore my right middle finger.",
+      "expected": [
+        "restore right_middle"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-23",
+      "instruction": "Freeze the pinky finger.",
+      "expected": [
+        "freeze pinky"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-24",
+      "instruction": "Restore my right pinky finger.",
+      "expected": [
+        "restore right_pinky"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-25",
+      "instruction": "Pause the left index finger's second knuckle.",
+      "expected": [
+        "freeze left_index_2"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-26",
+      "instruction": "Resume the last knuckle of the right middle finger.",
+      "expected": [
+        "restore right_middle_3"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-27",
+      "instruction": "Freeze the first knuckle of the thumb.",
+      "expected": [
+        "freeze thumb_1"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-28",
+      "instruction": "Unfreeze the little finger.",
+      "expected": [
+        "restore pinky"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-29",
+      "instruction": "Stop moving the pointer finger.",
+      "expected": [
+        "freeze index"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-30",
+      "instruction": "Re-enable both index fingers.",
+      "expected": [
+        "restore both_index"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-31",
+      "instruction": "Stop moving both knees.",
+      "expected": [
+        "freeze both_knee"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-32",
+      "instruction": "Pause the forearm.",
+      "expected": [
+        "freeze elbow"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-33",
+      "instruction": "Unfreeze my left hand.",
+      "expected": [
+        "restore left_wrist"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-34",
+      "instruction": "Keep dancing and pause the head.",
+      "expected": [
+        "freeze head"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-35",
+      "instruction": "Stop your waist from twisting.",
+      "expected": [
+        "freeze hips"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-36",
+      "instruction": "Restore the right shoulder.",
+      "expected": [
+        "restore right_shoulder"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-37",
+      "instruction": "Freeze the left leg.",
+      "expected": [
+        "freeze left_hip"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-38",
+      "instruction": "Resume moving the foot.",
+      "expected": [
+        "restore ankle"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-39",
+      "instruction": "Pause the torso.",
+      "expected": [
+        "freeze chest"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-cases-40",
+      "instruction": "Stop dancing",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-41",
+      "instruction": "Stop the whole animation",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-42",
+      "instruction": "Pause",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-43",
+      "instruction": "Stop",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-44",
+      "instruction": "Freeze the camera",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-45",
+      "instruction": "Resume salsa",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-46",
+      "instruction": "Restore the JSON file",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-47",
+      "instruction": "Keep the wave going and slow it down",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-48",
+      "instruction": "Keep the wave going, bend the ring finger 30 degrees",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-49",
+      "instruction": "Straighten your left index finger",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-50",
+      "instruction": "Hold the left ring finger at 45 degrees",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-51",
+      "instruction": "Wiggle only the left index finger 65 degrees",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-52",
+      "instruction": "Make a wave from pinky to thumb on your left hand.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-53",
+      "instruction": "Reverse the finger ripple on your right hand.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-54",
+      "instruction": "Touch your left thumb to each fingertip, index first.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-55",
+      "instruction": "Roll a coin across your right knuckles.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-56",
+      "instruction": "Freeze the ring finger and restore the pinky",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-57",
+      "instruction": "Lift your left leg forward 45 degrees",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-58",
+      "instruction": "Dance salsa",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-59",
+      "instruction": "Keep the footwork. Make the arms robotic.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-60",
+      "instruction": "Explain how to pause a finger",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-61",
+      "instruction": "Set the tempo to 80 BPM",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-62",
+      "instruction": "Move your left thumb",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-63",
+      "instruction": "Freeze the ring finger at 30 degrees",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-64",
+      "instruction": "Make your right ring finger wiggle",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-65",
+      "instruction": "Raise both arms 60 degrees",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-66",
+      "instruction": "Start a new finger ripple",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-cases-67",
+      "instruction": "Stop moving the entire character.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-heldout-0",
+      "instruction": "How can I pause the left ring finger?",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-heldout-1",
+      "instruction": "Explain what freezing a joint does.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-heldout-2",
+      "instruction": "Show me instructions for restoring a finger.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-heldout-3",
+      "instruction": "What does resume the thumb mean?",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-heldout-4",
+      "instruction": "Describe how to stop just one finger.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-heldout-5",
+      "instruction": "Pause the playback.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-heldout-6",
+      "instruction": "Please pause.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-heldout-7",
+      "instruction": "Stop all movement.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-heldout-8",
+      "instruction": "Can you pause just my right index finger?",
+      "expected": [
+        "freeze right_index"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-heldout-9",
+      "instruction": "Please restore the left pinky.",
+      "expected": [
+        "restore left_pinky"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-heldout-10",
+      "instruction": "Keep the ripple going, but stop the right ring finger.",
+      "expected": [
+        "freeze right_ring"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-heldout-11",
+      "instruction": "Let just the thumb start moving again.",
+      "expected": [
+        "restore thumb"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-heldout-12",
+      "instruction": "Freeze my right thigh.",
+      "expected": [
+        "freeze right_hip"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-heldout-13",
+      "instruction": "Unfreeze the left foot.",
+      "expected": [
+        "restore left_ankle"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-heldout-14",
+      "instruction": "Pause my left shin.",
+      "expected": [
+        "freeze left_knee"
+      ],
+      "category": "editor_targets"
+    },
+    {
+      "id": "editor-motion-0",
+      "instruction": "Make a tiny circle with the right wrist.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-1",
+      "instruction": "Touch the thumb and middle fingertip together.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-2",
+      "instruction": "Roll the coin back toward the index finger.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-3",
+      "instruction": "Ripple every finger from thumb to pinky.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-4",
+      "instruction": "Let the wave travel the opposite way.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-5",
+      "instruction": "Raise one knee slowly.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-6",
+      "instruction": "Keep the feet dancing while the arms make a wave.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-7",
+      "instruction": "Give me a thumbs-up.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-8",
+      "instruction": "Bend the elbow to a right angle.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-9",
+      "instruction": "Move the head from side to side.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-10",
+      "instruction": "Speed up the dance.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    },
+    {
+      "id": "editor-motion-11",
+      "instruction": "Return to the idle pose.",
+      "expected": [],
+      "category": "editor_preservation",
+      "excluded_prefixes": [
+        "freeze ",
+        "restore "
+      ]
+    }
+  ]
+}

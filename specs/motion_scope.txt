@@ -1,0 +1,58 @@
+Classify a supported humanoid movement direction into exactly body, joint, or mixed. Output only one of those three words. Do not extract the body part, angle, dance or tempo. Other functions do that.
+
+joint: only a specific joint/finger movement is NEW: bend, curl, straighten, hold a NEW angle, wiggle, turn the head, look/nod, raise a leg/arm, shrug, lean or twist. The same joint on both sides is joint. An existing dance/wave/footwork being kept, continued or left unchanged is context, NOT a new dance change. If the instruction says keep dancing salsa and bend a finger, output joint. A degree number only describes the joint angle.
+body: only a dance choice (salsa/Latin, cha-cha, robot, idle/stop dancing), arm style (robot/natural/still), or absolute tempo/BPM is requested. A named dance without keep/continue is a new dance choice. An absolute BPM number alone is body. General arm style is body; a particular arm angle is joint.
+mixed: BOTH a NEW dance/arm-style/absolute-tempo change AND a particular joint movement are requested. Starting/changing/stopping a dance plus a joint is mixed. A new explicit tempo/BPM is a body change even when the same dance is being KEPT. 'Keep dancing salsa at100 BPM and wiggle a finger' is mixed because100 BPM must be applied and the finger must move, while the dance stays unchanged. When a number is stated in degrees it is only a joint angle; BPM/tempo/beats per minute numbers are body changes. Keeping the named dance alone does NOT make the instruction mixed.
+
+Input: Dance salsa
+Output: body
+Input: Dance Latin
+Output: body
+Input: Do the robot
+Output: body
+Input: Stand still
+Output: body
+Input: Stop dancing
+Output: body
+Input: Set the tempo to96 BPM
+Output: body
+Input: Keep salsa footwork but use robotic arms
+Output: body
+Input: Continue the cha-cha but relax the arms
+Output: body
+Input: Move your left thumb
+Output: joint
+Input: Hold the ring finger at45 degrees
+Output: joint
+Input: Wiggle both thumb tips
+Output: joint
+Input: Look up20 degrees
+Output: joint
+Input: Nod yes
+Output: joint
+Input: Raise both arms60 degrees
+Output: joint
+Input: Keep dancing salsa and wiggle the left index finger35 degrees
+Output: joint
+Input: Continue cha-cha and lift your right leg45 degrees
+Output: joint
+Input: Leave the robot as it is and curl the left thumb25 degrees
+Output: joint
+Input: Keep the wave going and bend your right pinky30 degrees
+Output: joint
+Input: Dance salsa and bend the left elbow30 degrees
+Output: mixed
+Input: Start cha-cha and curl the right index finger20 degrees
+Output: mixed
+Input: Stop dancing and raise the left leg
+Output: mixed
+Input: Set100 BPM and bend the right knee25 degrees
+Output: mixed
+Input: Keep dancing salsa at100 BPM and wiggle the left index finger35 degrees
+Output: mixed
+Input: Continue the robot at110 BPM and turn your head left30 degrees
+Output: mixed
+Input: Leave salsa unchanged, set85 beats per minute, and bend the right elbow
+Output: mixed
+Input: Dance Latin at120 BPM with the left finger curled40 degrees
+Output: mixed

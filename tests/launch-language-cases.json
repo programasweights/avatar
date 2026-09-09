@@ -1,0 +1,505 @@
+{
+  "description": "Real language acceptance and honest-boundary probes. Each direction is stateless; visual/state preservation is verified separately.",
+  "cases": [
+    {
+      "id": "coin_default",
+      "instruction": "Roll a coin across your knuckles.",
+      "expected": [
+        "skill coin_roll left forward"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "coin_right",
+      "instruction": "Roll a coin across your right knuckles.",
+      "expected": [
+        "skill coin_roll right forward"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "coin_reverse",
+      "instruction": "Roll a coin across your left knuckles, from pinky to index.",
+      "expected": [
+        "skill coin_roll left reverse"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "coin_polite",
+      "instruction": "Can you please roll a coin across the knuckles of your right hand?",
+      "expected": [
+        "skill coin_roll right forward"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "coin_head",
+      "instruction": "Roll a coin on your head.",
+      "expected": [
+        "unsupported"
+      ],
+      "priority": "boundary",
+      "notes": "Do not silently substitute a hand trick for an unsupported head contact.",
+      "category": "boundary"
+    },
+    {
+      "id": "coin_flip",
+      "instruction": "Flip a coin into the air and catch it.",
+      "expected": [
+        "unsupported"
+      ],
+      "priority": "boundary",
+      "notes": "New prop choreography is outside the four supplied skills.",
+      "category": "boundary"
+    },
+    {
+      "id": "coin_both",
+      "instruction": "Roll a coin across both hands at the same time.",
+      "expected": [
+        "unsupported"
+      ],
+      "priority": "boundary",
+      "notes": "Both-hand skill requests must abstain until deliberately implemented.",
+      "category": "boundary"
+    },
+    {
+      "id": "finger_index",
+      "instruction": "Wiggle only the left index finger 65 degrees.",
+      "expected": [
+        "wiggle left_index_1 z 65"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "finger_thumb",
+      "instruction": "Move your left thumb.",
+      "expected": [
+        "joint left_thumb_1 z 45",
+        "wiggle left_thumb_1 z 45"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named",
+      "expected_patterns": [
+        "(?:joint|wiggle) left_thumb_1 z (?:[1-9]\\d*(?:\\.\\d+)?|0\\.\\d*[1-9]\\d*)"
+      ]
+    },
+    {
+      "id": "finger_polite_thumb",
+      "instruction": "Could you move just your left thumb?",
+      "expected": [
+        "joint left_thumb_1 z 45",
+        "wiggle left_thumb_1 z 45"
+      ],
+      "priority": "core",
+      "notes": "An ordinary new movement must never be mistaken for freeze.",
+      "category": "named",
+      "expected_patterns": [
+        "(?:joint|wiggle) left_thumb_1 z (?:[1-9]\\d*(?:\\.\\d+)?|0\\.\\d*[1-9]\\d*)"
+      ]
+    },
+    {
+      "id": "finger_right_pinky",
+      "instruction": "Wiggle your right little finger 40 degrees.",
+      "expected": [
+        "wiggle right_pinky_1 z -40"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "finger_segment",
+      "instruction": "Bend the second knuckle of your left index finger 30 degrees.",
+      "expected": [
+        "joint left_index_2 z 30"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "finger_both",
+      "instruction": "Bend both index fingers 30 degrees.",
+      "expected": [
+        "joint left_index_1 z 30\njoint right_index_1 z -30"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "freeze_ring",
+      "instruction": "Keep the wave going. Stop just the ring finger.",
+      "expected": [
+        "freeze ring"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "restore_ring",
+      "instruction": "Let the ring finger move again.",
+      "expected": [
+        "restore ring"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "leg_left",
+      "instruction": "Lift your left leg 45 degrees.",
+      "expected": [
+        "joint left_hip x -45"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "leg_right",
+      "instruction": "Lift your right leg 45 degrees.",
+      "expected": [
+        "joint right_hip x -45"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "head_right",
+      "instruction": "Turn your head 30 degrees to the right.",
+      "expected": [
+        "joint head y -30"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "head_up",
+      "instruction": "Look up 20 degrees.",
+      "expected": [
+        "joint head x -20",
+        "joint neck x -20"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "dance_salsa",
+      "instruction": "Dance salsa.",
+      "expected": [
+        "dance salsa"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "dance_latin",
+      "instruction": "Dance Latin.",
+      "expected": [
+        "dance salsa"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "dance_detail",
+      "instruction": "Keep dancing salsa and wiggle your left index finger 35 degrees.",
+      "expected": [
+        "wiggle left_index_1 z 35"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "dance_coin",
+      "instruction": "Keep the footwork and roll a coin across your left knuckles.",
+      "expected": [
+        "skill coin_roll left forward"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "slower",
+      "instruction": "Slow it down.",
+      "expected": [
+        "tempo_scale 0.8"
+      ],
+      "priority": "core",
+      "notes": "The validated command is resolved against the current scene by the motion engine.",
+      "category": "follow_up"
+    },
+    {
+      "id": "reverse_context",
+      "instruction": "Reverse it.",
+      "expected": [
+        "reverse current"
+      ],
+      "priority": "core",
+      "notes": "The validated command is resolved against the current scene by the motion engine.",
+      "category": "follow_up"
+    },
+    {
+      "id": "finger_ripple",
+      "instruction": "Make a wave from pinky to thumb on your left hand.",
+      "expected": [
+        "skill finger_ripple left forward"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "finger_touches",
+      "instruction": "Touch your right thumb to each fingertip, index first.",
+      "expected": [
+        "skill finger_touches right forward"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "arm_wave",
+      "instruction": "Send a wave from your left fingertips to your right fingertips.",
+      "expected": [
+        "skill arm_wave left forward"
+      ],
+      "priority": "core",
+      "notes": "",
+      "category": "named"
+    },
+    {
+      "id": "fist",
+      "instruction": "Make a fist with your left hand.",
+      "expected": [
+        "unsupported"
+      ],
+      "priority": "extension",
+      "notes": "Likely first-visit exploration; whole-hand pose needs an explicit skill or multiple-joint support.",
+      "category": "boundary"
+    },
+    {
+      "id": "thumbs_up",
+      "instruction": "Give me a thumbs up with your right hand.",
+      "expected": [
+        "unsupported"
+      ],
+      "priority": "extension",
+      "notes": "Recognizable gesture; only pass if honestly unsupported until a real pose exists.",
+      "category": "boundary"
+    },
+    {
+      "id": "other_right",
+      "instruction": "Do it with your right hand",
+      "expected": [
+        "hand right"
+      ],
+      "category": "follow_up",
+      "priority": "core",
+      "notes": "The validated command is resolved against the current scene by the motion engine."
+    },
+    {
+      "id": "other_hand",
+      "instruction": "Use the other hand",
+      "expected": [
+        "hand other"
+      ],
+      "category": "follow_up",
+      "priority": "core",
+      "notes": "The validated command is resolved against the current scene by the motion engine."
+    },
+    {
+      "id": "twice_fast",
+      "instruction": "Make it twice as fast",
+      "expected": [
+        "tempo_scale 2"
+      ],
+      "category": "follow_up",
+      "priority": "core",
+      "notes": "The validated command is resolved against the current scene by the motion engine."
+    },
+    {
+      "id": "slower_bare",
+      "instruction": "Slower",
+      "expected": [
+        "tempo_scale 0.8"
+      ],
+      "category": "follow_up",
+      "priority": "core",
+      "notes": "The validated command is resolved against the current scene by the motion engine."
+    },
+    {
+      "id": "faster_bare",
+      "instruction": "Faster",
+      "expected": [
+        "tempo_scale 1.25"
+      ],
+      "category": "follow_up",
+      "priority": "core",
+      "notes": "The validated command is resolved against the current scene by the motion engine."
+    },
+    {
+      "id": "thumbs_up_generic",
+      "instruction": "Give me a thumbs up",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "boundary",
+      "priority": "boundary",
+      "notes": "A whole-hand gesture must not be passed based on rotating only the thumb."
+    },
+    {
+      "id": "peace",
+      "instruction": "Make a peace sign",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "boundary",
+      "priority": "boundary",
+      "notes": "No authored pose currently exists."
+    },
+    {
+      "id": "clap",
+      "instruction": "Clap your hands",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "boundary",
+      "priority": "boundary",
+      "notes": "Clapping needs bilateral contact choreography."
+    },
+    {
+      "id": "moonwalk",
+      "instruction": "Do the moonwalk",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "boundary",
+      "priority": "boundary",
+      "notes": "No moonwalk choreography currently exists."
+    },
+    {
+      "id": "middle_finger",
+      "instruction": "Flip me off",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "boundary",
+      "priority": "boundary",
+      "notes": "A gesture needs the full correct hand pose, not merely a selected joint."
+    },
+    {
+      "id": "coin_short",
+      "instruction": "Roll a coin",
+      "expected": [
+        "skill coin_roll left forward"
+      ],
+      "category": "named",
+      "priority": "core",
+      "notes": "Short first-visit request directly implied by the tweet."
+    },
+    {
+      "id": "coin_tweet_exact",
+      "instruction": "Roll a coin across your knuckles",
+      "expected": [
+        "skill coin_roll left forward"
+      ],
+      "category": "named",
+      "priority": "core",
+      "notes": "Minimal advertised instruction without punctuation."
+    },
+    {
+      "id": "coin_head_exact",
+      "instruction": "Roll a coin on your head",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "boundary",
+      "priority": "boundary",
+      "notes": "Exact user-reported request; preserve honesty about unsupported prop contacts."
+    },
+    {
+      "id": "wave_hello_right",
+      "instruction": "Wave hello with your right hand.",
+      "expected": [
+        "wave right"
+      ],
+      "category": "named",
+      "priority": "core",
+      "notes": "The validated command is resolved against the current scene by the motion engine."
+    },
+    {
+      "id": "wave_hello_left",
+      "instruction": "Wave hello with your left hand.",
+      "expected": [
+        "wave left"
+      ],
+      "category": "named",
+      "priority": "core",
+      "notes": "The validated command is resolved against the current scene by the motion engine."
+    },
+    {
+      "id": "raise_both_arms",
+      "instruction": "Raise both arms 60 degrees.",
+      "expected": [
+        "joint left_shoulder z 60\njoint right_shoulder z -60"
+      ],
+      "category": "named",
+      "priority": "core",
+      "notes": "Homologous arm raise preserves both sides and anatomical signs."
+    },
+    {
+      "id": "nod_yes",
+      "instruction": "Nod yes.",
+      "expected": [
+        "wiggle head x 20",
+        "wiggle neck x 20"
+      ],
+      "category": "named",
+      "priority": "core",
+      "notes": "Nodding should be an oscillating head/neck pitch."
+    },
+    {
+      "id": "straighten_left_index",
+      "instruction": "Straighten your left index finger.",
+      "expected": [
+        "joint left_index_1 z 0"
+      ],
+      "category": "named",
+      "priority": "core",
+      "notes": "Straightening is a new zero-angle joint instruction, never freeze or restore."
+    },
+    {
+      "id": "stop_dancing",
+      "instruction": "Stop dancing.",
+      "expected": [
+        "dance idle"
+      ],
+      "category": "named",
+      "priority": "core",
+      "notes": "Global stop-dance must not freeze a selected joint."
+    }
+  ]
+}

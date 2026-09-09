@@ -11,6 +11,12 @@ import type { ArmStyle, DanceStyle } from "./skills";
 import { JOINTS, VALID_TARGETS } from "./rig";
 import { composeDexterity } from "./composeDexterity";
 import type { DexteritySkill } from "./dexterity";
+import {
+  changeMotionHand,
+  reverseCurrentMotion,
+  scaleTempo,
+  waveHand,
+} from "./relative";
 
 export function validateRigProgram(program: MotionProgram) {
   const timeline = compileMotion(program);
@@ -59,7 +65,7 @@ export function applyCommands(
     const [op, a, b, c] = parts;
     if (op === "unsupported")
       throw new Error(
-        "That movement is not in the language model’s vocabulary yet. You can author it through the joint controls and motion JSON.",
+        "That motion isn’t supported yet. Try a coin roll across your knuckles, a finger ripple, or an individual joint movement.",
       );
     if (
       op === "skill" &&
@@ -76,6 +82,26 @@ export function applyCommands(
         b as "left" | "right",
         c === "reverse",
       );
+    else if (op === "reverse" && parts.length === 2 && a === "current")
+      next = reverseCurrentMotion(next);
+    else if (
+      op === "hand" &&
+      parts.length === 2 &&
+      ["left", "right", "other"].includes(a)
+    )
+      next = changeMotionHand(next, a as "left" | "right" | "other");
+    else if (
+      op === "tempo_scale" &&
+      parts.length === 2 &&
+      /^\d+(\.\d+)?$/.test(a)
+    )
+      next = scaleTempo(next, Number(a));
+    else if (
+      op === "wave" &&
+      parts.length === 2 &&
+      ["left", "right"].includes(a)
+    )
+      next = waveHand(next, a as "left" | "right");
     else if (
       op === "dance" &&
       parts.length === 2 &&

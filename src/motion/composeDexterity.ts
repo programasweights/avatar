@@ -2,6 +2,7 @@ import { compileMotion, findNode } from "./engine";
 import { createDexterity } from "./dexterityDirector";
 import type { DexteritySkill } from "./dexterity";
 import type { GroupNode, MotionNode, MotionProgram } from "./types";
+import { removeWaveOverlay } from "./waveOverlay";
 
 // A language-directed trick replaces upper-body choreography while the existing
 // root/feet tracks keep their exact timing. Repeat complete phrases to a shared
@@ -12,6 +13,7 @@ export function composeDexterity(
   side: "left" | "right",
   reverse: boolean,
 ): MotionProgram {
+  current = removeWaveOverlay(current);
   const study = createDexterity(skill, side, reverse, current.bpm);
   if (
     current.root.kind !== "parallel" ||

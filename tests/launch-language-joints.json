@@ -1,0 +1,197 @@
+{
+  "description": "Joint family, segment, side, mode and explicit-axis acceptance probes. Includes regressions and additional paraphrases; the separately marked held-out suite remains excluded from training examples.",
+  "cases": [
+    {
+      "id": "paired_thumb_tips",
+      "instruction": "Wiggle both thumb tips by 15 degrees.",
+      "expected": [
+        "wiggle left_thumb_3 z 15\nwiggle right_thumb_3 z -15"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "paired_second_index",
+      "instruction": "Bend the second knuckle of both index fingers 22 degrees.",
+      "expected": [
+        "joint left_index_2 z 22\njoint right_index_2 z -22"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "paired_pinky_base",
+      "instruction": "Curl both pinkies 32 degrees.",
+      "expected": [
+        "joint left_pinky_1 z 32\njoint right_pinky_1 z -32"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "middle_tip_right",
+      "instruction": "Bend the tip of your right middle finger 18 degrees.",
+      "expected": [
+        "joint right_middle_3 z -18"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "ring_base_left",
+      "instruction": "Hold the left ring finger at 45 degrees.",
+      "expected": [
+        "joint left_ring_1 z 45"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "finger_preserve_wave",
+      "instruction": "Keep the ripple going and bend only your right pinky 24 degrees.",
+      "expected": [
+        "joint right_pinky_1 z -24"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "head_left",
+      "instruction": "Turn your head left by 42 degrees.",
+      "expected": [
+        "joint head y 42"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "head_down",
+      "instruction": "Look down 17 degrees.",
+      "expected": [
+        "joint head x 17"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "neck_pitch",
+      "instruction": "Bend the neck forward 12 degrees.",
+      "expected": [
+        "joint neck x 12"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "left_knee",
+      "instruction": "Flex the left knee by 28 degrees.",
+      "expected": [
+        "joint left_knee x 28"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "both_knees",
+      "instruction": "Bend both knees 35 degrees.",
+      "expected": [
+        "joint left_knee x 35\njoint right_knee x 35"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "right_hip_out",
+      "instruction": "Lift the right leg out to the side 40 degrees.",
+      "expected": [
+        "joint right_hip z -40"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "left_hip_back",
+      "instruction": "Move the left leg backward 25 degrees.",
+      "expected": [
+        "joint left_hip x 25"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "right_elbow",
+      "instruction": "Bend your right elbow by 63 degrees.",
+      "expected": [
+        "joint right_elbow x -63"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "left_arm",
+      "instruction": "Raise the left arm 70 degrees.",
+      "expected": [
+        "joint left_shoulder z 70"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "right_ankle",
+      "instruction": "Point the right foot upward 16 degrees.",
+      "expected": [
+        "joint right_ankle x -16"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "left_shrug",
+      "instruction": "Shrug your left shoulder 18 degrees.",
+      "expected": [
+        "joint left_clavicle z 18"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "torso",
+      "instruction": "Lean the torso forward 14 degrees.",
+      "expected": [
+        "joint chest x 14"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "waist",
+      "instruction": "Turn the waist right 29 degrees.",
+      "expected": [
+        "joint hips y -29"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "wrist_explicit_axis",
+      "instruction": "Set the right wrist y to -13 degrees.",
+      "expected": [
+        "joint right_wrist y -13"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "shoulder_explicit_axis",
+      "instruction": "Rotate the left shoulder on x to -27 degrees.",
+      "expected": [
+        "joint left_shoulder x -27"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "finger_explicit_axis",
+      "instruction": "Set left index finger z to -11 degrees.",
+      "expected": [
+        "joint left_index_1 z -11"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "both_wrist_axis",
+      "instruction": "Rotate both wrists on x to 21 degrees.",
+      "expected": [
+        "joint left_wrist x 21\njoint right_wrist x 21"
+      ],
+      "category": "joint_coverage"
+    },
+    {
+      "id": "head_tilt",
+      "instruction": "Tilt the head left 19 degrees.",
+      "expected": [
+        "joint head z -19"
+      ],
+      "category": "joint_coverage"
+    }
+  ]
+}

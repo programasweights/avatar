@@ -1,0 +1,100 @@
+Classify one avatar direction into exactly one domain: motion, dexterity, edit, control, or unsupported. Output ONLY that one word. Other specialist functions choose the exact action, body part, speed, hand and angle. Do not perform that extraction yourself.
+
+motion: normal humanoid joint movement or supported dance/arm/absolute-tempo changes. Includes any finger or thumb movement, bending, holding a NEW angle, straightening, leg lifts, arm raises, head turns, looking up/down, nodding, body leaning, shoulder shrugs, and the same joint on both sides. Includes salsa or Latin dancing, cha-cha, robot dancing, standing still/stopping dancing; natural/robot/still arms; and an explicit BPM/tempo number. A dance plus a joint movement is motion. Keeping any existing dance/wave while moving a joint is motion. New finger movements are never edit.
+dexterity: one coordinated finger ripple/cascade across one hand; sequential thumb-to-each-fingertip contacts; a traveling wave through both arms; or a coin roll across one hand's knuckles. Roll a coin, a coin roll, do the coin trick, or demonstrate rolling a coin all mean the knuckle coin roll. Explicit side and reverse order are allowed; preserving an existing dance is allowed.
+edit: pause/freeze/stop moving/keep still one named or selected joint or finger at its CURRENT pose; or restore/resume/unfreeze/re-enable its saved movement. Bare Freeze/Restore/Resume are edit. Setting or holding a NEW angle is motion. Explain how to edit, global playback pause, camera/file operations and multiple conflicting edits are unsupported.
+control: change the CURRENT action to the opposite/left/right hand without naming a new skill; reverse the CURRENT action without naming a new skill; change its relative speed (slower, faster, double, half, multiplier0.25 through4); or wave hello/goodbye with one hand (left, right, default right). An absolute BPM is motion. A new named skill is dexterity.
+unsupported: other dances/gestures/prop tricks, explanations, questions about meaning, facial expressions, unrelated tasks, unsupported simultaneous skills. Fist, thumbs-up, peace sign, middle-finger gesture/flip me off, clapping, moonwalk, ballet, acrobatics and juggling are unsupported. A coin roll explicitly on a head, face, arm, leg, table or anywhere except hand knuckles is unsupported. Coin flipping, spinning, tossing, catching and balancing are unsupported. Skills on both hands at once or starting a new dance plus a skill are unsupported. Never reduce a prop interaction/gesture to a related body joint.
+
+Input: Roll a coin
+Output: dexterity
+Input: Do a coin roll
+Output: dexterity
+Input: Roll a coin over your right knuckles
+Output: dexterity
+Input: Show me the coin trick
+Output: dexterity
+Input: Reverse the left finger ripple
+Output: dexterity
+Input: Ripple the fingers from pinky to thumb
+Output: dexterity
+Input: Touch your thumb to each fingertip
+Output: dexterity
+Input: Send a wave from the left fingertips to the right fingertips
+Output: dexterity
+Input: Keep dancing and roll a coin on the left hand
+Output: dexterity
+Input: Could you move just your left thumb?
+Output: motion
+Input: Wiggle both thumb tips by 15 degrees
+Output: motion
+Input: Hold the ring finger at 45 degrees
+Output: motion
+Input: Freeze the thumb at a new30 degree angle
+Output: motion
+Input: Lift your left leg
+Output: motion
+Input: Look up
+Output: motion
+Input: Nod yes
+Output: motion
+Input: Dance Latin
+Output: motion
+Input: Salsa dancing
+Output: motion
+Input: Stop dancing
+Output: motion
+Input: Keep dancing salsa and wiggle the left index finger
+Output: motion
+Input: Keep the cha-cha at95 BPM and bend the left elbow
+Output: motion
+Input: Keep salsa feet but make the arms robotic
+Output: motion
+Input: Set the tempo to100 BPM
+Output: motion
+Input: Freeze the ring finger
+Output: edit
+Input: Keep the ripple going but pause the right pinky
+Output: edit
+Input: Let the ring finger move again
+Output: edit
+Input: Restore
+Output: edit
+Input: Freeze
+Output: edit
+Input: Resume
+Output: edit
+Input: Reverse it
+Output: control
+Input: Use the other hand
+Output: control
+Input: Same motion with the left hand
+Output: control
+Input: Make it twice as fast
+Output: control
+Input: Slower
+Output: control
+Input: Wave hello with the left hand
+Output: control
+Input: Wave goodbye
+Output: control
+Input: Roll a coin on your head
+Output: unsupported
+Input: Roll coins on both hands simultaneously
+Output: unsupported
+Input: Flip a coin and catch it
+Output: unsupported
+Input: Flip me off
+Output: unsupported
+Input: Give me a thumbs up
+Output: unsupported
+Input: Make a fist
+Output: unsupported
+Input: Dance salsa and roll a coin
+Output: unsupported
+Input: Explain how to pause a finger
+Output: unsupported
+Input: Freeze the camera
+Output: unsupported
+Input: Please pause
+Output: unsupported

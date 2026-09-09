@@ -1,0 +1,106 @@
+Extract the NEW joint movement from one avatar direction. Return ONLY four space-separated fields:
+TARGET MODE OPERATION ANGLE
+Return unsupported if no new joint movement is requested, or different kinds of joints/actions are requested. Ignore any existing dance, footwork, wave, or other movement that is being kept. A dance or tempo change in the same sentence is handled separately; extract ONLY the requested joint movement. Never let the dance name choose the finger segment or change a fixed bend into a wiggle.
+
+TARGET is one canonical joint:
+hips, spine, spine_mid, chest, neck, head;
+left_ or right_ plus clavicle, shoulder, elbow, wrist, hip, knee, ankle, toes;
+left_ or right_ plus thumb_1, thumb_2, thumb_3, index_1, index_2, index_3, middle_1, middle_2, middle_3, ring_1, ring_2, ring_3, pinky_1, pinky_2, pinky_3.
+For the SAME joint on both matching sides use both_ (both_knee, both_shoulder, both_index_1). Use left when no side is specified. Fingers ALWAYS default to segment 1. Only an explicit second/middle knuckle requests 2; explicit tip/last/distal knuckle requests 3. A degree number is never a knuckle index. A whole finger movement selects its base, not all segments.
+Aliases: thumb is a finger even without the word finger; little finger=pinky; pointer=index. Leg/thigh/upper leg=hip; lower leg/shin=knee; foot=ankle; toe=toes; arm/upper arm=shoulder; forearm=elbow; hand=wrist; shrug/collarbone=clavicle; waist/pelvis=hips; lower back=spine; middle back=spine_mid; upper back/torso/upper body=chest; looking/nodding=head. Both hips means both_hip, whereas pelvis means hips.
+
+MODE: hold for a new fixed position (bend, curl, lift, turn, hold at an angle, straighten, or generic move). wave ONLY when the requested joint itself should wiggle, oscillate, swing repeatedly, nod or shake. Keeping a wave or a dance elsewhere does NOT make a new bend oscillate. Holding or freezing at a NEW stated angle is hold; pausing at its current pose or restoring saved motion is unsupported.
+
+OPERATION: x, y or z when an explicit axis is given. Otherwise bend, raise, left, right, backward, forward, outward, inward, up, down.
+Finger curls and elbow/knee flexion=bend. Generic move=bend. Straighten or relax a joint=bend with 0 degrees.
+Raise/lift an arm or shrug a collarbone=raise. Lift a leg without a direction=raise (a forward lift).
+Explicit forward/backward leg or arm movement=forward/backward. Away from the body or sideways=outward; toward/across the body=inward. Raise an arm sideways still uses raise.
+Head turning/twisting=left/right (default left). Leaning/bowing=forward/backward. Side tilts use z, negative degrees for left and positive for right. Looking or pointing toes up/down=up/down. Nod=forward. Shake head no=left. An explicit axis overrides anatomical operations.
+ANGLE: numeric degrees, preserving signs only for an explicit axis or z tilt. Otherwise use a positive magnitude. Unspecified angle=45, except nod/shake head=20. Straighten=0. Ignore BPM and speed numbers. Supported angle range -180 through 180. No other output fields or explanations.
+
+Input: Wiggle only the left index finger 65 degrees
+Output: left_index_1 wave bend 65
+Input: Could you please move only your left thumb?
+Output: left_thumb_1 hold bend 45
+Input: Bend both index fingers 30 degrees
+Output: both_index_1 hold bend 30
+Input: Curl the right little finger 40 degrees
+Output: right_pinky_1 hold bend 40
+Input: Bend the second knuckle of the left pointer finger 30 degrees
+Output: left_index_2 hold bend 30
+Input: Curl the last knuckle of your right thumb 15 degrees
+Output: right_thumb_3 hold bend 15
+Input: Wiggle both middle fingertips 20 degrees
+Output: both_middle_3 wave bend 20
+Input: Keep dancing and curl the right ring finger 25 degrees
+Output: right_ring_1 hold bend 25
+Input: Change to robot and bend the left pinky 35 degrees
+Output: left_pinky_1 hold bend 35
+Input: Start cha-cha and curl the right index finger 40 degrees
+Output: right_index_1 hold bend 40
+Input: Continue the wave and bend the ring finger 30 degrees
+Output: left_ring_1 hold bend 30
+Input: Stop dancing and wiggle a finger
+Output: left_index_1 wave bend 45
+Input: Dance salsa at 120 BPM and curl the left finger 60 degrees
+Output: left_index_1 hold bend 60
+Input: Keep the salsa at 100 BPM and wiggle the left index finger 35 degrees
+Output: left_index_1 wave bend 35
+Input: Hold your left ring finger at 45 degrees
+Output: left_ring_1 hold bend 45
+Input: Freeze the right wrist at a new 25 degree angle
+Output: right_wrist hold bend 25
+Input: Freeze the ring finger at its current pose
+Output: unsupported
+Input: Restore the ring finger
+Output: unsupported
+Input: Turn your head left 30 degrees
+Output: head hold left 30
+Input: Turn your head right 25 degrees
+Output: head hold right 25
+Input: Look up 20 degrees
+Output: head hold up 20
+Input: Look down 15 degrees
+Output: head hold down 15
+Input: Nod yes
+Output: head wave forward 20
+Input: Shake your head no
+Output: head wave left 20
+Input: Tilt your head to the left 15 degrees
+Output: head hold z -15
+Input: Lift your left leg 45 degrees
+Output: left_hip hold raise 45
+Input: Lift a leg
+Output: left_hip hold raise 45
+Input: Lift the right leg out to the side
+Output: right_hip hold outward 45
+Input: Swing the left leg backward 30 degrees
+Output: left_hip wave backward 30
+Input: Raise both arms 60 degrees
+Output: both_shoulder hold raise 60
+Input: Raise the left arm sideways 90 degrees
+Output: left_shoulder hold raise 90
+Input: Bend both knees 25 degrees
+Output: both_knee hold bend 25
+Input: Bend the right elbow 80 degrees
+Output: right_elbow hold bend 80
+Input: Shrug your left shoulder
+Output: left_clavicle hold raise 45
+Input: Lean the upper body forward 20 degrees
+Output: chest hold forward 20
+Input: Twist your waist right 35 degrees
+Output: hips hold right 35
+Input: Point the right foot up 15 degrees
+Output: right_ankle hold up 15
+Input: Set right wrist y to 15 degrees
+Output: right_wrist hold y 15
+Input: Set left shoulder x to -25 degrees
+Output: left_shoulder hold x -25
+Input: Straighten the left index finger
+Output: left_index_1 hold bend 0
+Input: Turn your head and bend a knee
+Output: unsupported
+Input: Give me a thumbs up
+Output: unsupported
+Input: Roll a coin on your head
+Output: unsupported

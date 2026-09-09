@@ -6,7 +6,7 @@ SIDE is left or right. DIRECTION is forward or reverse. No explanations.
 finger_ripple: a ripple, cascade, or wave of individual fingers curling one after another across ONE hand. Default side left. forward means pinky, ring, middle, index, thumb; reverse means thumb, index, middle, ring, pinky. A finger ripple runs across the hand; wiggling only one finger is legacy.
 finger_touches: touch the thumb to each fingertip in turn, on ONE hand. Default side left. forward means index, middle, ring, pinky; reverse means pinky, ring, middle, index.
 arm_wave: a traveling wave from one hand through its wrist, elbow, shoulders, and the other arm to the opposite hand. SIDE is the starting hand, default left. Explicit left-to-right is left forward; right-to-left is right forward. Reverse a left-to-right arm wave is left reverse. Waving hello, shaking one hand, robot arms, and ordinary arm raises are legacy.
-coin_roll: roll a coin across ONE hand's knuckles, a coordinated finger trick. Default side left. forward means index toward pinky; reverse means pinky toward index. Flipping, tossing, or spinning a coin, or rolling it on a table, are legacy.
+coin_roll: roll a coin across ONE hand's knuckles, a coordinated finger trick. A short request "roll a coin", "do a coin roll", or "show me the coin trick" names this same trick, even without the word knuckles. Default side left. forward means index toward pinky; reverse means pinky toward index. Flipping, tossing, catching, balancing, or spinning a coin, or rolling it anywhere except one hand's knuckles (including head, face, nose, arm, elbow, leg, foot, or table), are legacy. Never replace an explicitly different surface with knuckles.
 
 Use forward unless backward, reversed, or the opposite finger order is requested. Use the explicitly named hand. Each request must specify one supported skill. Maintaining an existing dance or footwork is allowed; starting/changing a dance or requesting multiple different skills in one sentence is legacy. Both hands simultaneously is legacy. All other instructions are legacy, including isolated joint rotations, dance choices, tempo changes, facial motions, arbitrary tricks, and instructions to explain something. Standalone "reverse it" is legacy because no prior action is provided. Do not guess the meaning of missing context.
 
@@ -57,4 +57,29 @@ Output: legacy
 Input: Flip a coin in the air.
 Output: legacy
 Input: Reverse it.
+Output: legacy
+
+Input: Roll a coin
+Output: skill coin_roll left forward
+Input: Could you do a coin roll with the right hand?
+Output: skill coin_roll right forward
+Input: Show me the coin trick
+Output: skill coin_roll left forward
+Input: Roll a coin backward over your left knuckles
+Output: skill coin_roll left reverse
+Input: Roll a coin on your head
+Output: legacy
+Input: Roll a coin on your left arm
+Output: legacy
+Input: Spin a coin on your right fingertip
+Output: legacy
+Input: Balance a coin on your nose
+Output: legacy
+Input: Roll coins across both hands
+Output: legacy
+Input: Give me a thumbs up
+Output: legacy
+Input: Do it with your right hand
+Output: legacy
+Input: Make it twice as fast
 Output: legacy

@@ -1,4 +1,5 @@
 import { compileMotion, findNode } from "./engine";
+import { removeWaveOverlay } from "./waveOverlay";
 import type {
   Axis,
   Curve,
@@ -107,6 +108,7 @@ export function armBranch(
   style: ArmStyle,
   duration: number,
   prefix = "arms",
+  waveSide: "left" | "right" = "right",
 ): GroupNode {
   const arms: MotionNode[] = [];
   for (const side of ["left", "right"]) {
@@ -114,7 +116,7 @@ export function armBranch(
     const phase = side === "left" ? 0 : 0.5;
     const id = `${prefix}.${side}`;
     const robot = style === "robot";
-    const wave = style === "wave" && side === "right";
+    const wave = style === "wave" && side === waveSide;
     const still = style === "still";
     const tracks = [
       leaf(
@@ -423,6 +425,7 @@ export function replaceArms(
   program: MotionProgram,
   style: ArmStyle,
 ): MotionProgram {
+  program = removeWaveOverlay(program);
   const arms = findNode(program.root, "arms");
   const duration = arms
     ? compileMotion({ ...program, root: arms }).duration
@@ -450,6 +453,24 @@ export function changeTempo(
       : { ...node, children: node.children.map(visit) };
   return { ...program, bpm, root: visit(program.root) };
 }
+export function findJointDetail(
+  program: MotionProgram,
+  target: string,
+  axis: Axis,
+): CurveNode | undefined {
+  const details = findNode(program.root, "details");
+  return details?.kind === "parallel"
+    ? details.children.find(
+        (node): node is CurveNode =>
+          node.kind === "curve" &&
+          node.target === target &&
+          node.channel === "rotation" &&
+          node.axis === axis &&
+          node.id.startsWith("detail."),
+      )
+    : undefined;
+}
+
 export function jointOffset(
   program: MotionProgram,
   target: string,
@@ -457,8 +478,12 @@ export function jointOffset(
   angle: number,
   oscillate = false,
 ): MotionProgram {
-  const id = `detail.${target}.${axis}`;
   const details = findNode(program.root, "details");
+  const previous = findJointDetail(program, target, axis);
+  // Hand changes retain editable node IDs. Upsert the joint by its actual
+  // target, and do not overwrite a mirrored detail that now owns another joint.
+  let id = previous?.id ?? `detail.${target}.${axis}`;
+  if (!previous) while (findNode(program.root, id)) id += "_";
   const duration = compileMotion(
     details ? { ...program, root: details } : program,
   ).duration;
@@ -483,7 +508,10 @@ export function jointOffset(
   }
   const visit = (n: MotionNode): MotionNode =>
     n.id === "details" && n.kind === "parallel"
-      ? { ...n, children: [...n.children.filter((c) => c.id !== id), node] }
+      ? {
+          ...n,
+          children: [...n.children.filter((c) => c.id !== id), node],
+        }
       : n.kind === "curve" || n.kind === "contact"
         ? n
         : { ...n, children: n.children.map(visit) };

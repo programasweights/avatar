@@ -1,0 +1,282 @@
+{
+  "description": "Held-out paraphrases and mixed-command acceptance cases. Original held-out phrases are excluded from training specifications. These check language command meaning; browser tests check actual resulting poses.",
+  "cases": [
+    {
+      "id": "heldout_coin_alias",
+      "instruction": "Show me a coin roll.",
+      "expected": [
+        "skill coin_roll left forward"
+      ],
+      "category": "heldout",
+      "expected_route": "dexterity"
+    },
+    {
+      "id": "heldout_coin_polite_right",
+      "instruction": "I would like you to walk a coin over your right knuckles.",
+      "expected": [
+        "skill coin_roll right forward"
+      ],
+      "category": "heldout",
+      "expected_route": "dexterity"
+    },
+    {
+      "id": "heldout_coin_order",
+      "instruction": "Walk the coin from the little finger toward the index finger of the right hand.",
+      "expected": [
+        "skill coin_roll right reverse"
+      ],
+      "category": "heldout",
+      "expected_route": "dexterity"
+    },
+    {
+      "id": "heldout_thumb_polite",
+      "instruction": "Would you mind moving only your right thumb?",
+      "expected": [],
+      "category": "heldout",
+      "expected_patterns": [
+        "(?:joint|wiggle) right_thumb_1 z -[1-9]\\d*(?:\\.\\d+)?"
+      ],
+      "expected_route": "joint"
+    },
+    {
+      "id": "heldout_thumb_curl",
+      "instruction": "Can you curl just the left thumb by 25 degrees?",
+      "expected": [
+        "joint left_thumb_1 z 25"
+      ],
+      "category": "heldout",
+      "expected_route": "joint"
+    },
+    {
+      "id": "heldout_keep_dance_finger",
+      "instruction": "Leave the salsa as it is and bend your right elbow 25 degrees.",
+      "expected": [
+        "joint right_elbow x -25"
+      ],
+      "category": "heldout",
+      "expected_route": "joint"
+    },
+    {
+      "id": "heldout_new_dance_finger",
+      "instruction": "Switch to cha-cha and curl your left pinky 20 degrees.",
+      "expected": [
+        "dance cha_cha\njoint left_pinky_1 z 20"
+      ],
+      "category": "heldout",
+      "expected_route": "mixed"
+    },
+    {
+      "id": "heldout_pause_polite",
+      "instruction": "Could you keep the middle finger from moving while the other fingers continue?",
+      "expected": [
+        "freeze middle"
+      ],
+      "category": "heldout",
+      "expected_route": "edit"
+    },
+    {
+      "id": "heldout_restore_polite",
+      "instruction": "Please let my paused right pinky move once more.",
+      "expected": [
+        "restore right_pinky"
+      ],
+      "category": "heldout",
+      "expected_route": "edit"
+    },
+    {
+      "id": "heldout_reverse_relative",
+      "instruction": "Make that motion run backward.",
+      "expected": [
+        "reverse current"
+      ],
+      "category": "heldout",
+      "expected_route": "control"
+    },
+    {
+      "id": "heldout_switch_relative",
+      "instruction": "Same trick, opposite hand.",
+      "expected": [
+        "hand other"
+      ],
+      "category": "heldout",
+      "expected_route": "control"
+    },
+    {
+      "id": "heldout_switch_left",
+      "instruction": "Repeat this with the left hand instead.",
+      "expected": [
+        "hand left"
+      ],
+      "category": "heldout",
+      "expected_route": "control"
+    },
+    {
+      "id": "heldout_relative_quarter",
+      "instruction": "Run this at a quarter of its current speed.",
+      "expected": [
+        "tempo_scale 0.25"
+      ],
+      "category": "heldout",
+      "expected_route": "control"
+    },
+    {
+      "id": "heldout_relative_double",
+      "instruction": "Double the speed of the current motion.",
+      "expected": [
+        "tempo_scale 2"
+      ],
+      "category": "heldout",
+      "expected_route": "control"
+    },
+    {
+      "id": "heldout_relative_slower",
+      "instruction": "A little more slowly, please.",
+      "expected": [
+        "tempo_scale 0.8"
+      ],
+      "category": "heldout",
+      "expected_route": "control"
+    },
+    {
+      "id": "heldout_absolute_speed",
+      "instruction": "Use a tempo of 96 beats per minute.",
+      "expected": [
+        "tempo 96"
+      ],
+      "category": "heldout",
+      "expected_route": "body"
+    },
+    {
+      "id": "heldout_head_prop",
+      "instruction": "Walk the coin across the top of your skull.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "heldout",
+      "expected_route": "unsupported"
+    },
+    {
+      "id": "heldout_unknown_prop",
+      "instruction": "Spin a basketball on your index finger.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "heldout",
+      "expected_route": "unsupported"
+    },
+    {
+      "id": "heldout_fist_gesture",
+      "instruction": "Close your right hand into a fist.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "heldout",
+      "expected_route": "unsupported"
+    },
+    {
+      "id": "heldout_unsupported_dance",
+      "instruction": "Perform a ballet pirouette.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "heldout",
+      "expected_route": "unsupported"
+    },
+    {
+      "id": "preserve_salsa_tempo",
+      "instruction": "Keep dancing salsa at 100 BPM and wiggle the left index finger 35 degrees.",
+      "expected": [
+        "tempo 100\nwiggle left_index_1 z 35"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "preserve_chacha_tempo",
+      "instruction": "Continue the cha-cha, set 90 BPM, and bend the right elbow 25 degrees.",
+      "expected": [
+        "tempo 90\njoint right_elbow x -25"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "new_dance_tempo",
+      "instruction": "Dance salsa at 120 BPM and curl the left index finger 40 degrees.",
+      "expected": [
+        "dance salsa\ntempo 120\njoint left_index_1 z 40"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "new_salsa_joint",
+      "instruction": "Dance salsa and bend the left elbow 30 degrees.",
+      "expected": [
+        "dance salsa\njoint left_elbow x -30"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "stop_dance_joint",
+      "instruction": "Stop dancing and raise the left leg 45 degrees.",
+      "expected": [
+        "dance idle\njoint left_hip x -45"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "new_robot_joint",
+      "instruction": "Dance robot with the right wrist rotated around y 20 degrees.",
+      "expected": [
+        "dance robot\njoint right_wrist y 20"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "preserve_salsa_arms",
+      "instruction": "Keep dancing salsa but make the arms robotic.",
+      "expected": [
+        "arms robot"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "left_wave_preserve",
+      "instruction": "Keep dancing and wave hello with the left hand.",
+      "expected": [
+        "wave left"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "right_wave_bare",
+      "instruction": "Wave hello.",
+      "expected": [
+        "wave right"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "speed_factor_limit",
+      "instruction": "Make it ten times faster.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "unsupported_coin_nose",
+      "instruction": "Roll the coin across your nose.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "mixed_and_boundaries"
+    },
+    {
+      "id": "unsupported_joint_and_prop",
+      "instruction": "Lift your left leg and balance a coin on your head.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "mixed_and_boundaries"
+    }
+  ]
+}

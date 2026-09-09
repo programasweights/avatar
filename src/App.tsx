@@ -44,10 +44,12 @@ import {
 import {
   changeTempo,
   createDance,
+  findJointDetail,
   jointOffset,
   replaceArms,
 } from "./motion/skills";
 import { createDexterity } from "./motion/dexterityDirector";
+import { currentMotionHand } from "./motion/relative";
 import {
   createDexteritySequence,
   getDexteritySequenceInstructions,
@@ -143,6 +145,7 @@ export default function App() {
     initialSequence.program,
   );
   const timeline = useMemo(() => validateRigProgram(program), [program]);
+  const performedHand = useMemo(() => currentMotionHand(program), [program]);
   const transport = useRef<Transport>({
     time: 0,
     playing: true,
@@ -203,6 +206,13 @@ export default function App() {
       frozen: FrozenRotation[];
       caption: string;
       cues: SequenceCue[];
+      focus: "body" | "left_hand" | "right_hand";
+      selected: string;
+      joint: string;
+      axis: Axis;
+      hand: Hand;
+      reverse: boolean;
+      dexterity: DexterityStudy | null;
     }[]
   >([]);
   const selectedTargets = useMemo(
@@ -257,7 +267,7 @@ export default function App() {
         ? `${Math.round(magnitude.value)}° ${magnitude.label.toLowerCase()}`
         : "",
   };
-  const detail = findNode(program.root, `detail.${joint}.${axis}`);
+  const detail = findJointDetail(program, joint, axis);
   const angle =
     detail?.kind === "curve" && detail.curve.kind === "constant"
       ? detail.curve.value
@@ -351,6 +361,13 @@ export default function App() {
       frozen,
       caption: displayedCaption,
       cues: sequenceCues,
+      focus,
+      selected,
+      joint,
+      axis,
+      hand,
+      reverse,
+      dexterity,
     };
     setUndo((items) => [...items.slice(-19), previous]);
   }
@@ -419,7 +436,11 @@ export default function App() {
   }
   function applyLanguageEdit(op: string, target: string, text: string) {
     const current = programRef.current;
-    const targets = resolveEditTarget(target, hand, selectedTargets);
+    const targets = resolveEditTarget(
+      target,
+      currentMotionHand(current) ?? hand,
+      selectedTargets,
+    );
     const matching = frozen.filter((item) =>
       item.targets.some((joint) => targets.includes(joint)),
     );
@@ -486,6 +507,13 @@ export default function App() {
     setFrozen(previous.frozen);
     setCaption(previous.caption);
     setSequenceCues(previous.cues);
+    setFocus(previous.focus);
+    setSelected(previous.selected);
+    setJoint(previous.joint);
+    setAxis(previous.axis);
+    setHand(previous.hand);
+    setReverse(previous.reverse);
+    setDexterity(previous.dexterity);
     setUndo((items) => items.slice(0, -1));
     setOrigin("Edited motion");
     sliderStart.current = null;
@@ -575,95 +603,153 @@ export default function App() {
     },
     [],
   );
+  function applyMotionCommands(
+    commands: string,
+    text: string,
+    source = "PAW · neural commands",
+  ) {
+    const motionEdit = /^(freeze|restore) (\S+)$/.exec(commands.trim());
+    if (motionEdit) {
+      applyLanguageEdit(motionEdit[1], motionEdit[2], text);
+      resumeCurrentMotion();
+      setRaw(commands);
+      return;
+    }
+    const lines = commands
+      .trim()
+      .split("\n")
+      .map((line) => line.trim());
+    const previous = programRef.current;
+    const switchingHand = lines.some((line) => line.startsWith("hand "));
+    const reversing = lines.includes("reverse current");
+    // The showcase is a complete sequence. A new skill starts a new scene;
+    // ordinary dance scenes retain their footwork when a skill is applied.
+    const newScene = lines.some((line) => /^(dance|skill) /.test(line));
+    const editedTargets = lines
+      .filter((line) => /^(joint|wiggle) /.test(line))
+      .map((line) => line.split(" ")[1]);
+    const released = frozen.filter(
+      (token) =>
+        newScene ||
+        token.targets.some((target) => editedTargets.includes(target)),
+    );
+    const restored = released.reduce(
+      (next, token) => restoreFrozen(next, token),
+      programRef.current,
+    );
+    const base =
+      findNode(restored.root, "dexterity_sequence") &&
+      lines[0]?.startsWith("skill ")
+        ? createDance("idle", "still", restored.bpm)
+        : restored;
+    const next = applyCommands(base, commands);
+    if (!newScene) rememberEdit();
+    accept(next, newScene);
+    if (reversing) {
+      transport.current.time = 0;
+      setTime(0);
+    }
+    resumeCurrentMotion();
+    if (!newScene)
+      setFrozen((items) =>
+        items
+          .filter((token) => !released.includes(token))
+          .map((token) => {
+            const overlay = findNode(next.root, token.id);
+            const at = (token.time * previous.bpm) / next.bpm;
+            return {
+              ...token,
+              targets: overlay ? branchTargets(overlay) : token.targets,
+              time: reversing ? transport.current.duration - at : at,
+            };
+          }),
+      );
+    if (switchingHand || reversing) {
+      curlReferences.current.clear();
+      sliderStart.current = null;
+    }
+    setSequenceCues([]);
+    setCaption(text);
+    setRaw(commands);
+    setOrigin(source);
+    const skill = lines.find((line) => line.startsWith("skill "))?.split(" ");
+    if (skill) {
+      const [, name, side, direction] = skill;
+      setDexterity(name as DexterityStudy);
+      setHand(side as Hand);
+      setReverse(direction === "reverse");
+      setSelected(next.root.id);
+      setJoint(`${side}_index_1`);
+      setAxis("z");
+      setFocus(
+        name === "arm_wave"
+          ? "body"
+          : (`${side}_hand` as "left_hand" | "right_hand"),
+      );
+    } else if (lines.some((line) => line.startsWith("dance "))) {
+      setDexterity(null);
+      setReverse(false);
+    }
+    const detail = lines
+      .find((line) => /^(joint|wiggle) /.test(line))
+      ?.split(" ");
+    if (detail) {
+      const [, target, nextAxis] = detail;
+      setJoint(target);
+      if (target.startsWith("left_")) setHand("left");
+      if (target.startsWith("right_")) setHand("right");
+      setAxis(nextAxis as Axis);
+      setSelected(findJointDetail(next, target, nextAxis as Axis)!.id);
+      setFocus(
+        /_(index|thumb|middle|ring|pinky)_/.test(target)
+          ? target.startsWith("left")
+            ? "left_hand"
+            : "right_hand"
+          : "body",
+      );
+    } else if (lines.some((line) => /^(dance|arms|wave) /.test(line)))
+      setFocus("body");
+    const wave = lines.find((line) => line.startsWith("wave "))?.split(" ");
+    if (wave) {
+      setHand(wave[1] as Hand);
+      setJoint(`${wave[1]}_wrist`);
+      setSelected("hello_wave");
+      setDexterity(null);
+    }
+    if (switchingHand) {
+      const side = currentMotionHand(next);
+      if (side) {
+        setHand(side);
+        setFocus(focus === "body" ? "body" : `${side}_hand`);
+      }
+      const node = findNode(next.root, selected);
+      if (node?.kind === "curve" && Object.hasOwn(JOINTS, node.target)) {
+        setJoint(node.target);
+        setAxis(node.axis);
+      }
+    }
+    if (reversing) setReverse((value) => !value);
+  }
+  function modifyCurrent(commands: string, text: string) {
+    cancelInference();
+    try {
+      applyMotionCommands(commands, text, "Edited motion");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not edit this motion.");
+    }
+  }
   async function direct() {
     if (!instruction.trim()) return;
     cancelInference();
     const controller = new AbortController();
     abort.current = controller;
+    const text = instruction.trim();
     setBusy(true);
     setError("");
     try {
-      const commands = await directMotion(
-        instruction.trim(),
-        controller.signal,
-      );
+      const commands = await directMotion(text, controller.signal);
       if (controller.signal.aborted) return;
-      const motionEdit = /^(freeze|restore) (\S+)$/.exec(commands.trim());
-      if (motionEdit) {
-        applyLanguageEdit(motionEdit[1], motionEdit[2], instruction.trim());
-        resumeCurrentMotion();
-        setRaw(commands);
-        return;
-      }
-      const lines = commands.split("\n");
-      // The showcase is a complete sequence. A new skill starts a new scene;
-      // ordinary dance scenes retain their footwork when a skill is applied.
-      const newScene = lines.some((line) => /^(dance|skill) /.test(line));
-      const editedTargets = lines
-        .filter((line) => /^(joint|wiggle) /.test(line))
-        .map((line) => line.split(" ")[1]);
-      const released = frozen.filter(
-        (token) =>
-          newScene ||
-          token.targets.some((target) => editedTargets.includes(target)),
-      );
-      const restored = released.reduce(
-        (next, token) => restoreFrozen(next, token),
-        programRef.current,
-      );
-      const base =
-        findNode(restored.root, "dexterity_sequence") &&
-        lines[0]?.startsWith("skill ")
-          ? createDance("idle", "still", restored.bpm)
-          : restored;
-      const next = applyCommands(base, commands);
-      accept(
-        next,
-        lines.some((line) => /^(dance|skill) /.test(line)),
-      );
-      resumeCurrentMotion();
-      if (!newScene)
-        setFrozen((items) =>
-          items.filter((token) => !released.includes(token)),
-        );
-      setSequenceCues([]);
-      setCaption(instruction.trim());
-      setRaw(commands);
-      setOrigin("PAW · neural commands");
-      const skill = lines.find((line) => line.startsWith("skill "))?.split(" ");
-      if (skill) {
-        const [, name, side, direction] = skill;
-        setDexterity(name as DexterityStudy);
-        setHand(side as Hand);
-        setReverse(direction === "reverse");
-        setSelected(next.root.id);
-        setJoint(`${side}_index_1`);
-        setAxis("z");
-        setFocus(
-          name === "arm_wave"
-            ? "body"
-            : (`${side}_hand` as "left_hand" | "right_hand"),
-        );
-      } else if (lines.some((line) => line.startsWith("dance ")))
-        setDexterity(null);
-      const detail = lines
-        .find((line) => /^(joint|wiggle) /.test(line))
-        ?.split(" ");
-      if (detail) {
-        const [, target, nextAxis] = detail;
-        setJoint(target);
-        if (target.startsWith("left_")) setHand("left");
-        if (target.startsWith("right_")) setHand("right");
-        setAxis(nextAxis as Axis);
-        setSelected(`detail.${target}.${nextAxis}`);
-        setFocus(
-          /_(index|thumb|middle|ring|pinky)_/.test(target)
-            ? target.startsWith("left")
-              ? "left_hand"
-              : "right_hand"
-            : "body",
-        );
-      } else if (!skill) setFocus("body");
+      applyMotionCommands(commands, text);
     } catch (e) {
       if (!controller.signal.aborted)
         setError(e instanceof Error ? e.message : "Could not direct motion.");
@@ -691,10 +777,11 @@ export default function App() {
     setSelected("motion");
     setFocus("body");
     setDexterity(null);
+    setReverse(false);
   }
   function dexterityStudy(
     skill: DexterityStudy,
-    side = hand,
+    side = performedHand ?? hand,
     backwards = reverse,
   ) {
     cancelInference();
@@ -722,7 +809,7 @@ export default function App() {
       );
     }
   }
-  function playSequence(side = hand, commands?: string[]) {
+  function playSequence(side = performedHand ?? hand, commands?: string[]) {
     const result = createDexteritySequence(commands, side);
     accept(result.program, true);
     transport.current.loop = false;
@@ -739,7 +826,7 @@ export default function App() {
     setOrigin(commands ? "PAW · four directions" : "Example · Hand sequence");
     setRaw(commands?.join("\n") ?? "");
   }
-  function previewSequence(side = hand) {
+  function previewSequence(side = performedHand ?? hand) {
     cancelInference();
     try {
       playSequence(side);
@@ -753,7 +840,7 @@ export default function App() {
     cancelInference();
     const controller = new AbortController();
     abort.current = controller;
-    const side = hand,
+    const side = performedHand ?? hand,
       directions = getDexteritySequenceInstructions(side),
       commands: string[] = [];
     setBusy(true);
@@ -891,8 +978,9 @@ export default function App() {
     );
   }
   function setJointAngle(value: number) {
-    edit(jointOffset(program, joint, axis, value));
-    setSelected(`detail.${joint}.${axis}`);
+    const next = jointOffset(program, joint, axis, value);
+    edit(next);
+    setSelected(findJointDetail(next, joint, axis)!.id);
   }
   function oneFinger() {
     const next = jointOffset(
@@ -910,6 +998,8 @@ export default function App() {
     setJoint("left_index_1");
     setAxis("z");
     setDexterity(null);
+    setHand("left");
+    setReverse(false);
     transport.current.loop = true;
     setLoop(true);
     setCaption("Wiggle only the left index finger 65 degrees.");
@@ -1257,12 +1347,11 @@ export default function App() {
                   Hand
                   <select
                     aria-label="Dexterity hand"
-                    value={hand}
+                    value={performedHand ?? hand}
+                    disabled={!performedHand}
                     onChange={(event) => {
                       const side = event.target.value as Hand;
-                      if (sequenceCues.length) previewSequence(side);
-                      else if (dexterity) dexterityStudy(dexterity, side);
-                      else setHand(side);
+                      modifyCurrent(`hand ${side}`, `Use your ${side} hand.`);
                     }}
                   >
                     <option value="left">Left</option>
@@ -1272,10 +1361,11 @@ export default function App() {
                 <button
                   aria-label="Reverse dexterity motion"
                   aria-pressed={reverse}
-                  disabled={sequenceCues.length > 0}
                   onClick={() => {
-                    if (dexterity) dexterityStudy(dexterity, hand, !reverse);
-                    else setReverse(!reverse);
+                    modifyCurrent(
+                      "reverse current",
+                      "Reverse the current motion.",
+                    );
                   }}
                 >
                   <RotateCcw size={14} /> Reverse
@@ -1643,6 +1733,12 @@ export default function App() {
                       setSequenceCues([]);
                       setCaption(next.title);
                       setOrigin("Imported motion");
+                      setDexterity(null);
+                      setReverse(false);
+                      const importedHand = currentMotionHand(next);
+                      if (importedHand) setHand(importedHand);
+                      setFocus(importedHand ? `${importedHand}_hand` : "body");
+                      setCameraReset((value) => value + 1);
                       setJson(null);
                       setSelected(next.root.id);
                     } catch (e) {

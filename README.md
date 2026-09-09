@@ -6,8 +6,9 @@ Direct a 3D character with words. Edit the motion down to individual finger join
 
 [![Finger ripple, fingertip touches and a coin rolling across the avatar’s knuckles](public/demo.gif)](https://programasweights.com/avatar)
 
-> “Make a wave from pinky to thumb on your left hand.”  
-> “Touch your left thumb to each fingertip, index first.”  
+> “Make a wave from pinky to thumb on your left hand.”\
+> “Reverse the finger ripple on your left hand.”\
+> “Touch your left thumb to each fingertip, index first.”\
 > “Roll a coin across your left knuckles.”
 
 The studio includes a complete hand sequence, dance studies, 52 articulated
@@ -56,6 +57,20 @@ same creation. To reload the original example, open **More motions → Load hand
 demo**. New directions resume playback; Replay starts the current motion from
 the beginning without replacing it.
 
+To reproduce the showcase through language, open **More motions → Load hand
+demo through PAW**. It sends the four quoted directions sequentially and uses
+their validated outputs to build the same timed sequence. You can also press
+**Start over** and apply each phrase yourself; each direction runs its gesture
+until you give the next one.
+
+Follow up with “Use the other hand,” “Reverse it,” or “Make it twice as fast.”
+These edit the actual motion tree, including the default hand sequence. Hand
+changes retain compatible joint edits and footwork; reversal plays the whole
+creation backwards. Speed changes multiply the current tempo within 30–240 BPM.
+The **Hand** and **Reverse** controls under **More motions** perform the same
+edits. An ambiguous hand or incompatible imported tree produces a clear error
+and leaves your creation intact.
+
 Try **Finger ripple**, select **Ring finger** in the motion tree, and press
 **Pause finger**. Its three joints stay fixed while the other fingers continue.
 **Restore motion** brings it back. Expand a finger to select one joint and
@@ -68,8 +83,10 @@ You can also type “Keep the wave going. Stop just the ring finger,” then
 uses the current tree selection. Pauses hold local joint rotations; contact
 choreography and leg IK need their own trajectory controls.
 
-Language can misinterpret wording: “Could you move just your left thumb?”
-currently pauses it. “Move your left thumb” follows the movement path.
+Try “Roll a coin,” “Could you move just your left thumb?”, or “Wave hello with
+your left hand.” Unsupported tricks, such as rolling a coin on the head, are
+declined rather than approximated with unrelated joint movements. Language
+interpretation can still make mistakes; **Start over** begins a fresh scene.
 
 **More motions** contains the other studies and hand selection. **Edit motion**
 contains detailed curves, joint axes, skeleton inspection and JSON import/export.
@@ -122,6 +139,17 @@ Run `npm test` for browser and motion regressions, `npm run test:director` and
 `npm run test:worker` for language/worker checks, and `npm run build` for a production build.
 These tests use mocked neural outputs; `AVATAR_LIVE_PAW=1 npm test` also runs
 the opt-in local inference checks.
+For a broader language check, run this against your running app (adjust the
+port to match Vite):
+
+```sh
+python3 tools/evaluate-launch.py --url http://127.0.0.1:5173/api/direct --output /tmp/avatar-language-results.json
+```
+
+This opt-in suite processes real requests sequentially and saves the model traces. It checks
+ordinary directions, follow-up edits, and honest rejection of unsupported
+tricks; the rig tests separately verify the resulting joint and prop motion.
+
 The built `dist/` can serve the examples and editor as a static site. Language
 input also needs a backend at `/api/direct`; `npm run dev` and `npm run preview`
 provide the included local Python bridge. A hosted site can connect that route

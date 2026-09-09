@@ -1,8 +1,0 @@
-[
-  {
-    "instruction": "Could you move just your left thumb?",
-    "expected": "none",
-    "observed": "freeze left_thumb",
-    "note": "All three editor functions agree on an incorrect pause. Explicit movement directions and Undo remain available."
-  }
-]

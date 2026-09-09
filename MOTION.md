@@ -45,3 +45,16 @@ skill, build and validate a tree, expose its command in
 [director.ts](src/motion/director.ts), then update and recompile the relevant
 PAW specification if you want language to select it. Normal app use loads the
 published functions listed in `programs.json`; it never recompiles them.
+
+Follow-up commands transform the current tree in [relative.ts](src/motion/relative.ts):
+`hand other` mirrors the active hand choreography and compatible detail edits;
+`reverse current` reverses the complete timeline; `tempo_scale 2` doubles the
+current tempo. Mirroring retains node IDs so selections and paused joints can
+follow their new targets. `wave left` or `wave right` adds a greeting overlay
+while retaining the other arm and footwork.
+
+These operations validate imported trees before changing them. Ambiguous
+two-hand choreography cannot choose an “other” hand. Reversal requires continuous
+curves and parallel branches of equal duration; held keyframes and unequal
+branches return an error. Tempo stays within 30–240 BPM. Failed operations leave
+the current creation intact.

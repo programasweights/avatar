@@ -1,14 +1,14 @@
 {
-  "router": "ec92f943b7ae5f230f61",
+  "dispatch": "70b85902246e19853389",
   "joint": "b42df04b45eea1642ddb",
   "body": "bd42d81036de7429fb74",
-  "mixed_body": "a62f428af7a69c3698d2",
-  "transform": "424a47e5fbc85a121dc9",
-  "router_fallback": "4090faad9b8926506958",
-  "paired_joint": "a58b30397fb40c7fe785",
   "body_fallback": "4fa031e988e33efffc57",
-  "dexterity": "6728bcd2d951d328eb1f",
-  "edit_intent": "b11c8d47049a45e7149d",
+  "dexterity": "94958731807aaeb84408",
   "edit_confirmation": "73f19db60929f666cdba",
-  "edit_target": "8defb95ebb022c0787ec"
+  "edit_target": "8defb95ebb022c0787ec",
+  "joint_motion": "6b0fee1223d7914dfc5c",
+  "edit_intent": "d609040e86816e8091e1",
+  "current_control": "0072f07cd4943868d32c",
+  "motion_scope": "c8a98679429d14c1da87",
+  "edit_fallback": "b11c8d47049a45e7149d"
 }

@@ -60,6 +60,9 @@ def transform_command(joint: str, raw: str) -> str:
             or not re.fullmatch(r"-?\d+(\.\d+)?", parts[2])):
         raise ValueError("Invalid joint transform")
     mode, operation, numeric = parts
+    # Raising the knee elevates it at the hip; bending still rotates the knee.
+    if operation == "raise" and joint.endswith("_knee"):
+        joint = joint.removesuffix("_knee") + "_hip"
     angle = float(numeric)
     if abs(angle) > 180:
         raise ValueError("Joint angle exceeds 180 degrees")
@@ -106,15 +109,6 @@ def joint_commands(selection: str, transform: str) -> str:
     return "\n".join(transform_command(target, transform) for target in targets)
 
 
-def paired_finger(selection: str) -> str | None:
-    if not selection.startswith("both_"):
-        return None
-    target = "left_" + selection[5:]
-    target = JOINT_ALIASES.get(target, target)
-    match = re.fullmatch(r"left_(thumb|index|middle|ring|pinky)_[123]", target)
-    return match[1] if match else None
-
-
 def validate_body(raw: str) -> str:
     lines = raw.strip().splitlines()
     if not lines or len(lines) > 6:
@@ -151,6 +145,16 @@ def validate_edit(raw: str) -> str:
     return " ".join(parts)
 
 
+def validate_follow_up(raw: str) -> str:
+    """Validate commands whose meaning is resolved against the current motion."""
+    if raw in {"reverse current", "hand left", "hand right", "hand other", "wave left", "wave right"}:
+        return raw
+    match = re.fullmatch(r"tempo_scale (\d+(?:\.\d+)?)", raw)
+    if match and 0.25 <= float(match[1]) <= 4:
+        return f"tempo_scale {float(match[1]):g}"
+    raise ValueError("Invalid motion route or current-motion control")
+
+
 def direct(instruction: str, infer: Infer | None = None) -> dict:
     """Interpret one direction. Every neural call runs sequentially and locally.
 
@@ -169,80 +173,87 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
             raise ValueError("PAW returned a non-text response")
         return raw.strip()
 
-    intent = ask("edit_intent")
-    trace["edit_intent"] = intent
-    if intent not in {"freeze", "restore", "none"}:
-        raise ValueError("Invalid motion edit intent")
-    if intent != "none":
-        confirmation = ask("edit_confirmation")
-        trace["edit_confirmation"] = confirmation
-        if confirmation != "none":
-            confirmed = validate_edit(confirmation)
-            target = ask("edit_target")
-            trace["edit_target"] = target
-            try:
-                command = validate_edit(target)
-                if command == "none":
-                    raise ValueError("Motion edit did not identify a target")
-            except ValueError:
-                # Both neural functions agreed this was an edit. If the
-                # target specialist fails, retain the confirmation's valid
-                # target and expose that choice in the trace.
-                command = confirmed
-                trace["edit_target_source"] = "edit_confirmation"
-            return {"output": f"{intent} {command.split()[1]}", "trace": {**trace, "route": "edit"}}
-
-    dexterity = ask("dexterity")
-    trace["dexterity"] = dexterity
-    if dexterity != "legacy":
-        return {"output": validate_dexterity(dexterity), "trace": {**trace, "route": "dexterity"}}
-
-    route = ask("router")
-    trace["route"] = route
-    if route == "unsupported":
+    domain = ask("dispatch")
+    trace["dispatch"] = domain
+    trace["route"] = domain
+    if domain == "unsupported":
         return {"output": "unsupported", "trace": trace}
-    if route not in {"body", "joint", "mixed"}:
+    intent = "none"
+    if domain in {"edit", "control", "motion"}:
+        intent = ask("edit_intent")
+        trace["edit_intent"] = intent
+        if domain == "edit" and intent == "none":
+            intent = ask("edit_fallback")
+            trace["edit_fallback"] = intent
+        if intent not in {"freeze", "restore", "none"}:
+            raise ValueError("Invalid motion edit intent")
+    if intent != "none":
+        target = ask("edit_target")
+        trace["edit_target"] = target
+        try:
+            command = validate_edit(target)
+            if command == "none":
+                raise ValueError("Motion edit did not identify a target")
+        except ValueError:
+            confirmation = ask("edit_confirmation")
+            trace["edit_confirmation"] = confirmation
+            command = validate_edit(confirmation)
+            if command == "none":
+                return {"output": "unsupported", "trace": trace}
+            trace["edit_target_source"] = "edit_confirmation"
+        return {"output": f"{intent} {command.split()[1]}", "trace": trace}
+    if domain == "edit":
+        return {"output": "unsupported", "trace": trace}
+    if domain == "control":
+        raw = ask("current_control")
+        trace["current_control"] = raw
+        return {"output": "unsupported" if raw == "unsupported" else validate_follow_up(raw), "trace": trace}
+    if domain == "motion":
+        route = ask("motion_scope")
+        trace["motion_scope"] = route
+        trace["route"] = route
+        if route not in {"body", "joint", "mixed"}:
+            raise ValueError("Invalid motion scope")
+    elif domain == "dexterity":
+        route = domain
+    else:
         raise ValueError("Invalid motion route")
+    if route == "dexterity":
+        raw = ask("dexterity")
+        trace["dexterity"] = raw
+        # A skill specialist can abstain; never reinterpret an unsupported prop
+        # or gesture as a related body-part motion.
+        output = "unsupported" if raw == "legacy" else validate_dexterity(raw)
+        return {"output": output, "trace": trace}
 
     output = []
-    if route == "body":
+    if route in {"body", "mixed"}:
         raw = ask("body")
         trace["body"] = raw
-        # Consult specialists only after explicit abstention, not invalid output.
-        if not raw or raw == "unsupported":
+        if route == "body" and raw == "unsupported":
             raw = ask("body_fallback")
             trace["body_fallback"] = raw
-        if not raw or raw == "unsupported":
-            refined = ask("router_fallback")
-            trace["route_fallback"] = refined
-            if refined not in {"joint", "mixed"}:
-                return {"output": "unsupported", "trace": trace}
-            trace["route_initial"] = route
-            route = refined
-            trace["route"] = route
-        else:
-            output.append(validate_body(raw))
-    if route == "mixed":
-        raw = ask("mixed_body")
-        trace["body"] = raw
-        if not raw or raw == "unsupported":
+        if raw == "unsupported":
             return {"output": "unsupported", "trace": trace}
         output.append(validate_body(raw))
     if route in {"joint", "mixed"}:
-        # Scope the transform so "stop dancing" does not zero a joint movement.
-        transform_input = f"Joint movement only: {instruction}" if route == "mixed" else instruction
-        joint = ask("joint")
-        transform = ask("transform", transform_input)
-        trace.update(joint=joint, transform=transform)
-        if joint == "unsupported" or transform == "unsupported":
+        raw = ask("joint_motion")
+        trace["joint_motion"] = raw
+        if raw == "unsupported":
             return {"output": "unsupported", "trace": trace}
-        finger = paired_finger(joint)
-        if finger:
-            refined = ask("paired_joint")
-            trace.update(joint_initial=joint, paired_joint=refined)
-            if paired_finger(refined) != finger:
-                raise ValueError("Paired-finger refinement changed the target or returned an invalid segment")
+        parts = raw.split()
+        if len(parts) != 4 or "\n" in raw or "\r" in raw:
+            raise ValueError("Invalid joint motion command")
+        joint, transform = parts[0], " ".join(parts[1:])
+        # Shoulder raises and collarbone shrugs have different rig joints.
+        # Keep that anatomical ambiguity in the target specialist's small domain.
+        if joint.endswith(("_shoulder", "_clavicle")) and parts[2] == "raise":
+            refined = ask("joint")
+            trace["joint_target"] = refined
+            side = joint.split("_", 1)[0]
+            if refined not in {f"{side}_shoulder", f"{side}_clavicle"}:
+                raise ValueError("Shoulder refinement changed the side or returned an invalid joint")
             joint = refined
-            trace["joint"] = joint
+        trace.update(joint=joint, transform=transform)
         output.append(joint_commands(joint, transform))
     return {"output": "\n".join(output), "trace": trace}
