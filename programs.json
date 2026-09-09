@@ -10,5 +10,9 @@
   "edit_intent": "d609040e86816e8091e1",
   "current_control": "0072f07cd4943868d32c",
   "motion_scope": "c8a98679429d14c1da87",
-  "edit_fallback": "b11c8d47049a45e7149d"
+  "edit_fallback": "b11c8d47049a45e7149d",
+  "action": "18b922d7673f48ecacce",
+  "activity_scope": "68f0fa31420354136848",
+  "action_composition": "f053bee45e4762cfad60",
+  "activity_confirmation": "d06c109545b5c3cc415b"
 }

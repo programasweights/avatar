@@ -624,7 +624,7 @@ export default function App() {
     const reversing = lines.includes("reverse current");
     // The showcase is a complete sequence. A new skill starts a new scene;
     // ordinary dance scenes retain their footwork when a skill is applied.
-    const newScene = lines.some((line) => /^(dance|skill) /.test(line));
+    const newScene = lines.some((line) => /^(dance|skill|action) /.test(line));
     const editedTargets = lines
       .filter((line) => /^(joint|wiggle) /.test(line))
       .map((line) => line.split(" ")[1]);
@@ -637,14 +637,17 @@ export default function App() {
       (next, token) => restoreFrozen(next, token),
       programRef.current,
     );
-    const base =
-      findNode(restored.root, "dexterity_sequence") &&
-      lines[0]?.startsWith("skill ")
-        ? createDance("idle", "still", restored.bpm)
-        : restored;
-    const next = applyCommands(base, commands);
+    const next = applyCommands(restored, commands);
     if (!newScene) rememberEdit();
     accept(next, newScene);
+    if (lines.some((line) => line.startsWith("action "))) {
+      // A lone gait repeats; counted actions and sequences finish once.
+      const cyclic =
+        lines.length === 1 &&
+        /^action (walk|run|walk_wave|run_wave) 1$/.test(lines[0]);
+      transport.current.loop = cyclic;
+      setLoop(cyclic);
+    }
     if (reversing) {
       transport.current.time = 0;
       setTime(0);
@@ -686,9 +689,10 @@ export default function App() {
           ? "body"
           : (`${side}_hand` as "left_hand" | "right_hand"),
       );
-    } else if (lines.some((line) => line.startsWith("dance "))) {
+    } else if (lines.some((line) => /^(dance|action) /.test(line))) {
       setDexterity(null);
       setReverse(false);
+      setSelected(next.root.id);
     }
     const detail = lines
       .find((line) => /^(joint|wiggle) /.test(line))
@@ -707,7 +711,7 @@ export default function App() {
             : "right_hand"
           : "body",
       );
-    } else if (lines.some((line) => /^(dance|arms|wave) /.test(line)))
+    } else if (lines.some((line) => /^(dance|action|arms|wave) /.test(line)))
       setFocus("body");
     const wave = lines.find((line) => line.startsWith("wave "))?.split(" ");
     if (wave) {

@@ -434,9 +434,34 @@ export function replaceArms(
     throw new Error(
       "This imported program has no arms branch. Edit its curves in the motion JSON.",
     );
+  // Keep an authored arm phrase bounded even after slowing to the minimum
+  // tempo. Its integer-cycle sine/keyframe motions close at each repeat seam.
+  const phrases = Math.ceil(duration / ((120 * 30) / program.bpm));
+  let replacement = armBranch(style, duration);
+  if (phrases > 1) {
+    const chunks: GroupNode[] = [];
+    for (let start = 0; start < phrases; start += 32) {
+      const prefix = `arms.phrase.${chunks.length}`;
+      chunks.push({
+        id: `${prefix}.repeat`,
+        kind: "repeat",
+        label: `Repeat the ${style} arm phrase`,
+        count: Math.min(32, phrases - start),
+        children: [armBranch(style, duration / phrases, prefix)],
+      });
+    }
+    replacement = group("arms", `Arms · ${style}`, [
+      {
+        id: "arms.phrases",
+        kind: "sequence",
+        label: "Continuous arm phrases",
+        children: chunks,
+      },
+    ]);
+  }
   const replace = (node: MotionNode): MotionNode =>
     node.id === "arms"
-      ? armBranch(style, duration)
+      ? replacement
       : node.kind === "curve" || node.kind === "contact"
         ? node
         : { ...node, children: node.children.map(replace) };
@@ -453,22 +478,40 @@ export function changeTempo(
       : { ...node, children: node.children.map(visit) };
   return { ...program, bpm, root: visit(program.root) };
 }
+function jointDetailNode(
+  program: MotionProgram,
+  target: string,
+  axis: Axis,
+): CurveNode | GroupNode | undefined {
+  const details = findNode(program.root, "details");
+  const matches = (node: MotionNode): node is CurveNode =>
+    node.kind === "curve" &&
+    node.target === target &&
+    node.channel === "rotation" &&
+    node.axis === axis &&
+    node.id.startsWith("detail.");
+  return details?.kind === "parallel"
+    ? details.children.find(
+        (node): node is CurveNode | GroupNode =>
+          matches(node) ||
+          (node.kind === "sequence" &&
+            node.id.startsWith("detail.") &&
+            node.children.length > 0 &&
+            node.children.every(matches)),
+      )
+    : undefined;
+}
 export function findJointDetail(
   program: MotionProgram,
   target: string,
   axis: Axis,
 ): CurveNode | undefined {
-  const details = findNode(program.root, "details");
-  return details?.kind === "parallel"
-    ? details.children.find(
-        (node): node is CurveNode =>
-          node.kind === "curve" &&
-          node.target === target &&
-          node.channel === "rotation" &&
-          node.axis === axis &&
-          node.id.startsWith("detail."),
-      )
-    : undefined;
+  const node = jointDetailNode(program, target, axis);
+  // The first segment is a real curve with the original detail ID, so the
+  // inspector and joint controls keep their existing selection contract.
+  return node?.kind === "curve"
+    ? node
+    : (node?.children[0] as CurveNode | undefined);
 }
 
 export function jointOffset(
@@ -479,6 +522,7 @@ export function jointOffset(
   oscillate = false,
 ): MotionProgram {
   const details = findNode(program.root, "details");
+  const previousNode = jointDetailNode(program, target, axis);
   const previous = findJointDetail(program, target, axis);
   // Hand changes retain editable node IDs. Upsert the joint by its actual
   // target, and do not overwrite a mirrored detail that now owns another joint.
@@ -487,14 +531,43 @@ export function jointOffset(
   const duration = compileMotion(
     details ? { ...program, root: details } : program,
   ).duration;
-  const node = leaf(
-    id,
-    `${target.replaceAll("_", " ")} · ${axis}`,
-    target,
-    axis,
-    oscillate ? sine(angle / 2, 4, -0.25, angle / 2) : constant(angle),
-    duration,
+  // Also reserve room for a later valid slowdown to 30 BPM. Equal segments
+  // carry the original four-cycle phase, rather than restarting the wiggle.
+  const segments = Math.ceil(duration / ((120 * 30) / program.bpm));
+  const uniqueId = (candidate: string) => {
+    while (
+      findNode(program.root, candidate) &&
+      !(previousNode && findNode(previousNode, candidate))
+    )
+      candidate += "_";
+    return candidate;
+  };
+  const children = Array.from({ length: segments }, (_, index) =>
+    leaf(
+      index === 0 ? id : uniqueId(`${id}.segment.${index}`),
+      `${target.replaceAll("_", " ")} · ${axis}`,
+      target,
+      axis,
+      oscillate
+        ? sine(
+            angle / 2,
+            4 / segments,
+            -0.25 + (4 * index) / segments,
+            angle / 2,
+          )
+        : constant(angle),
+      duration / segments,
+    ),
   );
+  const node: MotionNode =
+    segments === 1
+      ? children[0]
+      : {
+          id: uniqueId(`${id}.segments`),
+          kind: "sequence",
+          label: `${target.replaceAll("_", " ")} · ${axis} across the full motion`,
+          children,
+        };
   if (!details) {
     let rootId = "motion_with_details";
     while (findNode(program.root, rootId)) rootId += "_";
@@ -510,7 +583,7 @@ export function jointOffset(
     n.id === "details" && n.kind === "parallel"
       ? {
           ...n,
-          children: [...n.children.filter((c) => c.id !== id), node],
+          children: [...n.children.filter((c) => c !== previousNode), node],
         }
       : n.kind === "curve" || n.kind === "contact"
         ? n

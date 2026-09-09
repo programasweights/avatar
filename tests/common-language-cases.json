@@ -1,0 +1,590 @@
+{
+  "description": "Common visitor action families, explicit user regressions, held-out phrasings and separate honest-boundary checks. Limits and log provenance are documented in tests/README.md.",
+  "cases": [
+    {
+      "id": "common_jump_0",
+      "instruction": "jump",
+      "expected": [
+        "action jump 1"
+      ],
+      "category": "everyday_action",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_jump_1",
+      "instruction": "jump twice",
+      "expected": [
+        "action jump 2"
+      ],
+      "category": "everyday_action",
+      "source": "User-reported regression"
+    },
+    {
+      "id": "common_jump_2",
+      "instruction": "jump 5 times",
+      "expected": [
+        "action jump 5"
+      ],
+      "category": "everyday_action",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_jump_3",
+      "instruction": "hop three times",
+      "expected": [
+        "action jump 3"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_jump_4",
+      "instruction": "could you jump once please",
+      "expected": [
+        "action jump 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_bow_0",
+      "instruction": "bow",
+      "expected": [
+        "action bow 1"
+      ],
+      "category": "everyday_action",
+      "source": "User-reported regression"
+    },
+    {
+      "id": "common_bow_1",
+      "instruction": "take a bow",
+      "expected": [
+        "action bow 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_bow_2",
+      "instruction": "please bow twice",
+      "expected": [
+        "action bow 2"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_bow_3",
+      "instruction": "bow politely",
+      "expected": [
+        "action bow 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_run_0",
+      "instruction": "run",
+      "expected": [
+        "action run 1"
+      ],
+      "category": "everyday_action",
+      "source": "User-reported regression"
+    },
+    {
+      "id": "common_run_1",
+      "instruction": "run fast",
+      "expected": [
+        "action run 1"
+      ],
+      "category": "everyday_action",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_run_2",
+      "instruction": "jog in place",
+      "expected": [
+        "action run 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_run_3",
+      "instruction": "start running",
+      "expected": [
+        "action run 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_walk_0",
+      "instruction": "walk",
+      "expected": [
+        "action walk 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_walk_1",
+      "instruction": "walk in",
+      "expected": [
+        "action walk 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_walk_2",
+      "instruction": "can you walk?",
+      "expected": [
+        "action walk 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_walk_3",
+      "instruction": "march in place",
+      "expected": [
+        "action walk 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_crouch_0",
+      "instruction": "crouch",
+      "expected": [
+        "action crouch 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_crouch_1",
+      "instruction": "do two squats",
+      "expected": [
+        "action crouch 2"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_crouch_2",
+      "instruction": "duck down",
+      "expected": [
+        "action crouch 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_crouch_3",
+      "instruction": "squat",
+      "expected": [
+        "action crouch 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_sit_0",
+      "instruction": "sit",
+      "expected": [
+        "action sit 1"
+      ],
+      "category": "everyday_action",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_sit_1",
+      "instruction": "sit down",
+      "expected": [
+        "action sit 1"
+      ],
+      "category": "everyday_action",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_sit_2",
+      "instruction": "please sit",
+      "expected": [
+        "action sit 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_spin_0",
+      "instruction": "spin",
+      "expected": [
+        "action spin 1"
+      ],
+      "category": "everyday_action",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_spin_1",
+      "instruction": "spin around",
+      "expected": [
+        "action spin 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_spin_2",
+      "instruction": "do a full turn",
+      "expected": [
+        "action spin 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_kick_left_0",
+      "instruction": "kick left leg",
+      "expected": [
+        "action kick_left 1"
+      ],
+      "category": "everyday_action",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_kick_left_1",
+      "instruction": "kick with your left foot",
+      "expected": [
+        "action kick_left 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_kick_right_0",
+      "instruction": "kick",
+      "expected": [
+        "action kick_right 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_kick_right_1",
+      "instruction": "kick with the right leg",
+      "expected": [
+        "action kick_right 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_turn_left_0",
+      "instruction": "turn left",
+      "expected": [
+        "action turn_left 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_turn_left_1",
+      "instruction": "turn your body to the left",
+      "expected": [
+        "action turn_left 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_turn_right_0",
+      "instruction": "turn right",
+      "expected": [
+        "action turn_right 1"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_turn_right_1",
+      "instruction": "turn right twice",
+      "expected": [
+        "action turn_right 2"
+      ],
+      "category": "everyday_action",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_composition_0",
+      "instruction": "run and jump",
+      "expected": [
+        "action run 1\naction jump 1"
+      ],
+      "category": "everyday_composition",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_1",
+      "instruction": "jump then kick left leg",
+      "expected": [
+        "action jump 1\naction kick_left 1"
+      ],
+      "category": "everyday_composition",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_2",
+      "instruction": "Jump twice, then take a bow",
+      "expected": [
+        "action jump 2\naction bow 1"
+      ],
+      "category": "everyday_composition",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_composition_3",
+      "instruction": "walk in, turn left, then sit down",
+      "expected": [
+        "action walk 1\naction turn_left 1\naction sit 1"
+      ],
+      "category": "everyday_composition",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_4",
+      "instruction": "turn and sit",
+      "expected": [
+        "action spin 1\naction sit 1"
+      ],
+      "category": "everyday_composition",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_5",
+      "instruction": "bow after jumping three times",
+      "expected": [
+        "action jump 3\naction bow 1"
+      ],
+      "category": "everyday_composition",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_composition_6",
+      "instruction": "Run, jump twice, and bow",
+      "expected": [
+        "action run 1\naction jump 2\naction bow 1"
+      ],
+      "category": "everyday_composition",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_composition_7",
+      "instruction": "Jump once then crouch twice",
+      "expected": [
+        "action jump 1\naction crouch 2"
+      ],
+      "category": "everyday_composition",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_composition_8",
+      "instruction": "dance",
+      "expected": [
+        "dance salsa"
+      ],
+      "category": "historical_existing",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_9",
+      "instruction": "dance salsa",
+      "expected": [
+        "dance salsa"
+      ],
+      "category": "historical_existing",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_10",
+      "instruction": "dance chacha",
+      "expected": [
+        "dance cha_cha"
+      ],
+      "category": "historical_existing",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_11",
+      "instruction": "wave with the left arm",
+      "expected": [
+        "wave left"
+      ],
+      "category": "historical_existing",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_12",
+      "instruction": "wave your right hand",
+      "expected": [
+        "wave right"
+      ],
+      "category": "historical_existing",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_13",
+      "instruction": "wave with the right arm",
+      "expected": [
+        "wave right"
+      ],
+      "category": "historical_existing",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_14",
+      "instruction": "wave",
+      "expected": [
+        "wave right"
+      ],
+      "category": "historical_existing",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_composition_15",
+      "instruction": "nod with the head",
+      "expected": [
+        "wiggle head x 20"
+      ],
+      "category": "historical_existing",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "action_boundary_0",
+      "instruction": "jump nine times",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "action_boundary",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "action_boundary_1",
+      "instruction": "jump zero times",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "action_boundary",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "action_boundary_2",
+      "instruction": "jump then do a backflip",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "action_boundary",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "action_boundary_3",
+      "instruction": "run while juggling",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "action_boundary",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "action_boundary_4",
+      "instruction": "roll a coin on your head",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "action_boundary",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "action_boundary_5",
+      "instruction": "explain how to jump",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "action_boundary",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "action_boundary_6",
+      "instruction": "I ran yesterday",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "action_boundary",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "action_boundary_7",
+      "instruction": "walk backwards",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "action_boundary",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "action_boundary_8",
+      "instruction": "jump on one leg",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "action_boundary",
+      "source": "authored held-out phrasing"
+    },
+    {
+      "id": "common_parallel_0",
+      "instruction": "walk & wave",
+      "expected": [
+        "action walk_wave 1"
+      ],
+      "category": "everyday_composition",
+      "source": "Observed old-demo URL direction (aggregate referrer logs)"
+    },
+    {
+      "id": "common_parallel_1",
+      "instruction": "walk and wave",
+      "expected": [
+        "action walk_wave 1"
+      ],
+      "category": "everyday_composition",
+      "source": "Authored equivalent phrasing"
+    },
+    {
+      "id": "common_parallel_2",
+      "instruction": "walk in while waving, then take a bow",
+      "expected": [
+        "action walk_wave 1\naction bow 1"
+      ],
+      "category": "everyday_composition",
+      "source": "Old built-in example, counted separately from custom requests"
+    },
+    {
+      "id": "common_parallel_3",
+      "instruction": "run while waving",
+      "expected": [
+        "action run_wave 1"
+      ],
+      "category": "everyday_composition",
+      "source": "Authored composition"
+    },
+    {
+      "id": "common_parallel_4",
+      "instruction": "run and wave then jump twice",
+      "expected": [
+        "action run_wave 1\naction jump 2"
+      ],
+      "category": "everyday_composition",
+      "source": "Authored composition"
+    }
+  ]
+}

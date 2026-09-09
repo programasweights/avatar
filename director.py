@@ -24,6 +24,7 @@ JOINT_ALIASES.update({
 })
 EDIT_ALIASES = {f"{prefix}foot": f"{prefix}ankle" for prefix in ("", "left_", "right_", "both_")}
 DEXTERITY_SKILLS = {"finger_ripple", "finger_touches", "arm_wave", "coin_roll"}
+BODY_ACTIONS = {"walk", "run", "jump", "bow", "crouch", "sit", "turn_left", "turn_right", "spin", "kick_left", "kick_right", "walk_wave", "run_wave"}
 EDIT_PARTS = set(PARTS) | set(FINGERS) | {f"{finger}_{segment}" for finger in FINGERS for segment in (1, 2, 3)}
 EDIT_TARGETS = {"selected", "hips", "spine", "spine_mid", "chest", "neck", "head"} | EDIT_PARTS | {
     f"{side}_{part}" for side in ("left", "right", "both") for part in EDIT_PARTS
@@ -110,7 +111,9 @@ def joint_commands(selection: str, transform: str) -> str:
 
 
 def validate_body(raw: str) -> str:
-    lines = raw.strip().splitlines()
+    # The bare dance command selects the default salsa study. This normalizes
+    # model output only; user wording is interpreted by PAW.
+    lines = ["dance salsa" if line == "dance" else line for line in raw.strip().splitlines()]
     if not lines or len(lines) > 6:
         raise ValueError("Empty or oversized body command program")
     for line in lines:
@@ -155,6 +158,23 @@ def validate_follow_up(raw: str) -> str:
     raise ValueError("Invalid motion route or current-motion control")
 
 
+def validate_actions(raw: str) -> str:
+    """Bound a sequential whole-body program before creating joint curves."""
+    lines = raw.splitlines()
+    if not 1 <= len(lines) <= 4:
+        raise ValueError("An action sequence needs 1–4 steps")
+    total = 0
+    for line in lines:
+        parts = line.split(" ")
+        if (len(parts) != 3 or parts[0] != "action" or parts[1] not in BODY_ACTIONS
+                or not re.fullmatch(r"[1-8]", parts[2])):
+            raise ValueError("Invalid whole-body action command")
+        total += int(parts[2])
+    if total > 16:
+        raise ValueError("An action sequence is limited to 16 repetitions")
+    return "\n".join(lines)
+
+
 def direct(instruction: str, infer: Infer | None = None) -> dict:
     """Interpret one direction. Every neural call runs sequentially and locally.
 
@@ -172,6 +192,28 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
         if not isinstance(raw, str):
             raise ValueError("PAW returned a non-text response")
         return raw.strip()
+
+    activity = ask("activity_scope")
+    trace["activity_scope"] = activity
+    if activity == "basic":
+        raw = ask("action")
+        trace.update(action=raw, route="action")
+        if raw != "unsupported":
+            return {"output": validate_actions(raw), "trace": trace}
+        # Confirm an abstention before extending to coordinated actions. A coin
+        # can "walk" and an animation can "run backward" without locomotion.
+        activity = ask("activity_confirmation")
+        trace["activity_confirmation"] = activity
+        if activity == "basic":
+            raw = ask("action_composition")
+            trace["action_composition"] = raw
+            return {"output": "unsupported" if raw == "unsupported" else validate_actions(raw), "trace": trace}
+    if activity == "dance":
+        raw = ask("body_fallback")
+        trace.update(body_fallback=raw, route="body")
+        return {"output": "unsupported" if raw == "unsupported" else validate_body(raw), "trace": trace}
+    if activity != "other":
+        raise ValueError("Invalid activity scope")
 
     domain = ask("dispatch")
     trace["dispatch"] = domain

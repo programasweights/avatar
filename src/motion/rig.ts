@@ -116,6 +116,7 @@ export class MotionRig {
     }
     const rootPosition = positions.get("root");
     if (rootPosition) this.scene.position.add(rootPosition);
+    let rootRotation: Quaternion | undefined;
     for (const [id, degrees] of rotations) {
       const delta = q().setFromEuler(
         new Euler(
@@ -128,6 +129,7 @@ export class MotionRig {
         ),
       );
       if (id === "root") {
+        rootRotation = delta;
         this.scene.quaternion.premultiply(delta);
         continue;
       }
@@ -171,7 +173,14 @@ export class MotionRig {
         const ankle = this.joints.get(`${side}_ankle`)!;
         // Targets stay planted in stage coordinates while hips transfer weight.
         const target = ankle.worldPosition.clone().add(offset);
-        this.solveLeg(side, target);
+        // Turning changes the orientation of the walking frame. Translation
+        // stays independent so planted targets still support weight shifts.
+        if (rootRotation)
+          target
+            .sub(this.rootReference)
+            .applyQuaternion(rootRotation)
+            .add(this.rootReference);
+        this.solveLeg(side, target, rootRotation);
       }
     }
     // Explicit leg rotation tracks are FK edits on top of the solved stance.
@@ -190,6 +199,8 @@ export class MotionRig {
           "XYZ",
         ),
       );
+      if (rootRotation)
+        delta.premultiply(rootRotation).multiply(rootRotation.clone().invert());
       const parentWorld = ref.bone.parent!.getWorldQuaternion(q());
       ref.bone.quaternion.premultiply(
         parentWorld.clone().invert().multiply(delta).multiply(parentWorld),
@@ -211,7 +222,7 @@ export class MotionRig {
     );
     bone.updateWorldMatrix(false, true);
   }
-  private solveLeg(side: string, target: Vector3) {
+  private solveLeg(side: string, target: Vector3, rootRotation?: Quaternion) {
     const hip = this.joints.get(`${side}_hip`)!.bone;
     const knee = this.joints.get(`${side}_knee`)!.bone;
     const ankleRef = this.joints.get(`${side}_ankle`)!;
@@ -231,17 +242,19 @@ export class MotionRig {
     const along =
       (upper * upper - lower * lower + distance * distance) / (2 * distance);
     const height = Math.sqrt(Math.max(0, upper * upper - along * along));
-    const pole = new Vector3(0, 0, 1)
-      .addScaledVector(direction, -direction.z)
-      .normalize();
+    const pole = new Vector3(0, 0, 1);
+    if (rootRotation) pole.applyQuaternion(rootRotation);
+    pole.addScaledVector(direction, -pole.dot(direction)).normalize();
     const kneeTarget = h
       .clone()
       .addScaledVector(direction, along)
       .addScaledVector(pole, height);
     this.rotateToward(hip, knee, kneeTarget);
     this.rotateToward(knee, ankle, target);
+    const footOrientation = ankleRef.world.clone();
+    if (rootRotation) footOrientation.premultiply(rootRotation);
     ankle.quaternion.copy(
-      ankle.parent!.getWorldQuaternion(q()).invert().multiply(ankleRef.world),
+      ankle.parent!.getWorldQuaternion(q()).invert().multiply(footOrientation),
     );
     ankle.updateWorldMatrix(false, true);
   }

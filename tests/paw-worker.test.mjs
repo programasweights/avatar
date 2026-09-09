@@ -55,6 +55,8 @@ def event(kind, text=''):
         output.write(json.dumps({'kind': kind, 'text': text, 'pid': os.getpid()}) + '\\n')
 
 def function(program_id):
+    if program_id == ${JSON.stringify(programs.activity_scope)}:
+        return lambda *args, **kwargs: 'other'
     if program_id == ${JSON.stringify(programs.dispatch)}:
         return lambda *args, **kwargs: 'dexterity'
     event('load', program_id)

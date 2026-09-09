@@ -1,0 +1,113 @@
+Classify an avatar instruction into exactly one word: basic, dance, other.
+This is only a router, not an action or body-part extractor.
+
+basic: a request to START whole-body walking, running, jogging, marching, jumping, hopping, bowing, crouching, squatting, sitting, turning the ENTIRE BODY or spinning the ENTIRE BODY, or kicking. Includes repeats and sequences containing any such action. Invalid counts, unsupported variants (backwards walk, one-foot hops), and combinations containing other actions are still basic; the next interpreter decides whether the entire request is supported. Do not turn a HEAD turn, JOINT rotation, knee/leg lift, raised arm, finger curl, or other body-part angle into a basic action. A kick is basic but a leg lift is other. A whole-body turn has no named local body part; turn left/right or spin around are basic. Instructions to keep an existing walk/run while changing a joint are other.
+dance: a request to START salsa/Latin/generic dancing, cha-cha/chacha, or robot dancing, with optional arm style or absolute BPM. No specific joint edit or additional action. Unsupported dance styles (ballet, moonwalk, etc), stopping a dance, and instructions to KEEP the current dance/feet while editing anything else are other. A new dance plus a new basic action is basic.
+other: everything else, including all individual joint/finger/arm/leg/head moves, all hand skills/coin tricks/gestures, wave hello, arm style edits, freeze/restore operations, relative speed, global tempo-only changes, hand switches, reverse current motion, camera/files, unsupported unrelated tasks, explanations and descriptions of past actions. Faster/slower/speed up/double speed/run it faster mean editing current playback and are other, never running. Bare freeze/resume/stop are other. Walking a COIN across knuckles is a hand skill, not whole-body walking. Running THIS/THAT/THE CURRENT MOTION backward is playback reversal, not running locomotion. Distinguish the object of the verb: avatar walks/runs=basic, a coin walks=other, an existing motion runs=other.
+
+Output only basic, dance, or other.
+Input: jump twice
+Output: basic
+Input: take a bow
+Output: basic
+Input: run fast
+Output: basic
+Input: start running
+Output: basic
+Input: jog in place
+Output: basic
+Input: could you walk?
+Output: basic
+Input: walk and wave
+Output: basic
+Input: run and jump
+Output: basic
+Input: sit down
+Output: basic
+Input: crouch
+Output: basic
+Input: turn left
+Output: basic
+Input: turn your body right
+Output: basic
+Input: spin around
+Output: basic
+Input: kick left leg
+Output: basic
+Input: jump zero times
+Output: basic
+Input: hop on one foot
+Output: basic
+Input: dance
+Output: dance
+Input: dance chacha
+Output: dance
+Input: Dance salsa at120BPM
+Output: dance
+Input: Latin dance
+Output: dance
+Input: Do the robot
+Output: dance
+Input: Dance cha-cha with robotic arms
+Output: dance
+Input: Move your left thumb
+Output: other
+Input: Turn your head30degrees right
+Output: other
+Input: Lift your left leg45degrees
+Output: other
+Input: Bend both knees
+Output: other
+Input: Raise your right arm
+Output: other
+Input: Rotate the hips around y
+Output: other
+Input: Straighten the left index finger
+Output: other
+Input: Nod yes
+Output: other
+Input: Slower
+Output: other
+Input: Slow it down
+Output: other
+Input: Make it twice as fast
+Output: other
+Input: Run this at a quarter of its current speed
+Output: other
+Input: Use the other hand
+Output: other
+Input: Wave hello with your left hand
+Output: other
+Input: Reverse it
+Output: other
+Input: Keep dancing salsa and wiggle your left index finger
+Output: other
+Input: Dance salsa and bend the right elbow30degrees
+Output: other
+Input: Keep running and turn the head left
+Output: other
+Input: Keep salsa footwork, robotic arms
+Output: other
+Input: Stop dancing
+Output: other
+Input: Roll a coin on your head
+Output: other
+Input: Freeze the right pinky
+Output: other
+Input: Explain how to jump
+Output: other
+Input: I ran yesterday
+Output: other
+
+Input: I would like you to walk a coin over your right knuckles.
+Output: other
+Input: Walk the coin across your fingers
+Output: other
+Input: Make that motion run backward.
+Output: other
+Input: Run the current animation backwards
+Output: other
+Input: Run backward
+Output: basic
+Input: Walk backward
+Output: basic

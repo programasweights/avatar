@@ -88,6 +88,14 @@ your left hand.” Unsupported tricks, such as rolling a coin on the head, are
 declined rather than approximated with unrelated joint movements. Language
 interpretation can still make mistakes; **Start over** begins a fresh scene.
 
+Try “Run,” “Jump twice, then take a bow,” “Sit down,” or “Kick with your left
+leg.” Whole-body actions start a new scene and switch to the full-body view.
+Walking and running happen in place. A single walk or run loops; counted
+actions and sequences play once and stop. Sitting holds a floor-seated pose.
+These motions use editable joint curves and foot targets, just like the hand
+sequence. Short action sequences support up to four steps and sixteen total
+repetitions, with one to eight repetitions per step.
+
 **More motions** contains the other studies and hand selection. **Edit motion**
 contains detailed curves, joint axes, skeleton inspection and JSON import/export.
 **Full tree** reveals the pose and camera branches folded out of the compact view.

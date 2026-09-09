@@ -12,6 +12,12 @@ import { JOINTS, VALID_TARGETS } from "./rig";
 import { composeDexterity } from "./composeDexterity";
 import type { DexteritySkill } from "./dexterity";
 import {
+  BODY_ACTIONS,
+  createBodySequence,
+  type BodyAction,
+  type BodyActionStep,
+} from "./bodyActions";
+import {
   changeMotionHand,
   reverseCurrentMotion,
   scaleTempo,
@@ -60,7 +66,8 @@ export function applyCommands(
   if (!lines.length || lines.length > 12)
     throw new Error("PAW returned an empty or oversized command program.");
   let next = current;
-  for (const line of lines) {
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
     const parts = line.split(/\s+/);
     const [op, a, b, c] = parts;
     if (op === "unsupported")
@@ -77,12 +84,38 @@ export function applyCommands(
       ["forward", "reverse"].includes(c)
     )
       next = composeDexterity(
-        next,
+        ["dexterity_sequence", "body_sequence", "body_action"].some((id) =>
+          findNode(next.root, id),
+        )
+          ? createDance("idle", "still", next.bpm)
+          : next,
         a as DexteritySkill,
         b as "left" | "right",
         c === "reverse",
       );
-    else if (op === "reverse" && parts.length === 2 && a === "current")
+    else if (op === "action") {
+      const steps: BodyActionStep[] = [];
+      let cursor = index;
+      for (
+        ;
+        cursor < lines.length && lines[cursor].startsWith("action ");
+        cursor++
+      ) {
+        const [kind, action, count, extra] = lines[cursor].split(/\s+/);
+        if (
+          kind !== "action" ||
+          !BODY_ACTIONS.includes(action as BodyAction) ||
+          !/^[1-8]$/.test(count) ||
+          extra !== undefined
+        )
+          throw new Error(
+            `PAW returned an invalid body action: ${lines[cursor]}`,
+          );
+        steps.push({ action: action as BodyAction, count: Number(count) });
+      }
+      next = createBodySequence(steps, next.bpm);
+      index = cursor - 1;
+    } else if (op === "reverse" && parts.length === 2 && a === "current")
       next = reverseCurrentMotion(next);
     else if (
       op === "hand" &&

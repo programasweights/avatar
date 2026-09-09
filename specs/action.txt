@@ -1,0 +1,87 @@
+Translate a basic whole-body action instruction into an ordered program. Output ONLY lines in this exact form:
+action NAME COUNT
+NAME is one of walk, run, jump, bow, crouch, sit, turn_left, turn_right, spin, kick_left, kick_right. COUNT is an integer1 through8, default1. Output unsupported if the entire instruction cannot be represented. Do not silently omit any requested action.
+
+Walk/stroll/march means walk; run/jog/sprint means run, performed in place. Jump/hop/leap means jump (two feet). Bow/take a bow means bow. Squat/duck/crouch means crouch, lowering and returning upright. Sit/sit down means sit, holding a low seated pose with no chair. Turn left/right means quarter-turn of the entire body. Spin/turn around means spin, one complete turn. Kick with left/right leg means kick_left/kick_right; unspecified kick means kick_right. Reverse/backward walking, one-legged hops, balances, punches, clapping, emotional acting, acrobatics, new dances, props and simultaneous combinations are unsupported.
+
+Single action defaults to count1. Twice=2, three times=3; preserve explicit repeats. Consecutive actions joined by then, and, comma, followed by, or after that are separate lines in requested order. At most4 lines and at most16 total repetitions. An entire repeated sequence is expanded in order if within these limits. Do not confuse repetitions with degrees or speed. Unsupported numbers, zero/negative counts, forever, time durations and incomplete instructions are unsupported. Requests to change an existing motion, body-part edits, explanations, questions about meaning, and descriptions of past actions are unsupported. A polite request to perform a supported action is allowed.
+
+Input: jump twice
+Output: action jump 2
+Input: bow
+Output: action bow 1
+Input: run
+Output: action run 1
+Input: Can you walk?
+Output: action walk 1
+Input: Start running
+Output: action run 1
+Input: jog in place
+Output: action run 1
+Input: run fast
+Output: action run 1
+Input: hop three times
+Output: action jump 3
+Input: jump 5 times
+Output: action jump 5
+Input: take a bow
+Output: action bow 1
+Input: do two squats
+Output: action crouch 2
+Input: sit down
+Output: action sit 1
+Input: turn left
+Output: action turn_left 1
+Input: turn right twice
+Output: action turn_right 2
+Input: spin around
+Output: action spin 1
+Input: kick left leg
+Output: action kick_left 1
+Input: kick
+Output: action kick_right 1
+Input: run and jump
+Output: action run 1
+action jump 1
+Input: jump then kick left leg
+Output: action jump 1
+action kick_left 1
+Input: Jump twice then bow
+Output: action jump 2
+action bow 1
+Input: walk in, turn left, then sit down
+Output: action walk 1
+action turn_left 1
+action sit 1
+Input: bow after jumping three times
+Output: action jump 3
+action bow 1
+Input: repeat jump then bow twice
+Output: action jump 1
+action bow 1
+action jump 1
+action bow 1
+Input: jump nine times
+Output: unsupported
+Input: explain how to jump
+Output: unsupported
+Input: I ran yesterday
+Output: unsupported
+Input: keep running but bend the left index finger
+Output: unsupported
+Input: run while waving
+Output: unsupported
+Input: walk backwards
+Output: unsupported
+Input: jump on one leg
+Output: unsupported
+Input: lift the left leg
+Output: unsupported
+Input: roll a coin on your head
+Output: unsupported
+Input: jump then do a backflip
+Output: unsupported
+Input: dance salsa
+Output: unsupported
+Input: sit on a chair
+Output: unsupported

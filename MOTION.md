@@ -46,6 +46,12 @@ skill, build and validate a tree, expose its command in
 PAW specification if you want language to select it. Normal app use loads the
 published functions listed in `programs.json`; it never recompiles them.
 
+Whole-body actions are built in [bodyActions.ts](src/motion/bodyActions.ts).
+`action jump 2` creates two editable takeoff/landing cycles. Consecutive action
+commands form a sequence with pose transitions between steps. Foot targets
+follow whole-body turns, so a turn followed by a gait retains its new facing.
+Walking and running stay in place; finite sequences stop at their final pose.
+
 Follow-up commands transform the current tree in [relative.ts](src/motion/relative.ts):
 `hand other` mirrors the active hand choreography and compatible detail edits;
 `reverse current` reverses the complete timeline; `tempo_scale 2` doubles the
