@@ -22,13 +22,16 @@ function branch(node, id) {
 }
 
 /** Record real deployed form interactions. CSS affects framing only. */
-export async function recordGangnamInputs({ page, outDir, sourceUrl = "https://programasweights.com/avatar", inspectOnly = false }) {
+export async function recordGangnamInputs({ page, outDir, sourceUrl = "https://programasweights.com/avatar?example=gangnam", inspectOnly = false }) {
   const output = path.resolve(outDir);
   await fs.mkdir(output, { recursive: true });
   const url = new URL(sourceUrl);
   assert.equal(url.origin, "https://programasweights.com", "Use the deployed remote inference demo");
   url.pathname = "/avatar";
-  url.searchParams.delete("example");
+  url.searchParams.set("example", "gangnam");
+  const publicUrl = new URL(url);
+  publicUrl.searchParams.delete("dbg");
+  publicUrl.searchParams.delete("quality");
   url.searchParams.set("dbg", "1");
   url.searchParams.set("quality", "low");
   const manifest = {
@@ -48,8 +51,20 @@ export async function recordGangnamInputs({ page, outDir, sourceUrl = "https://p
   const snapshot = () => page.evaluate(() => window.__motionStudio.snapshot());
 
   try {
+    await page.goto(publicUrl.href, { waitUntil: "domcontentloaded" });
+    await page.locator(".motion-stage canvas").waitFor({ state: "visible", timeout: 90_000 });
+    await page.getByText("Loading the character…", { exact: true }).waitFor({ state: "hidden", timeout: 90_000 });
+    await page.getByText("Example · Gangnam Style", { exact: true }).waitFor();
+    await page.getByRole("button", { name: "Pause current motion", exact: true }).waitFor();
+    assert.equal(await page.getByRole("alert").count(), 0);
+    manifest.freshPublicPage = { url: page.url(), origin: "Example · Gangnam Style", playing: true };
+    await page.screenshot({ path: path.join(output, "fresh-gangnam-demo.png") });
     await page.goto(url.href, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => !!window.__motionStudio && !!window.__motion, undefined, { timeout: 90_000 });
+    manifest.loadedState = await snapshot();
+    assert.equal(manifest.loadedState.character, "gangnam");
+    assert.equal(manifest.loadedState.program.dance?.style, "gangnam");
+    assert.equal(manifest.loadedState.playing, true);
     await page.getByRole("button", { name: "Start over", exact: true }).click();
     manifest.initialState = await snapshot();
     await page.screenshot({ path: path.join(output, "original-public-ui.png") });
@@ -59,7 +74,7 @@ export async function recordGangnamInputs({ page, outDir, sourceUrl = "https://p
       .motion-prompt, .motion-prompt *, #paw-capture-cursor, #paw-capture-cursor * { visibility: visible !important; }
       .motion-prompt { position: fixed !important; left: ${CLIP.x}px !important; top: ${CLIP.y}px !important; width: ${WIDTH}px !important; height: ${HEIGHT}px !important; margin: 0 !important; padding: 0 !important; display: block !important; z-index: 2147483000 !important; }
       .motion-prompt .motion-session { display: none !important; }
-      .motion-prompt textarea { position: absolute !important; inset: 0 !important; box-sizing: border-box !important; width: 100% !important; height: 100% !important; min-height: 0 !important; margin: 0 !important; padding: 32px 260px 30px 25px !important; font-size: 36px !important; line-height: 60px !important; white-space: nowrap !important; overflow: hidden !important; border-radius: 18px !important; resize: none !important; }
+      .motion-prompt textarea { position: absolute !important; inset: 0 !important; box-sizing: border-box !important; width: 100% !important; height: 100% !important; min-height: 0 !important; margin: 0 !important; padding: 32px 260px 30px 25px !important; font-size: 43px !important; line-height: 60px !important; white-space: nowrap !important; overflow: hidden !important; border-radius: 18px !important; resize: none !important; }
       .motion-prompt .motion-primary { position: absolute !important; right: 18px !important; top: 30px !important; bottom: auto !important; width: 220px !important; height: 64px !important; min-height: 0 !important; padding: 10px 14px !important; margin: 0 !important; font-size: 22px !important; line-height: 1 !important; border-radius: 12px !important; }
       .motion-prompt .motion-primary svg { width: 20px !important; height: 20px !important; flex-shrink: 0 !important; }
       .motion-prompt .motion-primary:active:not(:disabled) { filter: brightness(.85); transform: translateY(1px); }
@@ -90,6 +105,12 @@ export async function recordGangnamInputs({ page, outDir, sourceUrl = "https://p
     const button = page.locator(".motion-prompt .motion-primary");
     const box = await page.locator(".motion-prompt").boundingBox();
     assert.deepEqual(box, CLIP);
+    // Park the pointer in the unused right side of the input. The browser's
+    // own caret remains at the text end; the pointer must not cover letters.
+    const inputPoint = { x: CLIP.x + 690, y: CLIP.y + 63 };
+    const initialButton = await button.boundingBox();
+    let pointer = { x: initialButton.x + initialButton.width / 2, y: initialButton.y + initialButton.height / 2 };
+    await page.mouse.move(pointer.x, pointer.y);
     const frame = async (entry, phase, include = true) => {
       const directory = `command-${String(manifest.commands.length).padStart(2, "0")}`;
       await fs.mkdir(path.join(output, directory), { recursive: true });
@@ -99,7 +120,11 @@ export async function recordGangnamInputs({ page, outDir, sourceUrl = "https://p
       const captureStartedAtMs = await now();
       const buttonTextBefore = (await button.innerText()).trim();
       await page.screenshot({ path: path.join(output, file), clip: CLIP, caret: "initial", animations: "allow", scale: "css" });
-      const item = { file, phase, capturedAtMs: captureStartedAtMs, captureStartedAtMs, captureFinishedAtMs: await now(), value: await input.inputValue(), buttonTextBefore, buttonText: (await button.innerText()).trim() };
+      const inputState = await input.evaluate((element) => ({
+        selectionStart: element.selectionStart, selectionEnd: element.selectionEnd,
+        scrollLeft: element.scrollLeft, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth,
+      }));
+      const item = { file, phase, capturedAtMs: captureStartedAtMs, captureStartedAtMs, captureFinishedAtMs: await now(), value: await input.inputValue(), inputState, pointer: { ...pointer }, buttonTextBefore, buttonText: (await button.innerText()).trim() };
       if (include) entry.frames.push(item);
       return item;
     };
@@ -114,20 +139,35 @@ export async function recordGangnamInputs({ page, outDir, sourceUrl = "https://p
       manifest.commands.push(entry);
       entry.previousState = await snapshot();
       entry.before = await frame(entry, "idle", false);
-      await page.mouse.move(CLIP.x + 55, CLIP.y + 63, { steps: 8 });
+      const from = { ...pointer };
+      for (let step = 1; step <= 6; step++) {
+        const fraction = step / 6;
+        pointer = { x: from.x + (inputPoint.x - from.x) * fraction, y: from.y + (inputPoint.y - from.y) * fraction };
+        await page.mouse.move(pointer.x, pointer.y);
+        await frame(entry, "focusing");
+      }
       await page.mouse.down();
       await page.mouse.up();
       await page.keyboard.press("ControlOrMeta+A");
+      await frame(entry, "selected");
       await page.keyboard.press("Backspace");
       await frame(entry, "editing");
       for (const character of direction.instruction) {
         await page.keyboard.type(character);
         await frame(entry, "editing");
       }
+      assert.equal(await input.evaluate((element) => element.scrollLeft), 0, "The whole instruction must fit without horizontal scrolling.");
       await frame(entry, "typed");
       const buttonBox = await button.boundingBox();
-      await page.mouse.move(buttonBox.x + buttonBox.width / 2, buttonBox.y + buttonBox.height / 2, { steps: 10 });
-      await frame(entry, "typed");
+      for (let step = 1; step <= 6; step++) {
+        const fraction = step / 6;
+        pointer = {
+          x: inputPoint.x + (buttonBox.x + buttonBox.width / 2 - inputPoint.x) * fraction,
+          y: inputPoint.y + (buttonBox.y + buttonBox.height / 2 - inputPoint.y) * fraction,
+        };
+        await page.mouse.move(pointer.x, pointer.y);
+        await frame(entry, "moving");
+      }
       const responsePromise = page.waitForResponse((response) => isDirect(response.request()) && response.request().postDataJSON().instruction === direction.instruction, { timeout: 180_000 });
       await page.mouse.down();
       await frame(entry, "pressed");
@@ -192,7 +232,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   const browser = await chromium.launch({ headless: true, args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-webgl", "--enable-unsafe-swiftshader"] });
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
-    const result = await recordGangnamInputs({ page, outDir, sourceUrl: value("--url", "https://programasweights.com/avatar"), inspectOnly: args.includes("--inspect") });
+    const result = await recordGangnamInputs({ page, outDir, sourceUrl: value("--url", "https://programasweights.com/avatar?example=gangnam"), inspectOnly: args.includes("--inspect") });
     console.log(JSON.stringify({ manifest: path.join(path.resolve(outDir), "manifest.json"), complete: result.complete ?? false, commands: result.commands.map(({ instruction, output, elapsedMs }) => ({ instruction, output, elapsedMs })) }, null, 2));
   } finally {
     await browser.close();

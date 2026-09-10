@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "postbuild": "node tools/build-social-pages.mjs",
     "preview": "vite preview",
     "test": "playwright test",
     "render": "node tools/render.mjs",

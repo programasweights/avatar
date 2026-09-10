@@ -108,19 +108,21 @@ try {
     output.replace(/\.[^.]+$/, "") + ".json",
     JSON.stringify(result.program, null, 2) + "\n",
   );
+  const renderDuration = Math.min(result.duration, durationLimit ?? Infinity);
+  const frameCount = Math.ceil(renderDuration * fps - 1e-9);
   if (dance) await writeFile(output.replace(/\.[^.]+$/, "") + ".timeline.json", JSON.stringify({
     ...result, program: undefined,
+    export: { fps, frames: frameCount, duration: frameCount / fps },
     edited: !!recording,
     sourceUrl: recording?.sourceUrl,
     sourceCommands: recording?.commands.map(({ instruction, output, elapsedMs }) => ({ instruction, output, elapsedMs })),
-    editing: result.launch ? { applyToResultSeconds: .25, inferenceWaitSeconds: .17, typingSeconds: .35,
-      pressedAt: result.launch.edits.map((edit) => edit.start - .25),
+    editing: result.launch ? { applyToResultSeconds: .30, inferenceWaitSeconds: .17, cursorReturnSeconds: .15, selectionSeconds: .15, typingSeconds: .40, readingSeconds: .20, cursorTravelSeconds: .15,
+      pressedAt: result.launch.edits.map((edit) => edit.start - .30),
       submittedAt: result.launch.edits.map((edit) => edit.start - .17),
       results: result.launch.edits.map((edit) => edit.start),
       settled: result.launch.edits.map((edit) => edit.settled) } : undefined,
     audio: audioFile,
   }, null, 2) + "\n");
-  const renderDuration = Math.min(result.duration, durationLimit ?? Infinity);
   if (preview) {
     const observations = [];
     for (const fraction of [
@@ -149,7 +151,7 @@ try {
     );
     console.log(`Preview frames saved in ${dirname(output)}`);
   } else {
-    const frames = Math.ceil(renderDuration * fps);
+    const frames = frameCount;
     const encodedDuration = frames / fps;
     encoder = spawn(
       ffmpeg,
@@ -163,7 +165,7 @@ try {
         String(fps),
         "-i",
         "pipe:0",
-        ...(audioFile ? ["-i", audioFile, "-map", "0:v:0", "-map", "1:a:0", "-c:a", "aac", "-b:a", "160k", "-af", `apad,atrim=duration=${encodedDuration}`] : ["-an"]),
+        ...(audioFile ? ["-i", audioFile, "-map", "0:v:0", "-map", "1:a:0", "-c:a", "aac", "-b:a", "160k", "-af", `apad,atrim=duration=${encodedDuration},afade=t=out:st=${Math.max(0, encodedDuration - .05)}:d=0.05`] : ["-an"]),
         "-c:v",
         "libx264",
         "-preset",

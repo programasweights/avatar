@@ -21,7 +21,7 @@ blue-tux character. Apply “Dance Gangnam Style.”, then “Now on one foot.�
 choreography and joint edits. The dance is an authored 16-beat motion tree with
 separate footwork, balance, torso, arm and finger branches. It is a stylized
 recreation, with an original Blender costume and face on the same articulated rig.
-[Watch both foot edits](https://programasweights.com/avatar/gangnam-director.mp4).
+[Watch both foot edits](https://programasweights.com/avatar/gangnam-director.mp4?v=b20a7662).
 
 ## Run
 
@@ -155,7 +155,7 @@ These exports use the same character and curves as the studio.
 Use `--variation one-foot` to render just that variation, or `--input motion.json`
 with `--dance` for your own full-body motion on the blue-tux character.
 
-The nine-second director clip starts dancing, changes to one foot at 1.82 seconds,
+The eight-second director clip starts dancing, changes to one foot at 1.82 seconds,
 and switches support at 4.55 seconds. Its arm choreography and beat stay continuous.
 To reproduce it, record the three directions through the public form, then render
 the returned motion programs with their actual input and Apply frames:
@@ -164,6 +164,7 @@ the returned motion programs with their actual input and Apply frames:
 node tools/record-gangnam-inputs.mjs --out exports/gangnam-inputs
 npm run render -- --dance --variation sequence \
   --interaction exports/gangnam-inputs/manifest.json \
+  --fps 60 --duration 8.05 --fixed-camera \
   --output exports/gangnam-director.mp4
 ```
 

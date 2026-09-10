@@ -112,15 +112,21 @@ function interactionAt(t: number) {
   let fraction = 1;
   for (let edit = 0; edit < launch.edits.length; edit++) {
     const start = launch.edits[edit].start;
-    if (t < start - .65) break;
+    if (t < start - 1.35) break;
     index = edit + 1;
-    if (t < start - .30) { phase = "editing"; fraction = (t - (start - .65)) / .35; }
-    else if (t < start - .25) phase = "typed";
+    if (t < start - 1.20) { phase = "focusing"; fraction = (t - (start - 1.35)) / .15; }
+    else if (t < start - 1.05) phase = "selected";
+    else if (t < start - .65) { phase = "editing"; fraction = (t - (start - 1.05)) / .40; }
+    else if (t < start - .45) phase = "typed";
+    else if (t < start - .30) { phase = "moving"; fraction = (t - (start - .45)) / .15; }
     else if (t < start - .17) phase = "pressed";
     else if (t < start) phase = "applying";
     else phase = "done";
   }
+  if (phase === "focusing" && !interaction[index].frames.some((frame) => frame.phase === phase)) { index--; phase = "done"; fraction = 1; }
   const command = interaction[index];
+  if (phase === "selected" && !command.frames.some((frame) => frame.phase === phase)) { phase = "editing"; fraction = 0; }
+  if (phase === "moving" && !command.frames.some((frame) => frame.phase === phase)) phase = "typed";
   // A cached response can complete before the browser paints a busy state.
   // Retain the recorded click until confirmation instead of inventing one.
   if (phase === "applying" && !command.frames.some((frame) => frame.phase === phase)) phase = "pressed";
