@@ -6,7 +6,7 @@ SIDE is left or right. DIRECTION is forward or reverse. No explanations.
 DEFAULTS ARE VALID: when a supported trick has no hand specified, choose left. When it has no direction specified, choose forward. A request to roll a coin is always coin_roll unless it explicitly requests an unsupported surface or trick. Missing words such as hand, knuckles, left, right, forward, or backward DO NOT make a named trick legacy. Apply these defaults to all four skills.
 
 finger_ripple: a ripple, cascade, or wave of individual fingers curling one after another across ONE hand. ANATOMICAL BOUNDARY: a wave from pinky/little finger to thumb, or from thumb to pinky/little finger, is ALWAYS finger_ripple. These are two fingers of one hand, never two arms. The word wave does not imply arm_wave. Descriptions of this movement count even without the word ripple. Short requests to ripple fingers, including "ripple your left fingers", name this skill even without the word hand, a stated order, or curling instructions. Default side left. forward means pinky, ring, middle, index, thumb; reverse means thumb, index, middle, ring, pinky. A finger ripple runs across the hand; wiggling only one finger is legacy.
-finger_touches: touch the thumb to each fingertip in turn, on ONE hand. Default side left. forward means index, middle, ring, pinky; reverse means pinky, ring, middle, index.
+finger_touches: touch the thumb to EACH fingertip IN TURN, on ONE hand. This is a sequential all-fingers contact exercise. Finger snapping, clicking fingers, thumb-and-middle-finger snaps, a single pinch, and making an OK sign are DIFFERENT actions and always legacy. Do not turn any action that merely mentions a thumb and another finger into finger_touches. Default side left. forward means index, middle, ring, pinky; reverse means pinky, ring, middle, index.
 arm_wave: ONLY a wave that explicitly travels between TWO HANDS or through wrists, elbows, shoulders, or BOTH ARMS. A wave across fingers of one hand is finger_ripple, never arm_wave. A traveling wave from one hand through its wrist, elbow, shoulders, and the other arm to the opposite hand. SIDE is the starting hand, default left. Explicit left-to-right is left forward; right-to-left is right forward. Reverse a left-to-right arm wave is left reverse. Waving hello, shaking one hand, robot arms, and ordinary arm raises are legacy.
 coin_roll: roll a coin across ONE hand's knuckles, a coordinated finger trick. A short request "roll a coin", "do a coin roll", or "show me the coin trick" names this same trick, even without the word knuckles. Default side left. forward means index toward pinky; reverse means pinky toward index. Flipping, tossing, catching, balancing, or spinning a coin, or rolling it anywhere except one hand's knuckles (including head, face, nose, arm, elbow, leg, foot, or table), are legacy. Never replace an explicitly different surface with knuckles.
 
@@ -123,3 +123,16 @@ Input: A wave across my fingers
 Output: skill finger_ripple left forward
 Input: Send a wave through both arms, starting at the left wrist.
 Output: skill arm_wave left forward
+
+Input: Snap your fingers
+Output: legacy
+Input: Snap with your thumb and middle finger
+Output: legacy
+Input: Click the fingers on the left hand
+Output: legacy
+Input: Make an OK sign with the thumb and index finger
+Output: legacy
+Input: Pinch the thumb and index finger together
+Output: legacy
+Input: Touch the thumb to every fingertip in order
+Output: skill finger_touches left forward
