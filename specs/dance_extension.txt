@@ -1,0 +1,156 @@
+Interpret only Gangnam Style starts and contextual dance SUPPORT-FOOT edits. Output exact command lines, none, or unsupported. No explanation.
+
+FIRST check whether this instruction is about Gangnam Style or which FOOT supports a CURRENT dance. If neither, output none. In particular changing HANDS and changing SPEED are NONE, not support-foot edits. "Make it twice as fast" is none. "Use the other hand" is none. Slower, faster, double speed, reverse it, stop, resume, finger motions and hand tricks are none. Never guess that an omitted body part means feet.
+
+Start Gangnam Style (PSY's horse-riding dance, misspellings included): dance gangnam
+Optional support line: support left / support right / support both
+One foot with no side means support left. Both feet means support both.
+The named STANDING/SUPPORTING foot determines the side directly:
+ON THE LEFT FOOT or LEFT LEG = support left. ON THE RIGHT FOOT or RIGHT LEG = support right.
+A specifically LIFTED foot is the opposite: RIGHT FOOT UP = support left. LEFT FOOT UP = support right.
+Do not confuse standing ON a leg with lifting that leg. "on the left leg" NEVER means support right.
+Optional absolute tempo: tempo INTEGER (30 through 240 BPM).
+Commands are ordered dance, support, tempo. Omit unspecified support and tempo. Do not invent tempo.
+
+A contextual edit such as "Now on one foot", "Do it on the right foot", "Keep dancing but lift your right foot" emits ONLY support left/right/both/other, without restarting the dance. Lifted right foot means support left; lifted left foot means support right. Other foot / switch feet means support other. Original footwork / both feet again means support both. The application resolves the current dance; you do not guess a style for an edit. Contextual support plus an explicit BPM may also emit tempo. Preservation phrases like "keep doing that" still mean a support edit when they explicitly say "on one foot". Bare left/right, an ankle joint rotation, or a NEW jump/hop/walk/run is not a contextual support edit.
+
+Return none for ALL other directions. They belong to other interpreters: salsa, cha-cha, robot, other dances; new jump/hop/bow/run/walk/kick actions even on one foot; all individual joint movements, angles, finger gestures, hand skills, coin tricks, grasps; stop/resume/replay, freeze/restore a joint, slower/faster, reverse, hand switches, camera edits, appearance/outfit edits, explanation/questions rather than motion requests. "Keep Gangnam going" with an ordinary joint or speed edit is also none: do not restart it. A named Gangnam request with an additional unsupported trick/action/style, a count/duration, a joint edit, or an invalid BPM is unsupported; never silently discard requested behavior. Negation ("do not do Gangnam") is none. Merely mentioning Gangnam music, a place, or a video is none.
+
+Input: Dance Gangnam Style.
+Output: dance gangnam
+Input: Can you do Psy's horse riding dance?
+Output: dance gangnam
+Input: Oppa Gangnam style!
+Output: dance gangnam
+Input: Do gangum stile
+Output: dance gangnam
+Input: Gangnam on your left foot
+Output: dance gangnam
+support left
+Input: Gangnam on your right foot
+Output: dance gangnam
+support right
+Input: Dance Gangnam Style on one foot
+Output: dance gangnam
+support left
+Input: Gangnam with one foot raised
+Output: dance gangnam
+support left
+Input: Dance Gangnam with both feet at 132 bpm
+Output: dance gangnam
+support both
+tempo 132
+Input: Dance Gangnam at 100 BPM
+Output: dance gangnam
+tempo 100
+Input: Now on one foot.
+Output: support left
+Input: Do that dance on your left leg
+Output: support left
+Input: Keep dancing on the left foot
+Output: support left
+Input: Change the supporting leg to the left
+Output: support left
+Input: Could you keep doing that on just one foot?
+Output: support left
+Input: Now on your right foot.
+Output: support right
+Input: Do it on the left foot
+Output: support left
+Input: Keep the dance going but lift your right foot off the floor
+Output: support left
+Input: Same routine with the left foot lifted
+Output: support right
+Input: Both feet again.
+Output: support both
+Input: Restore the original footwork
+Output: support both
+Input: Now switch feet
+Output: support other
+Input: Use the other foot
+Output: support other
+Input: Same dance on one leg at 110 BPM
+Output: support left
+tempo 110
+Input: Jump on your left foot
+Output: none
+Input: Hop on one foot
+Output: none
+Input: Jump twice then bow
+Output: none
+Input: Kick without moving arms
+Output: none
+Input: Lift your left leg 45 degrees
+Output: none
+Input: Wiggle only the left index finger 65 degrees
+Output: none
+Input: Rotate your right ankle
+Output: none
+Input: Freeze the left foot
+Output: none
+Input: Restore the left ankle
+Output: none
+Input: Make a wave from pinky to thumb on your left hand.
+Output: none
+Input: Reverse the finger ripple on your left hand.
+Output: none
+Input: Touch your left thumb to each fingertip, index first.
+Output: none
+Input: Roll a coin across your left knuckles.
+Output: none
+Input: Hold hands together
+Output: none
+Input: Snap with your thumb and middle finger
+Output: none
+Input: Stop
+Output: none
+Input: Resume Gangnam Style
+Output: none
+Input: Restart the dance
+Output: none
+Input: Keep Gangnam going, but slow it down
+Output: none
+Input: Keep Gangnam and bend the left index finger
+Output: none
+Input: Do not do Gangnam, dance salsa
+Output: none
+Input: Dance salsa on one foot
+Output: none
+Input: Roll a coin on your head
+Output: none
+Input: Use the other hand
+Output: none
+Input: Make it twice as fast
+Output: none
+Input: Could you switch to the right hand?
+Output: none
+Input: Now the left hand
+Output: none
+Input: Reverse it
+Output: none
+Input: Slower please
+Output: none
+Input: Run it at double speed
+Output: none
+Input: Switch sides
+Output: none
+Input: Keep the footwork and make the arms robotic
+Output: none
+Input: Explain Gangnam Style
+Output: none
+Input: Put the camera on the right
+Output: none
+Input: Wear Psy's blue jacket
+Output: none
+Input: Gangnam Style is a song
+Output: none
+Input: Dance Gangnam and do a backflip
+Output: unsupported
+Input: Gangnam at 500 BPM
+Output: unsupported
+Input: Dance Gangnam for 30 seconds
+Output: unsupported
+Input: Do Gangnam three times
+Output: unsupported
+Input: Dance Gangnam and bend the right elbow 45 degrees
+Output: unsupported

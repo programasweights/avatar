@@ -1,0 +1,106 @@
+Is this instruction in the new Gangnam/support-foot domain? Return exactly yes or no.
+
+yes: a request to START specifically Gangnam Style, PSY's dance, or its recognizable horse-riding dance; also includes a new Gangnam request with extra unsupported modifiers/actions, because its interpreter must decline the whole combination. Polite requests such as "show me", "can we see", "could you perform" are requests, not factual questions.
+yes: change which FOOT/LEG supports the CURRENT dance: "now on one foot", "same dance on your left leg", "keep doing that with one foot up", "switch feet", "use the other foot", "both feet again", "restore original footwork". A support-foot edit may include an absolute BPM. No new action is being started.
+no: everything else. Generic dance, salsa, Latin, cha-cha, robot, ballet and other dances are NOT Gangnam. All new walking, running, jumping, hopping, kicking, bowing, sitting, spinning and combinations are no, even on one foot. Walk/run AND wave are no. All individual joint angles, raised arms/legs, finger moves, hand tricks, coin tricks, grasps, snaps, freeze/restore a joint, hand switches, relative speed, reverse, stop/resume/replay, cameras, appearance and factual questions are no. Keeping Gangnam while editing a finger, arms or speed is no; it is not a new dance or a support-foot edit. A word like "other" or "left" never implies feet unless a FOOT/LEG is named. Do not use the proposed output of any other model: classify only the user's request.
+
+Input: Dance Gangnam Style.
+Output: yes
+Input: Gangnam style
+Output: yes
+Input: Show me PSY's Gangnam dance
+Output: yes
+Input: Can you do the horse-riding dance?
+Output: yes
+Input: Oppa Gangnam Style
+Output: yes
+Input: Dance like PSY
+Output: yes
+Input: Gangnam on your left foot at 120 BPM
+Output: yes
+Input: Gangnam with a backflip
+Output: yes
+Input: Dance Gangnam three times
+Output: yes
+Input: Now on one foot
+Output: yes
+Input: Same routine on the right leg
+Output: yes
+Input: Could you keep doing that on just one foot?
+Output: yes
+Input: Keep dancing but lift the left foot off the floor
+Output: yes
+Input: Switch feet
+Output: yes
+Input: Both feet again
+Output: yes
+Input: Restore the original footwork
+Output: yes
+Input: Use the other foot
+Output: yes
+Input: Change your supporting leg
+Output: yes
+Input: dance
+Output: no
+Input: Dance chacha
+Output: no
+Input: Salsa please
+Output: no
+Input: Latin dance
+Output: no
+Input: Dance cha-cha with robotic arms
+Output: no
+Input: Do the robot
+Output: no
+Input: Do ballet
+Output: no
+Input: walk & wave
+Output: no
+Input: walk and wave
+Output: no
+Input: run while waving
+Output: no
+Input: run and wave then jump twice
+Output: no
+Input: jump on left foot
+Output: no
+Input: Hop on one leg
+Output: no
+Input: Jump twice then bow
+Output: no
+Input: Kick without moving arms
+Output: no
+Input: Lift the left leg 45 degrees
+Output: no
+Input: Raise your right foot
+Output: no
+Input: Wiggle only the left index finger 65 degrees
+Output: no
+Input: Roll a coin across your left knuckles
+Output: no
+Input: Keep Gangnam dancing and bend the left index finger
+Output: no
+Input: Keep Gangnam, but make it slower
+Output: no
+Input: Keep Gangnam footwork, make the arms robotic
+Output: no
+Input: Use the other hand
+Output: no
+Input: Switch sides
+Output: no
+Input: Make it twice as fast
+Output: no
+Input: Run it backward
+Output: no
+Input: Stop
+Output: no
+Input: Freeze the left foot
+Output: no
+Input: Restore the left ankle
+Output: no
+Input: Put on PSY's blue jacket
+Output: no
+Input: Explain Gangnam Style
+Output: no
+Input: Who made Gangnam Style?
+Output: no
