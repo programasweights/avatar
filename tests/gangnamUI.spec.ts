@@ -4,8 +4,8 @@ test.use({
   launchOptions: { args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-webgl", "--enable-unsafe-swiftshader"] },
 });
 
-test("the dedicated Gangnam URL opens the dancing character and survives refresh", async ({ page }) => {
-  await page.goto("/avatar/gangnam?dbg=1&quality=low");
+test("the short Gangnam URL opens the dancing character and survives refresh", async ({ page }) => {
+  await page.goto("/gangnam?dbg=1&quality=low");
   for (const refresh of [false, true]) {
     if (refresh) await page.reload();
     await page.waitForFunction(() => !!(window as any).__motion);
@@ -24,7 +24,7 @@ test("the dedicated Gangnam URL opens the dancing character and survives refresh
 
 test("the dedicated path takes precedence over example queries while honoring an explicit character", async ({ page }) => {
   for (const character of [undefined, "jade"]) {
-    await page.goto(`/avatar/gangnam?example=coin&dbg=1&quality=low${character ? `&character=${character}` : ""}`);
+    await page.goto(`/gangnam?example=coin&dbg=1&quality=low${character ? `&character=${character}` : ""}`);
     await page.waitForFunction(() => !!(window as any).__motion);
     await expect(page.getByText("Loading the character…")).toBeHidden();
     const state = await page.evaluate(() => (window as any).__motionStudio.snapshot());
@@ -32,6 +32,17 @@ test("the dedicated path takes precedence over example queries while honoring an
     expect(state.character).toBe(character ?? "gangnam");
     expect(state.playing).toBe(true);
   }
+});
+
+test("the previous avatar Gangnam path remains a working direct link", async ({ page }) => {
+  await page.goto("/avatar/gangnam?dbg=1&quality=low");
+  await page.waitForFunction(() => !!(window as any).__motion);
+  await expect(page.getByText("Loading the character…")).toBeHidden();
+  await expect(page.getByText("Example · Gangnam Style", { exact: true })).toBeVisible();
+  const state = await page.evaluate(() => (window as any).__motionStudio.snapshot());
+  expect(state.character).toBe("gangnam");
+  expect(state.program.dance).toEqual({ style: "gangnam", support: "both" });
+  expect(state.playing).toBe(true);
 });
 
 test("the legacy Gangnam query opens the dance and survives its first asset request failing", async ({ page }) => {
@@ -99,7 +110,7 @@ test("a direction selects the dance and costume; a foot edit and stop preserve t
 });
 
 test("the original hand demo remains available after loading Gangnam", async ({ page }) => {
-  await page.goto("/avatar/gangnam?dbg=1&quality=low");
+  await page.goto("/gangnam?dbg=1&quality=low");
   await page.waitForFunction(() => !!(window as any).__motion);
   await page.getByText("More motions", { exact: true }).click();
   await page.getByRole("button", { name: "Load hand demo", exact: true }).click();

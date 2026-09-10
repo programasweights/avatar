@@ -9,7 +9,7 @@ camera stabilization, and approximate head/torso orientation. The blue-tux chara
 retains its stylized proportions. Knee height, foot pointing, and depth remain approximate.
 
 [Watch the avatar reconstruction](https://programasweights.com/avatar/gangnam-reference.mp4).
-To edit it, open the [studio](https://programasweights.com/avatar/gangnam),
+To edit it, open the [studio](https://programasweights.com/gangnam),
 expand **Edit motion**, open **Edit motion JSON**, paste the example, and press
 **Apply program**. It is a separate imported study; the existing Gangnam example
 retains its authored routine and support-foot variations.

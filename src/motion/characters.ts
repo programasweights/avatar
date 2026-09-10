@@ -1,7 +1,7 @@
 export type CharacterLook = "jade" | "gangnam" | "mixamo";
 
 export function isGangnamExample(search = window.location.search, pathname = window.location.pathname): boolean {
-  return pathname.replace(/\/$/, "") === "/avatar/gangnam"
+  return ["/gangnam", "/avatar/gangnam"].includes(pathname.replace(/\/$/, ""))
     || new URLSearchParams(search).get("example") === "gangnam";
 }
 

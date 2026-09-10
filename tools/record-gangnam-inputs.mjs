@@ -22,13 +22,13 @@ function branch(node, id) {
 }
 
 /** Record real deployed form interactions. CSS affects framing only. */
-export async function recordGangnamInputs({ page, outDir, sourceUrl = "https://programasweights.com/avatar/gangnam", inspectOnly = false }) {
+export async function recordGangnamInputs({ page, outDir, sourceUrl = "https://programasweights.com/gangnam", inspectOnly = false }) {
   const output = path.resolve(outDir);
   await fs.mkdir(output, { recursive: true });
   const url = new URL(sourceUrl);
   assert.equal(url.origin, "https://programasweights.com", "Use the deployed remote inference demo");
   url.pathname = url.pathname.replace(/\/$/, "");
-  assert.ok(["/avatar", "/avatar/gangnam"].includes(url.pathname), "Use the public avatar page");
+  assert.ok(["/avatar", "/avatar/gangnam", "/gangnam"].includes(url.pathname), "Use the public avatar page");
   if (url.pathname === "/avatar") url.searchParams.set("example", "gangnam");
   const publicUrl = new URL(url);
   publicUrl.searchParams.delete("dbg");
@@ -233,7 +233,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   const browser = await chromium.launch({ headless: true, args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-webgl", "--enable-unsafe-swiftshader"] });
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 960 }, deviceScaleFactor: 1 });
-    const result = await recordGangnamInputs({ page, outDir, sourceUrl: value("--url", "https://programasweights.com/avatar/gangnam"), inspectOnly: args.includes("--inspect") });
+    const result = await recordGangnamInputs({ page, outDir, sourceUrl: value("--url", "https://programasweights.com/gangnam"), inspectOnly: args.includes("--inspect") });
     console.log(JSON.stringify({ manifest: path.join(path.resolve(outDir), "manifest.json"), complete: result.complete ?? false, commands: result.commands.map(({ instruction, output, elapsedMs }) => ({ instruction, output, elapsedMs })) }, null, 2));
   } finally {
     await browser.close();

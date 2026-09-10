@@ -14,10 +14,10 @@ test("exact launch phrases preserve the dance and switch the supporting foot", a
   const outDir = process.env.AVATAR_RECORDING_DIR || testInfo.outputPath("interaction");
   const result = await recordGangnamInputs({ page, outDir });
   expect(result.complete).toBe(true);
-  expect(result.freshPublicPage.url).toBe("https://programasweights.com/avatar/gangnam");
+  expect(result.freshPublicPage.url).toBe("https://programasweights.com/gangnam");
   expect(result.freshPublicPage.origin).toBe("Example · Gangnam Style");
   expect(result.freshPublicPage.playing).toBe(true);
-  expect(new URL(result.sourceUrl).pathname).toBe("/avatar/gangnam");
+  expect(new URL(result.sourceUrl).pathname).toBe("/gangnam");
   expect(new URL(result.sourceUrl).searchParams.has("example")).toBe(false);
   expect(result.loadedState.character).toBe("gangnam");
   expect(result.loadedState.program.dance.style).toBe("gangnam");
