@@ -216,6 +216,8 @@ See [MOTION.md](MOTION.md) for the tree format and a minimal finger example.
 
 Run `npm test` for browser and motion regressions, `npm run test:director` and
 `npm run test:worker` for language/worker checks, and `npm run build` for a production build.
+For programasweights.com, use `npm run build:website`; it sets the `/avatar/`
+asset path and the hosted `/api/v1/avatar/direct` endpoint for both demo URLs.
 These tests use mocked neural outputs; `AVATAR_LIVE_PAW=1 npm test` also runs
 the opt-in local inference checks.
 For a broader language check, run this against your running app (adjust the

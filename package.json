@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:website": "VITE_DIRECT_API_URL=/api/v1/avatar/direct npm run build -- --base=/avatar/",
     "postbuild": "node tools/build-social-pages.mjs",
     "preview": "vite preview",
     "test": "playwright test",
