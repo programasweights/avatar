@@ -7,6 +7,7 @@ import { createGangnam } from "../src/motion/gangnam";
 import { createDance, jointOffset, replaceArm } from "../src/motion/skills";
 import { createBodySequence } from "../src/motion/bodyActions";
 import { compileMotion, findNode, sampleTimeline } from "../src/motion/engine";
+import { armTargets, freezeTargets, resolveEditTarget, restoreFrozen } from "../src/motion/editing";
 import { MotionRig } from "../src/motion/rig";
 import type { Timeline } from "../src/motion/types";
 
@@ -22,6 +23,47 @@ const pose = (timeline: Timeline, time: number) => {
   return rig.snapshot();
 };
 const distance = (a: number[], b: number[]) => Math.hypot(...a.map((v, i) => v - b[i]));
+
+test("whole-arm freezes hold every local arm joint while footwork, opposite arm and fingers keep their original phase", () => {
+  const original = applyCommands(createGangnam({ support: "left" }),
+    "wiggle left_index_1 z 40\nwiggle right_index_1 z 40");
+  const timeline = compileMotion(original);
+  const pauseTime = 0.73;
+  const rotation = (joint: string) => rig.joints.get(joint)!.bone.quaternion.clone().normalize();
+  for (const target of ["left_arm", "right_arm", "both_arms"]) {
+    const targets = resolveEditTarget(target, "left", []);
+    pose(timeline, pauseTime);
+    const held = Object.fromEntries(targets.map((joint) =>
+      [joint, rotation(joint)]));
+    const frozen = freezeTargets(original, targets, pauseTime);
+    const changed = validateRigProgram(frozen.program);
+    expect(changed.duration).toBe(timeline.duration);
+    expect(frozen.program.dance).toEqual(original.dance);
+    const unselected = [...rig.joints.keys()].filter((joint) => !targets.includes(joint));
+    const movement: Record<string, Quaternion[]> = Object.fromEntries(
+      [...armTargets(), "left_index_1", "right_index_1"].map((joint) => [joint, []]),
+    );
+    for (let frame = 0; frame <= 32; frame++) {
+      const time = timeline.duration * frame / 32;
+      const before = pose(timeline, time);
+      const local = Object.fromEntries(unselected.map((joint) =>
+        [joint, rotation(joint)]));
+      const after = pose(changed, time);
+      for (const joint of targets)
+        expect(rotation(joint).angleTo(held[joint]), `${target}: ${joint} held`).toBeLessThan(1e-6);
+      for (const joint of unselected)
+        expect(rotation(joint).angleTo(local[joint]), `${target}: ${joint} preserved`).toBeLessThan(1e-6);
+      for (const joint of ["hips", "left_ankle", "right_ankle"])
+        expect(distance(before[joint].position, after[joint].position), `${target}: ${joint}`).toBeLessThan(1e-7);
+      for (const joint of Object.keys(movement))
+        movement[joint].push(rotation(joint));
+    }
+    for (const joint of ["left_index_1", "right_index_1",
+      ...(target === "both_arms" ? [] : [target === "left_arm" ? "right_elbow" : "left_elbow"])])
+      expect(Math.max(...movement[joint].map((q) => q.angleTo(movement[joint][0]))), `${target}: ${joint} still moves`).toBeGreaterThan(0.2);
+    expect(restoreFrozen(frozen.program, frozen.token)).toEqual(original);
+  }
+});
 
 test("Gangnam arm styles visibly replace the reins without changing the supporting leg or body phase", () => {
   const original = createGangnam({ support: "left" });

@@ -22,11 +22,12 @@ JOINT_ALIASES.update({
     f"{side}_mid{suffix}": f"{side}_middle{suffix or '_1'}"
     for side in SIDES for suffix in ("", "_1", "_2", "_3")
 })
-EDIT_ALIASES = {f"{prefix}foot": f"{prefix}ankle" for prefix in ("", "left_", "right_", "both_")}
+EDIT_ALIASES = {"arms": "both_arms", "both_arm": "both_arms"}
+EDIT_ALIASES.update({f"{prefix}foot": f"{prefix}ankle" for prefix in ("", "left_", "right_", "both_")})
 DEXTERITY_SKILLS = {"finger_ripple", "finger_touches", "arm_wave", "coin_roll"}
 BODY_ACTIONS = {"walk", "run", "jump", "bow", "crouch", "sit", "turn_left", "turn_right", "spin", "kick_left", "kick_right", "walk_wave", "run_wave"}
-EDIT_PARTS = set(PARTS) | set(FINGERS) | {f"{finger}_{segment}" for finger in FINGERS for segment in (1, 2, 3)}
-EDIT_TARGETS = {"selected", "hips", "spine", "spine_mid", "chest", "neck", "head"} | EDIT_PARTS | {
+EDIT_PARTS = {"arm"} | set(PARTS) | set(FINGERS) | {f"{finger}_{segment}" for finger in FINGERS for segment in (1, 2, 3)}
+EDIT_TARGETS = {"selected", "both_arms", "hips", "spine", "spine_mid", "chest", "neck", "head"} | EDIT_PARTS | {
     f"{side}_{part}" for side in ("left", "right", "both") for part in EDIT_PARTS
 }
 
@@ -325,11 +326,14 @@ def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
 
     dance = ask("dance_extension")
     trace["dance_extension"] = dance
+    confirmation = ask("dance_confirmation")
+    trace["dance_confirmation"] = confirmation
+    if confirmation not in {"yes", "no"}:
+        raise ValueError("Invalid dance domain confirmation")
+    if dance == "none" and confirmation == "yes":
+        dance = ask("dance_fallback")
+        trace["dance_fallback"] = dance
     if dance != "none":
-        confirmation = ask("dance_confirmation")
-        trace["dance_confirmation"] = confirmation
-        if confirmation not in {"yes", "no"}:
-            raise ValueError("Invalid dance domain confirmation")
         if confirmation == "yes":
             if dance == "unsupported":
                 return finish(dance)
@@ -356,6 +360,12 @@ def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
     # Preserve the proven dance/joint router. A second opinion can recognize a
     # constrained body action it missed, without overriding a joint edit as dance.
     if activity == "other" and confirm_activity() == "basic":
+        # A relative edit can mention an action name or repetition word.
+        # Confirm it is not an existing-motion control before starting an action.
+        control = ask("current_control")
+        trace["current_control"] = control
+        if control != "unsupported":
+            return finish(validate_follow_up(control), "control")
         activity = "basic"
     if activity == "basic":
         raw = ask("action")
@@ -422,6 +432,12 @@ def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
     else:
         raise ValueError("Invalid motion route")
     if route == "dexterity":
+        # Naming a skill may identify the CURRENT motion during a speed edit.
+        # Let the narrow control interpreter check before creating a new skill.
+        control = ask("current_control")
+        trace["current_control"] = control
+        if control != "unsupported":
+            return finish(validate_follow_up(control), "control")
         raw = ask("dexterity")
         trace["dexterity"] = raw
         # A skill specialist can abstain; never reinterpret an unsupported prop

@@ -5,6 +5,8 @@ basic: a request to START whole-body walking, running, jogging, marching, jumpin
 dance: a request to START salsa/Latin/generic dancing, cha-cha/chacha, or robot dancing, with optional arm style or absolute BPM. No specific joint edit or additional action. Unsupported dance styles (ballet, moonwalk, etc), stopping a dance, and instructions to KEEP the current dance/feet while editing anything else are other. A new dance plus a new basic action is basic.
 other: everything else, including all individual joint/finger/arm/leg/head moves, all hand skills/coin tricks/gestures, wave hello, arm style edits, freeze/restore operations, relative speed, global tempo-only changes, hand switches, reverse current motion, camera/files, unsupported unrelated tasks, explanations and descriptions of past actions. Faster/slower/speed up/double speed/run it faster mean editing current playback and are other, never running. Bare freeze/resume/stop are other.
 
+An angle does not imply a head or joint. A turn/rotate instruction with NO named local body part, or with whole body/entire body/yourself/face the other way, is basic even when an angle is explicit. A quarter-turn, half-turn, turn around 180 degrees, rotate yourself 270 degrees, and face the opposite direction all turn the ENTIRE BODY. Clockwise/counterclockwise also describe whole-body direction when no local joint is named. Explicit head/neck/hips/wrist/arm/leg rotations remain other, including 90 or 180 degrees. All unsupported whole-body angles remain basic so the action interpreter can reject them instead of moving the head. A request to keep dancing while rotating a specific joint is other.
+
 Output only basic, dance, or other.
 Input: jump twice
 Output: basic
@@ -97,4 +99,25 @@ Output: other
 Input: Explain how to jump
 Output: other
 Input: I ran yesterday
+Output: other
+
+Input: Turn around 180 degrees
+Output: basic
+Input: Turn left 180 degrees
+Output: basic
+Input: Rotate yourself 270 degrees clockwise
+Output: basic
+Input: Make a half-turn
+Output: basic
+Input: Face the opposite direction
+Output: basic
+Input: Turn 45 degrees
+Output: basic
+Input: Turn your head left 90 degrees
+Output: other
+Input: Rotate your hips 180 degrees
+Output: other
+Input: Keep dancing and turn the head right
+Output: other
+Input: Balance on one foot
 Output: other

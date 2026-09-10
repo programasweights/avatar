@@ -1,10 +1,11 @@
 Classify one requested edit to an existing avatar motion. Output ONLY freeze TARGET, restore TARGET, or none.
 First reject informational requests: questions about how editing works, explanations, instructions/tutorials, and hypothetical examples are none even when they mention pausing a finger. A polite action request ("Please pause the ring finger" or "Can you freeze my thumb?") is an edit.
 freeze holds just the named joint/finger at its CURRENT pose while other movement continues. Use for pause, freeze, stop moving, keep still, or disable that part. restore reinstates its saved animation: restore, resume, unfreeze, re-enable, or let it move again. This is NOT setting a new pose or starting an action.
-TARGET is selected; hips, spine, spine_mid, chest, neck, head; or clavicle, shoulder, elbow, wrist, hip, knee, ankle, toes, thumb, index, middle, ring, pinky, optionally prefixed left_, right_, or both_. Fingers may end _1, _2, or _3 ONLY for an explicitly named segment: base/first knuckle=1, second/middle knuckle=2, tip/last knuckle=3. No segment means the WHOLE finger. Do not infer a segment from an angle.
+TARGET is selected; hips, spine, spine_mid, chest, neck, head; or arm, clavicle, shoulder, elbow, wrist, hip, knee, ankle, toes, thumb, index, middle, ring, pinky, optionally prefixed left_, right_, or both_. Fingers may end _1, _2, or _3 ONLY for an explicitly named segment: base/first knuckle=1, second/middle knuckle=2, tip/last knuckle=3. No segment means the WHOLE finger. Do not infer a segment from an angle.
 Use explicit left/right/both. Without a side, leave the prefix OFF so the editor can use the active hand. This/that/it/the selected part means selected. Restore/resume/unfreeze alone means restore selected. Bare freeze means freeze selected. Bare stop, pause, stop moving, and pause it all are none. Pause with NO named part or selected-part pronoun is always none. Requests to stop the entire avatar/scene/animation are none.
 Canonical limb targets matter: an entire leg or thigh is hip, NOT knee. Only the lower leg or shin is knee. A foot is ankle, never foot. Keep these aliases when pausing AND when restoring.
-Aliases: little finger=pinky; pointer/forefinger=index; leg/thigh=hip; shin/lower leg=knee; foot=ankle; toe=toes; arm/upper arm=shoulder; forearm=elbow; hand=wrist; collarbone=clavicle; pelvis/waist=hips; lower back=spine; middle back=spine_mid; torso/upper back=chest. Both hips means both_hip.
+Aliases: little finger=pinky; pointer/forefinger=index; leg/thigh=hip; shin/lower leg=knee; foot=ankle; toe=toes; entire arm=arm; upper arm=shoulder; forearm=elbow; hand=wrist; collarbone=clavicle; pelvis/waist=hips; lower back=spine; middle back=spine_mid; torso/upper back=chest. Both hips means both_hip.
+A whole arm is a GROUP: use left_arm or right_arm, never reduce it to the shoulder. Both arms / the arms = both_arms. Arm without a side = arm. Freeze/restore the whole group together. Only an explicitly named upper arm is shoulder.
 Return none for ordinary movements, new dances/gestures, speed changes, bend/straighten/relax, a requested angle, camera commands, global playback controls, explanations, or multiple unrelated edits. Stop dancing is none. Hold a pose or bend a finger to a fixed angle is none. Restore a file/program/settings, or resume a named dance, is none. A preservation clause (keep the wave/dance/rest going) does not request a new action: classify the one actual pause/restore edit.
 Input: Keep the wave going. Stop just the ring finger.
 Output: freeze ring
@@ -106,3 +107,44 @@ Input: Stop moving
 Output: none
 Input: Pause
 Output: none
+
+Input: Freeze your left arm.
+Output: freeze left_arm
+Input: Freeze both arms while keeping the dance going.
+Output: freeze both_arms
+Input: Pause the entire right arm where it is.
+Output: freeze right_arm
+Input: Unfreeze both arms.
+Output: restore both_arms
+Input: Resume the left arm.
+Output: restore left_arm
+Input: Keep dancing, but lock your right arm in its current pose.
+Output: freeze right_arm
+Input: Freeze only the left upper arm.
+Output: freeze left_shoulder
+Input: Let the arm move again.
+Output: restore arm
+
+The generic words FINGER or THUMB do not select a knuckle or segment. A whole finger has no _1/_2/_3 suffix, even when called a thumb finger, index finger, little finger or middle finger. Add a segment suffix only when the instruction explicitly says base/first knuckle, middle/second knuckle, or tip/last/third knuckle.
+Input: Freeze the thumb finger.
+Output: freeze thumb
+Input: Pause the thumb.
+Output: freeze thumb
+Input: Restore your right thumb finger.
+Output: restore right_thumb
+Input: Freeze the left thumb tip.
+Output: freeze left_thumb_3
+Input: Pause the middle finger.
+Output: freeze middle
+Input: Pause the middle joint of the thumb.
+Output: freeze thumb_2
+
+Waist and pelvis name the hips joint, not the chest or spine. Preserve that anatomical distinction for both freezing and restoring.
+Input: Stop your waist from twisting.
+Output: freeze hips
+Input: Freeze my pelvis.
+Output: freeze hips
+Input: Restore the waist movement.
+Output: restore hips
+Input: Pause your upper back.
+Output: freeze chest

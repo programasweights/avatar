@@ -26,6 +26,14 @@ export function fingerTargets(side: Side, finger: Finger): string[] {
   return targets;
 }
 
+/** Arm edits include the wrist, but leave each finger's own articulation free. */
+export function armTargets(side?: Side): string[] {
+  const sides: Side[] = side ? [side] : ["left", "right"];
+  return sides.flatMap((arm) =>
+    ["clavicle", "shoulder", "elbow", "wrist"].map((joint) => `${arm}_${joint}`),
+  );
+}
+
 /** A leaf selects one joint; a finger branch selects all its articulated segments. */
 export function branchTargets(node: MotionNode): string[] {
   if (node.kind === "contact") return [];
@@ -334,6 +342,12 @@ export function resolveEditTarget(
   }
   if (["hips", "spine", "spine_mid", "chest", "neck", "head"].includes(target))
     return [target];
+  const arm = /^(?:(left|right|both)_)?(arm|arms)$/.exec(target);
+  if (arm) {
+    if (arm[1] === "both" || (!arm[1] && arm[2] === "arms"))
+      return armTargets();
+    return armTargets((arm[1] as Side) || side);
+  }
   const match =
     /^(?:(left|right|both)_)?(clavicle|shoulder|elbow|wrist|hip|knee|ankle|toes|(?:thumb|index|middle|ring|pinky)(?:_[123])?)$/.exec(
       target,

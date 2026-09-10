@@ -114,3 +114,25 @@ Input: Touch your left thumb to each fingertip, index first.
 Output: none
 Input: Roll a coin across your left knuckles.
 Output: none
+
+Restoring paused arms is not choosing a new arm style. Let/start moving AGAIN, unfreeze, unlock, resume, restore, or re-enable an arm = none, regardless of side or whether the dance continues. A phrase like "move again" does not mean robot, natural, or wave. Freezing/locking an arm WHERE IT IS also returns none so the frozen-pose editor handles the entire arm group.
+Input: Let the left arm move again.
+Output: none
+Input: Let your left arm move again.
+Output: none
+Input: Let both arms start moving again.
+Output: none
+Input: Unfreeze both arms.
+Output: none
+Input: Restore motion to the right arm.
+Output: none
+Input: Unlock the left arm while the legs keep dancing.
+Output: none
+Input: Freeze both arms while keeping the dance going.
+Output: none
+Input: Pause the entire right arm where it is.
+Output: none
+Input: Keep both arms still.
+Output: arms still
+Input: Start moving the left arm like a robot.
+Output: arm left robot

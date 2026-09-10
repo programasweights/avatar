@@ -1,0 +1,302 @@
+{
+  "description": "Remote language regressions for whole-body turn angles, support-foot selection, and neighboring joint/prop/playback domains. No visitor identifiers or retained visitor corpus.",
+  "cases": [
+    {
+      "id": "turn_180",
+      "instruction": "Turn around 180 degrees.",
+      "expected": [
+        "action turn_left 2"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_left_half",
+      "instruction": "Make a half-turn to your left.",
+      "expected": [
+        "action turn_left 2"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_right_180",
+      "instruction": "Turn right 180 degrees.",
+      "expected": [
+        "action turn_right 2"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_270_clockwise",
+      "instruction": "Rotate yourself 270 degrees clockwise.",
+      "expected": [
+        "action turn_right 3"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_quarter",
+      "instruction": "Turn one quarter of a circle to the right.",
+      "expected": [
+        "action turn_right 1"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_opposite",
+      "instruction": "Face the opposite direction.",
+      "expected": [
+        "action turn_left 2"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_counterclockwise",
+      "instruction": "Turn 180 degrees counterclockwise.",
+      "expected": [
+        "action turn_left 2"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_angle_repeat",
+      "instruction": "Turn 180 degrees right twice.",
+      "expected": [
+        "action turn_right 4"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_360_direction",
+      "instruction": "Turn left 360 degrees.",
+      "expected": [
+        "action turn_left 4"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_half_still_arms",
+      "instruction": "Turn right 180 degrees without moving your arms.",
+      "expected": [
+        "action turn_right 2\narms still"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_left_default",
+      "instruction": "Turn left.",
+      "expected": [
+        "action turn_left 1"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_directionless_default",
+      "instruction": "Turn around.",
+      "expected": [
+        "action spin 1"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_45_boundary",
+      "instruction": "Turn your whole body 45 degrees.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "turn_100_boundary",
+      "instruction": "Turn left 100 degrees.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "whole_body_turn"
+    },
+    {
+      "id": "balance_default",
+      "instruction": "Balance on one foot.",
+      "expected": [
+        "support left"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "balance_left",
+      "instruction": "Can you balance on just your left leg?",
+      "expected": [
+        "support left"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "balance_right",
+      "instruction": "Balance on your right foot.",
+      "expected": [
+        "support right"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "stand_right",
+      "instruction": "Stand on your right leg.",
+      "expected": [
+        "support right"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "weight_right",
+      "instruction": "Put your weight on the right foot.",
+      "expected": [
+        "support right"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "support_weight_left",
+      "instruction": "Use the left leg to support your weight.",
+      "expected": [
+        "support left"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "balance_other",
+      "instruction": "Balance on the opposite leg.",
+      "expected": [
+        "support other"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "lifted_left",
+      "instruction": "Keep your left foot in the air.",
+      "expected": [
+        "support right"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "balance_both",
+      "instruction": "Go back to standing on both feet.",
+      "expected": [
+        "support both"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "balance_current",
+      "instruction": "Keep dancing while balancing on one leg.",
+      "expected": [
+        "support left"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "demo_gangnam",
+      "instruction": "Dance Gangnam Style.",
+      "expected": [
+        "dance gangnam"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "demo_one_foot",
+      "instruction": "Now on one foot.",
+      "expected": [
+        "support left"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "demo_switch",
+      "instruction": "Switch to the opposite foot.",
+      "expected": [
+        "support other"
+      ],
+      "category": "support_foot"
+    },
+    {
+      "id": "local_head_turn",
+      "instruction": "Turn your head 90 degrees to the right.",
+      "expected": [
+        "joint head y -90"
+      ],
+      "category": "routing_boundary"
+    },
+    {
+      "id": "local_hip_rotation",
+      "instruction": "Rotate your hips 90 degrees around the y axis.",
+      "expected": [
+        "joint hips y 90"
+      ],
+      "category": "routing_boundary"
+    },
+    {
+      "id": "local_leg_angle",
+      "instruction": "Lift your left leg 45 degrees.",
+      "expected": [
+        "joint left_hip x -45"
+      ],
+      "category": "routing_boundary"
+    },
+    {
+      "id": "new_jump_support",
+      "instruction": "Jump on your right foot twice.",
+      "expected": [
+        "action jump 2 right"
+      ],
+      "category": "routing_boundary"
+    },
+    {
+      "id": "standing_still",
+      "instruction": "Stand still.",
+      "expected": [
+        "dance idle"
+      ],
+      "category": "routing_boundary",
+      "notes": "Stand still requests the existing neutral idle pose; the playback_control and body specs distinguish this from a global pause."
+    },
+    {
+      "id": "coin_on_head_boundary",
+      "instruction": "Balance a coin on your head.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "routing_boundary"
+    },
+    {
+      "id": "handstand_boundary",
+      "instruction": "Stand on your hands.",
+      "expected": [
+        "unsupported"
+      ],
+      "category": "routing_boundary"
+    },
+    {
+      "id": "coin_demo",
+      "instruction": "Roll a coin across your left knuckles.",
+      "expected": [
+        "skill coin_roll left forward"
+      ],
+      "category": "routing_boundary"
+    },
+    {
+      "id": "speed_edit_boundary",
+      "instruction": "Make it twice as fast.",
+      "expected": [
+        "tempo_scale 2"
+      ],
+      "category": "routing_boundary"
+    },
+    {
+      "id": "hand_switch_boundary",
+      "instruction": "Use the other hand.",
+      "expected": [
+        "hand other"
+      ],
+      "category": "routing_boundary"
+    }
+  ]
+}

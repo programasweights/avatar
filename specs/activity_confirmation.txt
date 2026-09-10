@@ -9,6 +9,8 @@ Standing/idle is NOT one of the basic actions. Stand, stand still, stand motionl
 
 A NAMED LEG OR ARM DOES NOT CANCEL A NEW WHOLE-BODY ACTION. A hop on the left/right leg, jump using one supporting foot, kick with a particular leg, run with motionless arms, or crouch while keeping the arms still is basic. Support side, held limbs, depth, height, speed, direction, or style are constraints on the new action; pass the WHOLE request to basic. Even an unsupported constraint is basic, so the action interpreter can reject it without silently dropping the main action. "Keep the arms still while crouching" starts a constrained crouch: basic. In contrast, "Keep crouching and bend the left elbow" preserves an ALREADY RUNNING crouch while editing a joint: other. Distinguish what is being kept: keeping ARMS/LEGS still during a requested new action is basic; keeping the EXISTING WALK/RUN/DANCE while editing another joint is other.
 
+An angle does not imply a head or joint. A turn/rotate instruction with NO named local body part, or with whole body/entire body/yourself/face the other way, is basic even when an angle is explicit. A quarter-turn, half-turn, turn around 180 degrees, rotate yourself 270 degrees, and face the opposite direction all turn the ENTIRE BODY. Clockwise/counterclockwise also describe whole-body direction when no local joint is named. Explicit head/neck/hips/wrist/arm/leg rotations remain other, including 90 or 180 degrees. All unsupported whole-body angles remain basic so the action interpreter can reject them instead of moving the head. A request to keep dancing while rotating a specific joint is other.
+
 Output only basic, dance, or other.
 Input: jump twice
 Output: basic
@@ -178,4 +180,43 @@ Output: basic
 Input: Flip me off
 Output: other
 Input: Give me a thumbs up
+Output: other
+
+Input: Turn around 180 degrees
+Output: basic
+Input: Turn left 180 degrees
+Output: basic
+Input: Rotate yourself 270 degrees clockwise
+Output: basic
+Input: Make a half-turn
+Output: basic
+Input: Face the opposite direction
+Output: basic
+Input: Turn 45 degrees
+Output: basic
+Input: Turn your head left 90 degrees
+Output: other
+Input: Rotate your hips 180 degrees
+Output: other
+Input: Keep dancing and turn the head right
+Output: other
+Input: Balance on one foot
+Output: other
+
+Local head/neck/eye looking directions are always other, including a stated number of degrees. Looking up/down/left/right never rotates the entire body. Explicit whole-body turning is basic; degrees alone do not imply a body turn.
+Input: Look up 20 degrees.
+Output: other
+Input: Look down 30 degrees.
+Output: other
+Input: Look left 45 degrees.
+Output: other
+Input: Tilt your head backward by 20 degrees.
+Output: other
+Input: Turn your head to the right.
+Output: other
+Input: Nod your head.
+Output: other
+Input: Turn your whole body 180 degrees.
+Output: basic
+Input: Rotate your wrist by 45 degrees.
 Output: other

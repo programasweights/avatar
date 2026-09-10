@@ -18,9 +18,6 @@ A contextual edit such as "Now on one foot", "Do it on the right foot", "Keep da
 
 Return none for ALL other directions. They belong to other interpreters: salsa, cha-cha, robot, other dances; new jump/hop/bow/run/walk/kick actions even on one foot; all individual joint movements, angles, finger gestures, hand skills, coin tricks, grasps; stop/resume/replay, freeze/restore a joint, slower/faster, reverse, hand switches, camera edits, appearance/outfit edits, explanation/questions rather than motion requests. "Keep Gangnam going" with an ordinary joint or speed edit is also none: do not restart it. A named Gangnam request with an additional unsupported trick/action/style, a count/duration, a joint edit, or an invalid BPM is unsupported; never silently discard requested behavior. Negation ("do not do Gangnam") is none. Merely mentioning Gangnam music, a place, or a video is none.
 
-
-BARE SUPPORT REQUESTS also edit the supporting foot of the current dance. They do NOT need words such as now, keep dancing, or same routine. Balance on one foot, stand on one leg, put your weight on the left foot, and use the right leg for support all specify support. A generic one-foot/one-legged balance defaults to left. Choose the named supporting foot directly; an explicitly lifted foot means the opposite support. Neither balance nor stand-on-one-foot starts a new dance. Balancing a prop on a foot/head/hand, walking a tightrope, a handstand, and standing on hands are not support-foot edits. A new jump/hop still belongs to the basic-action interpreter. Mere standing still or standing upright without a support-foot change is not a support edit.
-
 Input: Dance Gangnam Style.
 Output: dance gangnam
 Input: Can you do Psy's horse riding dance?
@@ -171,41 +168,3 @@ Input: Do Gangnam three times
 Output: unsupported
 Input: Dance Gangnam and bend the right elbow 45 degrees
 Output: unsupported
-
-Input: Balance on one foot
-Output: support left
-Input: Stand on your right leg
-Output: support right
-Input: Can you balance on just your left leg?
-Output: support left
-Input: Put your weight on the right foot
-Output: support right
-Input: Keep your left foot in the air
-Output: support right
-Input: Balance on the opposite leg
-Output: support other
-Input: Go back to standing on both feet
-Output: support both
-Input: Stand on your hands
-Output: none
-Input: Balance a coin on your head
-Output: none
-Input: Stand still
-Output: none
-Input: Jump on your right foot
-Output: none
-
-Requests to do, perform, show, try, or start Gangnam (with or without the word Style) all start the supported Gangnam dance. The verb does not require an extra constraint; these are complete dance requests.
-Input: Do Gangnam.
-Output: dance gangnam
-Input: Perform Gangnam Style.
-Output: dance gangnam
-Input: Gangnam, please.
-Output: dance gangnam
-Input: Show me the Gangnam dance.
-Output: dance gangnam
-Input: Do Gangnam on the left foot.
-Output: dance gangnam
-support left
-Input: Balance on the opposite leg.
-Output: support other

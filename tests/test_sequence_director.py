@@ -16,10 +16,11 @@ class PlannedInference:
     def __call__(self, program_id, text):
         name = next(name for name, value in PROGRAMS.items() if value == program_id)
         self.calls.append((name, text))
+        outputs = {**self.outputs, **self.clauses.get(text, {})}
         defaults = {"sequence": self.sequence, "playback_control": "none", "arm_control": "none",
-                    "dance_extension": "none", "activity_scope": "other", "activity_confirmation": "other",
-                    "dispatch": "motion", "edit_intent": "none", "motion_scope": "joint"}
-        return {**defaults, **self.outputs, **self.clauses.get(text, {})}[name]
+                    "dance_extension": "none", "dance_confirmation": "yes" if outputs.get("dance_extension", "none") != "none" else "no", "dance_fallback": "none", "activity_scope": "other", "activity_confirmation": "other",
+                    "dispatch": "motion", "edit_intent": "none", "motion_scope": "joint", "current_control": "unsupported"}
+        return {**defaults, **outputs}[name]
 
 
 class SequenceDirectorTest(unittest.TestCase):
@@ -32,7 +33,7 @@ class SequenceDirectorTest(unittest.TestCase):
         infer = PlannedInference(joint_motion="left_elbow hold x 30")
         result = direct("Bend your left elbow.", infer)
         self.assertEqual(result["output"], "joint left_elbow x 30")
-        self.assertEqual([name for name, _ in infer.calls], ["sequence", "playback_control", "arm_control", "dance_extension", "activity_scope", "activity_confirmation", "dispatch", "edit_intent", "motion_scope", "joint_motion"])
+        self.assertEqual([name for name, _ in infer.calls], ["sequence", "playback_control", "arm_control", "dance_extension", "dance_confirmation", "activity_scope", "activity_confirmation", "dispatch", "edit_intent", "motion_scope", "joint_motion"])
         self.assertEqual(result["trace"]["sequence"], "single")
         self.assertEqual(result["trace"]["arm_control"], "none")
         infer = PlannedInference(playback_control="pause")
@@ -61,6 +62,22 @@ class SequenceDirectorTest(unittest.TestCase):
         seen = [text for _, text in infer.calls[1:]]
         self.assertEqual(seen, sorted(seen, key=list(clauses).index))
         self.assertEqual(infer.calls[-2:], [(name, "Make the right arm robotic.") for name in ["playback_control", "arm_control"]])
+
+    def test_named_speed_followup_remains_a_continuation_in_an_ordered_plan(self):
+        infer = PlannedInference(
+            "sequence\nperform|2|Roll a coin.\ncontinue|3|Make the coin roll faster.",
+            {
+                "Roll a coin.": {"dispatch": "dexterity", "dexterity": "skill coin_roll left forward"},
+                "Make the coin roll faster.": {"dispatch": "dexterity", "current_control": "tempo_scale 1.25"},
+            },
+        )
+        result = direct("Roll a coin for two seconds, then make the coin roll faster for three seconds.", infer)
+        self.assertEqual(json.loads(result["output"]), {"kind": "sequence", "steps": [
+            {"instruction": "Roll a coin.", "mode": "perform", "seconds": 2, "commands": "skill coin_roll left forward"},
+            {"instruction": "Make the coin roll faster.", "mode": "continue", "seconds": 3, "commands": "tempo_scale 1.25"},
+        ]})
+        self.assertEqual([step["trace"]["route"] for step in result["trace"]["steps"]], ["dexterity", "control"])
+        self.assertEqual([call for call in infer.calls if call[0] == "dexterity"], [("dexterity", "Roll a coin.")])
 
     def test_malformed_or_missing_plan_fields_reject_before_any_atomic_call(self):
         valid = "perform|auto|Move an arm."

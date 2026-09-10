@@ -72,6 +72,7 @@ their validated outputs to build the same timed sequence. You can also press
 until you give the next one.
 
 Follow up with “Use the other hand,” “Reverse it,” or “Make it twice as fast.”
+You can name the current motion: “Make the coin roll faster.”
 These edit the actual motion tree, including the default hand sequence. Hand
 changes retain compatible joint edits and footwork; reversal plays the whole
 creation backwards. Speed changes multiply the current tempo within 30–240 BPM.
@@ -87,7 +88,9 @@ change its curl with the slider; **Undo** restores the previous edit.
 [Watch the joint-control recording](https://programasweights.com/avatar/joint-control.mp4).
 
 You can also type “Keep the wave going. Stop just the ring finger,” then
-“Restore the ring finger.” An omitted side uses the active hand. “This joint”
+“Restore the ring finger.” “Freeze your left arm” holds the shoulder, elbow,
+wrist and collarbone together; “Unfreeze both arms” restores their movement.
+An omitted side uses the active hand. “This joint”
 uses the current tree selection. Pauses hold local joint rotations; contact
 choreography and leg IK need their own trajectory controls.
 
@@ -98,8 +101,9 @@ interpretation can still make mistakes; **Start over** begins a fresh scene.
 
 Try “Run,” “Jump twice, then take a bow,” “Sit down,” or “Kick with your left
 leg.” Whole-body actions start a new scene and switch to the full-body view.
-Walking and running happen in place. A single walk or run loops; counted
-actions and sequences play once and stop. Sitting holds a floor-seated pose.
+“Turn around 180 degrees” makes a whole-body half turn. “Balance on one foot”
+edits the supporting foot of the Gangnam dance. Walking and running happen in
+place. A single walk or run loops; counted actions and sequences play once and stop. Sitting holds a floor-seated pose.
 These motions use editable joint curves and foot targets, just like the hand
 sequence. Short action sequences support up to four steps and sixteen total
 repetitions, with one to eight repetitions per step.

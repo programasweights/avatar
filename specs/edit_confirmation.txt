@@ -1,8 +1,9 @@
 Classify one edit to an existing avatar motion. Output ONLY freeze TARGET, restore TARGET, or none.
 freeze holds just the named joint/finger at its CURRENT pose while other movement continues. Use for pause, freeze, stop moving, keep still, or disable that part. restore reinstates its saved animation: restore, resume, unfreeze, re-enable, or let it move again. This is NOT setting a new pose or starting an action.
-TARGET is selected; hips, spine, spine_mid, chest, neck, head; or clavicle, shoulder, elbow, wrist, hip, knee, ankle, toes, thumb, index, middle, ring, pinky, optionally prefixed left_, right_, or both_. Fingers may end _1, _2, or _3 ONLY for an explicitly named segment: base/first knuckle=1, second/middle knuckle=2, tip/last knuckle=3. No segment means the WHOLE finger. Do not infer a segment from an angle.
+TARGET is selected; hips, spine, spine_mid, chest, neck, head; or arm, clavicle, shoulder, elbow, wrist, hip, knee, ankle, toes, thumb, index, middle, ring, pinky, optionally prefixed left_, right_, or both_. Fingers may end _1, _2, or _3 ONLY for an explicitly named segment: base/first knuckle=1, second/middle knuckle=2, tip/last knuckle=3. No segment means the WHOLE finger. Do not infer a segment from an angle.
 Use explicit left/right/both. Without a side, leave the prefix OFF so the editor can use the active hand. This/that/it/the selected part means selected. Restore/resume/unfreeze alone means restore selected. Bare freeze means freeze selected. Bare stop/pause or requests to stop the entire avatar/scene/animation are none.
-Aliases: little finger=pinky; pointer/forefinger=index; leg/thigh=hip; shin/lower leg=knee; foot=ankle; toe=toes; arm/upper arm=shoulder; forearm=elbow; hand=wrist; collarbone=clavicle; pelvis/waist=hips; lower back=spine; middle back=spine_mid; torso/upper back=chest. Both hips means both_hip.
+Aliases: little finger=pinky; pointer/forefinger=index; leg/thigh=hip; shin/lower leg=knee; foot=ankle; toe=toes; entire arm=arm; upper arm=shoulder; forearm=elbow; hand=wrist; collarbone=clavicle; pelvis/waist=hips; lower back=spine; middle back=spine_mid; torso/upper back=chest. Both hips means both_hip.
+A whole arm is a GROUP: use left_arm or right_arm, never reduce it to the shoulder. Both arms / the arms = both_arms. Arm without a side = arm. Freeze/restore the whole group together. Only an explicitly named upper arm is shoulder.
 Return none for ordinary movements, new dances/gestures, speed changes, bend/straighten/relax, a requested angle, camera commands, global playback controls, explanations, or multiple unrelated edits. Stop dancing is none. Hold a pose or bend a finger to a fixed angle is none. Restore a file/program/settings, or resume a named dance, is none. A preservation clause (keep the wave/dance/rest going) does not request a new action: classify the one actual pause/restore edit.
 Input: Keep the wave going. Stop just the ring finger.
 Output: freeze ring
@@ -78,3 +79,20 @@ Input: Roll a coin across your right knuckles.
 Output: none
 Input: Freeze the ring finger and restore the pinky
 Output: none
+
+Input: Freeze your left arm.
+Output: freeze left_arm
+Input: Freeze both arms while keeping the dance going.
+Output: freeze both_arms
+Input: Pause the entire right arm where it is.
+Output: freeze right_arm
+Input: Unfreeze both arms.
+Output: restore both_arms
+Input: Resume the left arm.
+Output: restore left_arm
+Input: Keep dancing, but lock your right arm in its current pose.
+Output: freeze right_arm
+Input: Freeze only the left upper arm.
+Output: freeze left_shoulder
+Input: Let the arm move again.
+Output: restore arm

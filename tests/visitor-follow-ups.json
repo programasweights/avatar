@@ -1,0 +1,132 @@
+{
+  "cases": [
+    {
+      "id": "freeze_arm",
+      "category": "visitor_follow_up",
+      "instruction": "Freeze your left arm.",
+      "expected": [
+        "freeze left_arm"
+      ]
+    },
+    {
+      "id": "freeze_both_arms",
+      "category": "visitor_follow_up",
+      "instruction": "Freeze both arms while keeping the dance going.",
+      "expected": [
+        "freeze both_arms"
+      ]
+    },
+    {
+      "id": "freeze_right",
+      "category": "visitor_follow_up",
+      "instruction": "Pause your entire right arm where it is.",
+      "expected": [
+        "freeze right_arm"
+      ]
+    },
+    {
+      "id": "restore_both",
+      "category": "visitor_follow_up",
+      "instruction": "Unfreeze both arms.",
+      "expected": [
+        "restore both_arms"
+      ]
+    },
+    {
+      "id": "restore_left",
+      "category": "visitor_follow_up",
+      "instruction": "Let the left arm move again.",
+      "expected": [
+        "restore left_arm"
+      ]
+    },
+    {
+      "id": "freeze_upper",
+      "category": "visitor_follow_up",
+      "instruction": "Freeze only the left upper arm.",
+      "expected": [
+        "freeze left_shoulder"
+      ]
+    },
+    {
+      "id": "freeze_elbow",
+      "category": "visitor_follow_up",
+      "instruction": "Freeze your right elbow.",
+      "expected": [
+        "freeze right_elbow"
+      ]
+    },
+    {
+      "id": "restore_ring",
+      "category": "visitor_follow_up",
+      "instruction": "Restore the ring finger.",
+      "expected": [
+        "restore ring"
+      ]
+    },
+    {
+      "id": "faster_coin",
+      "category": "visitor_follow_up",
+      "instruction": "Make the coin roll faster.",
+      "expected": [
+        "tempo_scale 1.25"
+      ]
+    },
+    {
+      "id": "slower_ripple",
+      "category": "visitor_follow_up",
+      "instruction": "Slow down the finger ripple.",
+      "expected": [
+        "tempo_scale 0.8"
+      ]
+    },
+    {
+      "id": "half_coin",
+      "category": "visitor_follow_up",
+      "instruction": "Keep the coin rolling but at half the speed.",
+      "expected": [
+        "tempo_scale 0.5"
+      ]
+    },
+    {
+      "id": "faster_dance",
+      "category": "visitor_follow_up",
+      "instruction": "Speed up the salsa.",
+      "expected": [
+        "tempo_scale 1.25"
+      ]
+    },
+    {
+      "id": "double_wave",
+      "category": "visitor_follow_up",
+      "instruction": "Make the arm wave twice as fast.",
+      "expected": [
+        "tempo_scale 2"
+      ]
+    },
+    {
+      "id": "flip_faster",
+      "category": "visitor_follow_up",
+      "instruction": "Flip a coin faster.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "juggle_slow",
+      "category": "visitor_follow_up",
+      "instruction": "Juggle more slowly.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "still_arms",
+      "category": "visitor_follow_up",
+      "instruction": "Keep dancing but hold both arms still.",
+      "expected": [
+        "arms still"
+      ]
+    }
+  ]
+}

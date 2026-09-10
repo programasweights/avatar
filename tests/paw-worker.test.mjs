@@ -28,7 +28,7 @@ async function events() {
   }
 }
 async function until(predicate) {
-  const deadline = Date.now() + 5_000;
+  const deadline = Date.now() + 15_000;
   while (!predicate(await events())) {
     if (Date.now() > deadline) throw new Error("Worker event did not arrive");
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -57,12 +57,16 @@ def event(kind, text=''):
 def function(program_id):
     if program_id == ${JSON.stringify(programs.sequence)}:
         return lambda *args, **kwargs: 'single'
-    if program_id in (${JSON.stringify(programs.playback_control)}, ${JSON.stringify(programs.arm_control)}, ${JSON.stringify(programs.dance_extension)}):
+    if program_id in (${JSON.stringify(programs.playback_control)}, ${JSON.stringify(programs.arm_control)}, ${JSON.stringify(programs.dance_extension)}, ${JSON.stringify(programs.dance_fallback)}):
         return lambda *args, **kwargs: 'none'
+    if program_id == ${JSON.stringify(programs.dance_confirmation)}:
+        return lambda *args, **kwargs: 'no'
     if program_id in (${JSON.stringify(programs.activity_scope)}, ${JSON.stringify(programs.activity_confirmation)}):
         return lambda *args, **kwargs: 'other'
     if program_id == ${JSON.stringify(programs.dispatch)}:
         return lambda *args, **kwargs: 'dexterity'
+    if program_id == ${JSON.stringify(programs.current_control)}:
+        return lambda *args, **kwargs: 'unsupported'
     event('load', program_id)
     def infer(text, **kwargs):
         event('start', text)

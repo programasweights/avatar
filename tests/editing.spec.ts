@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import {
   branchTargets,
+  armTargets,
   resolveEditTarget,
   editingBlockReason,
   fingerTargets,
@@ -304,6 +305,14 @@ test("model edit tokens resolve explicit, active-hand and selected targets witho
   ]);
   expect(resolveEditTarget("elbow", "right", [])).toEqual(["right_elbow"]);
   expect(resolveEditTarget("head", "left", [])).toEqual(["head"]);
+  expect(armTargets("left")).toEqual([
+    "left_clavicle", "left_shoulder", "left_elbow", "left_wrist",
+  ]);
+  expect(resolveEditTarget("left_arm", "right", [])).toEqual(armTargets("left"));
+  expect(resolveEditTarget("right_arm", "left", [])).toEqual(armTargets("right"));
+  expect(resolveEditTarget("both_arms", "left", [])).toEqual(armTargets());
+  expect(resolveEditTarget("arm", "right", [])).toEqual(armTargets("right"));
+  expect(resolveEditTarget("arms", "right", [])).toEqual(armTargets());
   expect(
     resolveEditTarget("selected", "left", ["head", "neck", "head"]),
   ).toEqual(["head", "neck"]);
@@ -317,6 +326,8 @@ test("model edit tokens resolve explicit, active-hand and selected targets witho
     "ring\nfreeze head",
     "Ring",
     "left_hips",
+    "left_arm extra",
+    "arms\nrestore head",
     "unknown",
   ])
     expect(() => resolveEditTarget(target, "left", [])).toThrow(

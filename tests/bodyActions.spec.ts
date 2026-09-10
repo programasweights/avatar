@@ -266,6 +266,29 @@ test("left/right kicks visibly extend the selected foot while the support foot s
   ).toBe(720);
 });
 
+test("a half turn rotates the actual character and both feet by 180 degrees without changing its head pose", () => {
+  for (const side of ["left", "right"] as const) {
+    const timeline = compileMotion(createBodyAction(`turn_${side}`, 2));
+    const before = poseAt(timeline, 0);
+    const initialRoot = rig.scene.quaternion.clone().normalize();
+    const initialHead = rig.joints.get("head")!.bone.quaternion.clone().normalize();
+    const bodyJoints = ["left_ankle", "right_ankle", "hips"];
+    const initialWorld = Object.fromEntries(bodyJoints.map((joint) =>
+      [joint, rig.joints.get(joint)!.bone.getWorldQuaternion(new Quaternion()).normalize()]));
+    const after = poseAt(timeline, timeline.duration);
+    const finalRoot = rig.scene.quaternion.clone().normalize();
+    expect(finalRoot.angleTo(initialRoot)).toBeCloseTo(Math.PI, 7);
+    expect(rig.joints.get("head")!.bone.quaternion.clone().normalize().angleTo(initialHead)).toBeLessThan(1e-6);
+    for (const joint of bodyJoints) {
+      const original = new Vector3(...before[joint].position as [number, number, number]);
+      const expected = original.applyAxisAngle(new Vector3(0, 1, 0), side === "left" ? Math.PI : -Math.PI);
+      expect(distance(after[joint].position, expected.toArray()), `${side}: ${joint} turns with the body`).toBeLessThan(1e-6);
+      const end = rig.joints.get(joint)!.bone.getWorldQuaternion(new Quaternion()).normalize();
+      expect(end.angleTo(initialWorld[joint]), `${side}: ${joint} world rotation`).toBeCloseTo(Math.PI, 6);
+    }
+  }
+});
+
 test("multiple requested body actions keep their order, counts, and continuous transition endpoints", () => {
   const program = applyCommands(
     createBodyAction("walk"),

@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { Quaternion } from "three";
 import { findNode } from "../src/motion/engine";
+import { armTargets } from "../src/motion/editing";
 
 test.use({
   launchOptions: { args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-webgl", "--enable-unsafe-swiftshader"] },
@@ -13,6 +14,10 @@ async function studio(page: Page) {
     "Pause both shoulders.": "freeze both_shoulder",
     "Pause left shoulder.": "freeze left_shoulder",
     "Pause right shoulder.": "freeze right_shoulder",
+    "Freeze your left arm.": "freeze left_arm",
+    "Freeze both arms while keeping the dance going.": "freeze both_arms",
+    "Restore your left arm.": "restore left_arm",
+    "Restore both arms.": "restore both_arms",
     "Make the arms robotic.": "arms robot",
     "Wave with the left hand.": "wave left",
     "Keep the arms still.": "arms still",
@@ -25,7 +30,7 @@ async function studio(page: Page) {
     return route.fulfill({ json: { output: outputs[instruction], trace: { mocked: true } } });
   });
   await page.goto("/gangnam?dbg=1&quality=low");
-  await page.waitForFunction(() => !!(window as any).__motion);
+  await page.waitForFunction(() => !!(window as any).__motion, undefined, { timeout: 60_000 });
   await expect(page.getByText("Loading the character…")).toBeHidden();
   return async (instruction: string) => {
     await page.getByLabel("Direction", { exact: true }).fill(instruction);
@@ -44,15 +49,46 @@ async function sampleLocalArms(page: Page, fractions = [0, 0.25]) {
     return fractions.map((fraction) => {
       const time = motion.timeline.duration * fraction;
       motion.seek(time);
-      return Object.fromEntries(["head", "left_shoulder", "right_shoulder", "left_wrist", "right_wrist"].map((joint) => [
+      return Object.fromEntries(["head", "left_clavicle", "right_clavicle", "left_shoulder", "right_shoulder", "left_elbow", "right_elbow", "left_wrist", "right_wrist"].map((joint) => [
         joint, motion.rig.joints.get(joint).bone.quaternion.toArray(),
       ]));
     });
   }, fractions);
 }
 const rotationChange = (samples: Record<string, number[]>[], joint: string) =>
-  new Quaternion().fromArray(samples[0][joint]).angleTo(new Quaternion().fromArray(samples[1][joint]));
+  Math.max(...samples.map((sample) => new Quaternion().fromArray(samples[0][joint]).normalize()
+    .angleTo(new Quaternion().fromArray(sample[joint]).normalize())));
 const frozenTargets = (state: any): string[] => state.frozen.flatMap((token: any) => token.targets).sort();
+
+test("arm group pauses and restores are complete, independent and reversible through the direction input", async ({ page }) => {
+  test.setTimeout(120_000);
+  const direct = await studio(page);
+  const original = await page.evaluate(() => (window as any).__motionStudio.snapshot().program);
+  // Cover both arm phrases and verify the next direction after playback ends.
+  const cycle = [0, 0.25, 0.5, 0.75, 1];
+  await page.evaluate(() => (window as any).__motion.seek(0.73));
+  const left = await direct("Freeze your left arm.");
+  expect(frozenTargets(left)).toEqual(armTargets("left").sort());
+  let samples = await sampleLocalArms(page, cycle);
+  for (const joint of armTargets("left"))
+    expect(rotationChange(samples, joint), joint).toBeLessThan(1e-6);
+  expect(rotationChange(samples, "right_elbow")).toBeGreaterThan(0.1);
+  const both = await direct("Freeze both arms while keeping the dance going.");
+  expect(frozenTargets(both)).toEqual(armTargets().sort());
+  expect(both.playing).toBe(true);
+  samples = await sampleLocalArms(page, cycle);
+  for (const joint of armTargets())
+    expect(rotationChange(samples, joint), joint).toBeLessThan(1e-6);
+  const restoredLeft = await direct("Restore your left arm.");
+  expect(frozenTargets(restoredLeft)).toEqual(armTargets("right").sort());
+  samples = await sampleLocalArms(page, cycle);
+  expect(rotationChange(samples, "left_elbow")).toBeGreaterThan(0.1);
+  for (const joint of armTargets("right"))
+    expect(rotationChange(samples, joint), joint).toBeLessThan(1e-6);
+  const restored = await direct("Restore both arms.");
+  expect(frozenTargets(restored)).toEqual([]);
+  expect(restored.program).toEqual(original);
+});
 
 test("new arm and one-sided wave commands release matching pauses and preserve other pauses, support and phase", async ({ page }) => {
   const direct = await studio(page);

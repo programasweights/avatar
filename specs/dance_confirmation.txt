@@ -4,6 +4,9 @@ yes: a request to START specifically Gangnam Style, PSY's dance, or its recogniz
 yes: change which FOOT/LEG supports the CURRENT dance: "now on one foot", "same dance on your left leg", "keep doing that with one foot up", "switch feet", "use the other foot", "both feet again", "restore original footwork". A support-foot edit may include an absolute BPM. No new action is being started.
 no: everything else. Generic dance, salsa, Latin, cha-cha, robot, ballet and other dances are NOT Gangnam. All new walking, running, jumping, hopping, kicking, bowing, sitting, spinning and combinations are no, even on one foot. Walk/run AND wave are no. All individual joint angles, raised arms/legs, finger moves, hand tricks, coin tricks, grasps, snaps, freeze/restore a joint, hand switches, relative speed, reverse, stop/resume/replay, cameras, appearance and factual questions are no. Keeping Gangnam while editing a finger, arms or speed is no; it is not a new dance or a support-foot edit. A word like "other" or "left" never implies feet unless a FOOT/LEG is named. Do not use the proposed output of any other model: classify only the user's request.
 
+
+BARE SUPPORT REQUESTS also edit the supporting foot of the current dance. They do NOT need words such as now, keep dancing, or same routine. Balance on one foot, stand on one leg, put your weight on the left foot, and use the right leg for support all specify support. A generic one-foot/one-legged balance defaults to left. Choose the named supporting foot directly; an explicitly lifted foot means the opposite support. Neither balance nor stand-on-one-foot starts a new dance. Balancing a prop on a foot/head/hand, walking a tightrope, a handstand, and standing on hands are not support-foot edits. A new jump/hop still belongs to the basic-action interpreter. Mere standing still or standing upright without a support-foot change is not a support edit.
+
 Input: Dance Gangnam Style.
 Output: yes
 Input: Gangnam style
@@ -103,4 +106,27 @@ Output: no
 Input: Explain Gangnam Style
 Output: no
 Input: Who made Gangnam Style?
+Output: no
+
+Input: Balance on one foot
+Output: yes
+Input: Stand on your right leg
+Output: yes
+Input: Can you balance on just your left leg?
+Output: yes
+Input: Put your weight on the right foot
+Output: yes
+Input: Keep your left foot in the air
+Output: yes
+Input: Balance on the opposite leg
+Output: yes
+Input: Go back to standing on both feet
+Output: yes
+Input: Stand on your hands
+Output: no
+Input: Balance a coin on your head
+Output: no
+Input: Stand still
+Output: no
+Input: Jump on your right foot
 Output: no

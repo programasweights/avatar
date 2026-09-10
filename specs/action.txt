@@ -4,7 +4,9 @@ Optionally append one final line: arms still
 
 NAME is one of walk, run, jump, bow, crouch, sit, turn_left, turn_right, spin, kick_left, kick_right. COUNT is an integer from 1 through 8, default 1. All counts 1, 2, 3, 4, 5, 6, 7, and 8 are supported, written as digits or words. SUPPORT is optional and allowed ONLY for jump: left, right, or both. Omitted SUPPORT means two-foot jumping. Preserve every requested support foot and arm constraint. Output unsupported if the entire instruction cannot be represented. Do not silently omit any requested action.
 
-Walk/stroll/march means walk; run/jog/sprint means run, performed in place. Jump/hop/leap defaults to jump (two feet). On the left/right foot or leg means jump with SUPPORT left/right. On one foot/one leg without a named side defaults to SUPPORT left. Each jump step can have its own support foot. Bow/take a bow means bow. Squat/duck/crouch means crouch, lowering and returning upright. Sit/sit down means sit, holding a low seated pose with no chair. An explicitly left/right turn means a 90-degree quarter-turn of the entire body: turn_left/turn_right. A directionless turn, full turn, turn around, or spin means spin, one complete 360-degree turn. Do not invent a left/right direction. This default also applies inside sequences: turn and sit means spin then sit. Kick with left/right leg means kick_left/kick_right; unspecified kick means kick_right. Reverse/backward walking, balances, punches, clapping, emotional acting, acrobatics, new dances, props and simultaneous combinations are unsupported.
+Walk/stroll/march means walk; run/jog/sprint means run, performed in place. Jump/hop/leap defaults to jump (two feet). On the left/right foot or leg means jump with SUPPORT left/right. On one foot/one leg without a named side defaults to SUPPORT left. Each jump step can have its own support foot. Bow/take a bow means bow. Squat/duck/crouch means crouch, lowering and returning upright. Sit/sit down means sit, holding a low seated pose with no chair. An explicitly left/right turn means a 90-degree quarter-turn of the entire body: turn_left/turn_right. A directionless turn, full turn, turn around, or spin means spin, one complete 360-degree turn. For the directionless full-turn default, use spin rather than inventing a left/right direction. This default also applies inside sequences: turn and sit means spin then sit. Kick with left/right leg means kick_left/kick_right; unspecified kick means kick_right. Reverse/backward walking, balances, punches, clapping, emotional acting, acrobatics, new dances, props and simultaneous combinations are unsupported.
+
+QUANTIFIED WHOLE-BODY TURNS: turn_left and turn_right each make 90 degrees. Convert an explicitly requested total angle into quarter-turn COUNT: 90=1, 180=2, 270=3, 360=4, 450=5, 540=6, 630=7, 720=8. A quarter-turn=90 and a half-turn=180. Left/counterclockwise means turn_left; right/clockwise means turn_right. If a specified angle or half-turn has no direction, use turn_left. Thus turn around 180 degrees or face the opposite direction is action turn_left 2. A directionless complete/full 360-degree turn may use action spin 1; two full rotations may use action spin 2. Retain explicit direction even for 360 degrees. "Turn right twice" means two 90-degree turns, COUNT 2. "Turn 180 degrees right twice" means four quarter-turns, COUNT 4. Degrees are the angle of EACH requested turn; multiply quarter-turn count by explicit repetitions, keeping the 1–8 count limit. Other angles (such as 30, 45, 100, negative or zero) are unsupported, never rounded or discarded. Head/neck/hips/shoulder/wrist/finger turns are local joint edits, not these whole-body actions, and are unsupported here. Turning the entire body or rotating yourself does NOT mean turning the head.
 
 A single action defaults to count 1. Once/one=1, twice/two=2, three=3, four=4, five=5, six=6, seven=7, eight=8. Preserve explicit repeats in the COUNT field. Repeating ONE action produces ONE output line, never one line per repetition: five jumps means action jump 5, not five steps. Consecutive actions joined by then, and, comma, followed by, or after that are separate lines in requested order. There are two separate limits: at most 4 action LINES (steps), and at most 16 total REPETITIONS (the sum of their COUNT values), plus the optional final arms still line. The four-line limit does not limit COUNT to four. One line with COUNT 5, 6, 7, or 8 is valid; two lines with COUNT 8 each total 16 and are valid. Only repetitions of an entire MULTI-ACTION sequence expand into ordered lines, if within both limits. Do not confuse repetitions with degrees or speed. Unsupported numbers, zero/negative counts, forever, time durations and incomplete instructions are unsupported. Requests to change an existing motion, body-part edits, explanations, questions about meaning, and descriptions of past actions are unsupported. A polite request to perform a supported action is allowed.
 
@@ -147,3 +149,35 @@ Input: Jump without moving your legs
 Output: unsupported
 Input: Walk and wave but don't move your arms
 Output: unsupported
+
+Input: Turn around 180 degrees
+Output: action turn_left 2
+Input: Turn left 180 degrees
+Output: action turn_left 2
+Input: Turn right 180 degrees
+Output: action turn_right 2
+Input: Rotate yourself 270 degrees clockwise
+Output: action turn_right 3
+Input: Make a half-turn
+Output: action turn_left 2
+Input: Face the opposite direction
+Output: action turn_left 2
+Input: Make a quarter-turn to the right
+Output: action turn_right 1
+Input: Turn left 360 degrees
+Output: action turn_left 4
+Input: Turn 180 degrees right twice
+Output: action turn_right 4
+Input: Turn around 360 degrees
+Output: action spin 1
+Input: Turn 45 degrees
+Output: unsupported
+Input: Turn left 100 degrees
+Output: unsupported
+Input: Turn your head left 90 degrees
+Output: unsupported
+Input: Rotate your hips 180 degrees
+Output: unsupported
+Input: Turn right 180 degrees with your arms still
+Output: action turn_right 2
+arms still

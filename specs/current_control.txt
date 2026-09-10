@@ -121,3 +121,23 @@ Input: Pause the animation
 Output: unsupported
 Input: Resume
 Output: unsupported
+
+Relative speed edits may NAME the currently running skill or dance. The skill name identifies the existing motion; faster/slower/double/half changes only its speed, not the motion itself. Apply this to coin rolls, ripples, fingertip touches, arm waves, dances, walking and running. Do not turn an unsupported new trick into a speed edit.
+Input: Make the coin roll faster.
+Output: tempo_scale 1.25
+Input: Slow down the finger ripple.
+Output: tempo_scale 0.8
+Input: Do the fingertip touches at half speed.
+Output: tempo_scale 0.5
+Input: Double the speed of the current dance.
+Output: tempo_scale 2
+Input: Speed up the salsa.
+Output: tempo_scale 1.25
+Input: Keep the coin rolling but at half the speed.
+Output: tempo_scale 0.5
+Input: Make the arm wave twice as fast.
+Output: tempo_scale 2
+Input: Flip a coin faster.
+Output: unsupported
+Input: Juggle more slowly.
+Output: unsupported
