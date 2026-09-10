@@ -1,5 +1,5 @@
 import { compileMotion, findNode } from "./engine";
-import { removeWaveOverlay } from "./waveOverlay";
+import { removeWaveOverlay, waveOverlay } from "./waveOverlay";
 import { createGangnam, GANGNAM_BPM } from "./gangnam";
 import type {
   Axis,
@@ -431,7 +431,7 @@ export function replaceArms(
   program: MotionProgram,
   style: ArmStyle,
 ): MotionProgram {
-  program = removeWaveOverlay(program);
+  program = clearArmDetails(removeWaveOverlay(program), ["left", "right"]);
   const arms = findNode(program.root, "arms");
   const duration = arms
     ? compileMotion({ ...program, root: arms }).duration
@@ -472,6 +472,73 @@ export function replaceArms(
         ? node
         : { ...node, children: node.children.map(replace) };
   return { ...program, root: replace(program.root) };
+}
+
+function clearArmDetails(program: MotionProgram, sides: string[]): MotionProgram {
+  const visit = (node: MotionNode, inDetails = false): MotionNode => {
+    inDetails ||= node.id === "details";
+    if (node.kind === "curve") return inDetails && node.channel === "rotation" &&
+      /_(clavicle|shoulder|elbow|wrist)$/.test(node.target) && sides.includes(node.target.split("_")[0])
+      // A new whole-arm pose supersedes earlier offsets on that arm. Keeping
+      // neutral tracks retains their timing and editable IDs, including repeats.
+      ? { ...node, blend: "add", curve: constant(0) }
+      : node;
+    return node.kind === "contact" ? node : { ...node, children: node.children.map((child) => visit(child, inDetails)) };
+  };
+  return { ...program, root: visit(program.root) };
+}
+
+/** Replace one arm without retiming the other arm or any body-action phases. */
+export function replaceArm(
+  program: MotionProgram,
+  side: "left" | "right",
+  style: ArmStyle,
+): MotionProgram {
+  if (!["left", "right"].includes(side)) throw new Error("Choose the left or right arm.");
+  program = clearArmDetails(program, [side]);
+  const wave = waveOverlay(program);
+  if (wave?.children.some((node) => node.kind === "curve" && node.target.startsWith(`${side}_`)))
+    program = removeWaveOverlay(program);
+  const arms = findNode(program.root, "arms");
+  if (arms?.kind !== "parallel")
+    throw new Error("This imported program has no parallel arms branch to edit.");
+  // Reuse the bounded phrase/repeat construction for long imported motions.
+  const profile = findNode(replaceArms(program, style).root, "arms")!;
+  const overlayId = `arms.edit.${side}`;
+  const existing = findNode(program.root, overlayId);
+  if (existing && !arms.children.includes(existing))
+    throw new Error(`The imported motion already uses ${overlayId} outside the arm edits.`);
+  const select = (node: MotionNode): MotionNode | undefined => {
+    if (node.kind === "contact") return undefined;
+    if (node.kind === "curve") return node.target.startsWith(`${side}_`)
+      ? { ...node, id: `${overlayId}.${node.id}`, blend: "replace" }
+      : undefined;
+    const children = node.children.map(select).filter((child): child is MotionNode => !!child);
+    if (!children.length) return undefined;
+    // Full rotations replace old crossing/twisting axes as well as flexion.
+    // A neutral arm therefore really lowers from a multi-axis dance pose.
+    if (children.every((child) => child.kind === "curve")) {
+      const duration = (children[0] as CurveNode).duration;
+      for (const joint of ["clavicle", "shoulder", "elbow", "wrist"])
+        for (const axis of ["x", "y", "z"] as const) {
+          const target = `${side}_${joint}`;
+          if (!children.some((child) => child.kind === "curve" && child.target === target && child.axis === axis))
+            children.push({
+              ...leaf(`${overlayId}.${node.id}.${joint}.${axis}`, `${joint} · ${axis}`, target, axis, constant(0), duration),
+              blend: "replace",
+            });
+        }
+    }
+    return { ...node, id: `${overlayId}.${node.id}`, children };
+  };
+  const replacement = { ...select(profile)!, id: overlayId, label: `${side === "left" ? "Left" : "Right"} arm · ${style}` };
+  const visit = (node: MotionNode): MotionNode =>
+    node.id === "arms" ? { ...arms, children: [...arms.children.filter((child) => child !== existing), replacement] }
+      : node.kind === "curve" || node.kind === "contact" ? node
+      : { ...node, children: node.children.map(visit) };
+  const next = { ...program, root: visit(program.root) };
+  compileMotion(next);
+  return next;
 }
 export function changeTempo(
   program: MotionProgram,

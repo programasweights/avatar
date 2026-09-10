@@ -1,14 +1,16 @@
-Recognize four coordinated avatar motions. Return exactly legacy OR one line:
+Recognize four coordinated avatar motions, including short informal requests. Return exactly legacy OR one line:
 skill NAME SIDE DIRECTION
 NAME is finger_ripple, finger_touches, arm_wave, or coin_roll.
 SIDE is left or right. DIRECTION is forward or reverse. No explanations.
 
-finger_ripple: a ripple, cascade, or wave of individual fingers curling one after another across ONE hand. Default side left. forward means pinky, ring, middle, index, thumb; reverse means thumb, index, middle, ring, pinky. A finger ripple runs across the hand; wiggling only one finger is legacy.
+DEFAULTS ARE VALID: when a supported trick has no hand specified, choose left. When it has no direction specified, choose forward. A request to roll a coin is always coin_roll unless it explicitly requests an unsupported surface or trick. Missing words such as hand, knuckles, left, right, forward, or backward DO NOT make a named trick legacy. Apply these defaults to all four skills.
+
+finger_ripple: a ripple, cascade, or wave of individual fingers curling one after another across ONE hand. ANATOMICAL BOUNDARY: a wave from pinky/little finger to thumb, or from thumb to pinky/little finger, is ALWAYS finger_ripple. These are two fingers of one hand, never two arms. The word wave does not imply arm_wave. Descriptions of this movement count even without the word ripple. Short requests to ripple fingers, including "ripple your left fingers", name this skill even without the word hand, a stated order, or curling instructions. Default side left. forward means pinky, ring, middle, index, thumb; reverse means thumb, index, middle, ring, pinky. A finger ripple runs across the hand; wiggling only one finger is legacy.
 finger_touches: touch the thumb to each fingertip in turn, on ONE hand. Default side left. forward means index, middle, ring, pinky; reverse means pinky, ring, middle, index.
-arm_wave: a traveling wave from one hand through its wrist, elbow, shoulders, and the other arm to the opposite hand. SIDE is the starting hand, default left. Explicit left-to-right is left forward; right-to-left is right forward. Reverse a left-to-right arm wave is left reverse. Waving hello, shaking one hand, robot arms, and ordinary arm raises are legacy.
+arm_wave: ONLY a wave that explicitly travels between TWO HANDS or through wrists, elbows, shoulders, or BOTH ARMS. A wave across fingers of one hand is finger_ripple, never arm_wave. A traveling wave from one hand through its wrist, elbow, shoulders, and the other arm to the opposite hand. SIDE is the starting hand, default left. Explicit left-to-right is left forward; right-to-left is right forward. Reverse a left-to-right arm wave is left reverse. Waving hello, shaking one hand, robot arms, and ordinary arm raises are legacy.
 coin_roll: roll a coin across ONE hand's knuckles, a coordinated finger trick. A short request "roll a coin", "do a coin roll", or "show me the coin trick" names this same trick, even without the word knuckles. Default side left. forward means index toward pinky; reverse means pinky toward index. Flipping, tossing, catching, balancing, or spinning a coin, or rolling it anywhere except one hand's knuckles (including head, face, nose, arm, elbow, leg, foot, or table), are legacy. Never replace an explicitly different surface with knuckles.
 
-Use forward unless backward, reversed, or the opposite finger order is requested. Use the explicitly named hand. Each request must specify one supported skill. Maintaining an existing dance or footwork is allowed; starting/changing a dance or requesting multiple different skills in one sentence is legacy. Both hands simultaneously is legacy. All other instructions are legacy, including isolated joint rotations, dance choices, tempo changes, facial motions, arbitrary tricks, and instructions to explain something. Standalone "reverse it" is legacy because no prior action is provided. Do not guess the meaning of missing context.
+Use forward unless backward, reversed, or the opposite finger order is requested. Use the explicitly named hand. Each request must specify one supported skill. Maintaining an existing dance or footwork is allowed; starting/changing a dance or requesting multiple different skills in one sentence is legacy. Both hands simultaneously is legacy. All other instructions are legacy, including isolated joint rotations, dance choices, tempo changes, facial motions, arbitrary tricks, and instructions to explain something. Standalone "reverse it" is legacy because no prior action is provided. Only pronouns without a named skill need context. Named skills such as coin roll or finger ripple are complete requests and use the defaults above.
 
 Input: Make a wave from your pinky to your thumb.
 Output: skill finger_ripple left forward
@@ -20,6 +22,18 @@ Input: Reverse the finger ripple on the left hand.
 Output: skill finger_ripple left reverse
 Input: Keep dancing and ripple the fingers on your right hand.
 Output: skill finger_ripple right forward
+Input: Ripple your left fingers.
+Output: skill finger_ripple left forward
+Input: Ripple the right fingers.
+Output: skill finger_ripple right forward
+Input: Make my fingers ripple.
+Output: skill finger_ripple left forward
+Input: Do a finger cascade with the left hand.
+Output: skill finger_ripple left forward
+Input: A right-hand finger ripple, please.
+Output: skill finger_ripple right forward
+Input: Ripple the left fingers in reverse order.
+Output: skill finger_ripple left reverse
 Input: Touch your thumb to each fingertip, one at a time.
 Output: skill finger_touches left forward
 Input: Tap each finger with the right thumb, starting at the pinky.
@@ -83,3 +97,29 @@ Input: Do it with your right hand
 Output: legacy
 Input: Make it twice as fast
 Output: legacy
+
+Input: Coin roll please
+Output: skill coin_roll left forward
+Input: Roll a coin over the knuckles
+Output: skill coin_roll left forward
+Input: Do a knuckle roll with a coin
+Output: skill coin_roll left forward
+Input: Can you roll a coin across your knuckles?
+Output: skill coin_roll left forward
+Input: Roll a coin across the right knuckles.
+Output: skill coin_roll right forward
+Input: Roll a coin from pinky to index.
+Output: skill coin_roll left reverse
+Input: Roll a coin on the table
+Output: legacy
+
+Input: Make a wave from pinky to thumb on your left hand.
+Output: skill finger_ripple left forward
+Input: Wave the right fingers, starting at the little finger and finishing at the thumb.
+Output: skill finger_ripple right forward
+Input: Send a wave from thumb to little finger on the left hand.
+Output: skill finger_ripple left reverse
+Input: A wave across my fingers
+Output: skill finger_ripple left forward
+Input: Send a wave through both arms, starting at the left wrist.
+Output: skill arm_wave left forward

@@ -1,0 +1,116 @@
+Extract one arm-style edit to the CURRENT avatar motion. Output ONLY none, or one command:
+arms natural
+arms robot
+arms wave
+arms still
+arm left natural
+arm right natural
+arm left robot
+arm right robot
+arm left wave
+arm right wave
+arm left still
+arm right still
+
+Mandatory scope: emit an arm command ONLY when the requested NEW style or resting pose explicitly applies to a whole arm or to the arms. The instruction must name that arm subject and ask to change its motion. Resolve left/right from that ARM subject, never from a nearby foot, leg, hand or other body part. Do not invent an arm edit from "keep the routine going", "only the left", "still", "relax", "lower", "robotic", or "touching the floor". Without an explicit new whole-arm style/rest request, output none. Mentioning arms solely to preserve their existing motion is not a request to replace them. This scope rule applies even when the input resembles a positive example.
+
+arms edits BOTH complete arms. arm left/right edits ONLY that complete arm. Preserve the explicit side; unspecified plural arms means both. natural means natural swinging dance arms; robot means robotic/mechanical/angular arms; wave means wave-like/dancing arm motion; still means relax/lower/drop/rest the arm(s) at the sides with no arm animation. "Lower both arms" is arms still, never a zero-degree additive joint change.
+
+A clause saying keep/continue the current dance, routine, legs, feet or footwork is preservation, NOT a new dance. Ignore its name (Gangnam, salsa, cha-cha, robot or any other name) when extracting an explicit arm edit. Keeping a motion at a stated speed is also preservation. Preservation alone does not imply an arm edit. An added restriction such as only one foot touching the floor is a NEW support request, not an arm request. Do not reject a real arm edit just because the retained background is named. Output only the newly requested arm style. Do not change the legs or dance.
+
+Return none for a new dance/body action plus an arm modifier (handled together elsewhere), joint angles or ordinary joint raises/bends/rotations, finger skills, waving hello/goodbye with a hand, hand-side switches, support-foot edits, global playback, tempo changes, freeze/pause an arm at its CURRENT pose, restore/resume an arm, explicit complex poses (cross arms, hands behind head, reach above head), unsupported styles, multiple different arm edits, questions and unrelated tasks. A generic arm movement is not a style request. Do not substitute a style for an unsupported pose. "Keep both arms still" selects arms still; explicitly freeze them WHERE THEY ARE selects none. A numbered or first/then sequence is none; another function splits it.
+
+Input: Keep Gangnam footwork but make the arms robotic.
+Output: arms robot
+Input: Keep the feet exactly the same. Use mechanical arms.
+Output: arms robot
+Input: Continue the cha-cha and make only the left arm robotic.
+Output: arm left robot
+Input: Keep dancing, but the right arm should move like a robot.
+Output: arm right robot
+Input: Lower both arms.
+Output: arms still
+Input: Drop your left arm to your side.
+Output: arm left still
+Input: Relax the right arm while the rest keeps dancing.
+Output: arm right still
+Input: Keep dancing but hold both arms still.
+Output: arms still
+Input: Use natural arm motion.
+Output: arms natural
+Input: Make the right arm swing naturally.
+Output: arm right natural
+Input: Give both arms wave-like motion.
+Output: arms wave
+Input: Make just the left arm move in waves.
+Output: arm left wave
+Input: Keep standing on the right foot and let the left arm hang loosely at your side.
+Output: arm left still
+Input: Leave the left leg alone; make the right arm mechanical.
+Output: arm right robot
+Input: Keep the routine going with only the left foot touching the floor.
+Output: none
+Input: Continue the dance with the right foot planted and the left foot raised.
+Output: none
+Input: Keep doing Gangnam, now balance on one leg.
+Output: none
+Input: Same routine, but put both feet back on the ground.
+Output: none
+Input: Leave the arms exactly as they are; switch the supporting foot.
+Output: none
+Input: Keep the robotic arms and dance on your right foot.
+Output: none
+Input: Keep dancing but hold the left leg still.
+Output: none
+Input: Lower your right leg to the floor.
+Output: none
+Input: Relax the left knee while the dance continues.
+Output: none
+Input: Make the footwork robotic.
+Output: none
+Input: Move your torso in waves while keeping your arms unchanged.
+Output: none
+Input: Continue the routine at half speed.
+Output: none
+Input: Keep dancing exactly as before.
+Output: none
+Input: Only the left one now.
+Output: none
+Input: Stand still.
+Output: none
+Input: Relax your shoulders.
+Output: none
+Input: Lower your head.
+Output: none
+Input: Let the right hand hang open.
+Output: none
+Input: Dance salsa with robotic arms.
+Output: none
+Input: Jump without moving arms.
+Output: none
+Input: Raise the left arm 90 degrees.
+Output: none
+Input: Bend your right elbow.
+Output: none
+Input: Wiggle only the left index finger 65 degrees.
+Output: none
+Input: Wave hello with your right hand while keeping the dance going.
+Output: none
+Input: Send a traveling wave across both arms.
+Output: none
+Input: Cross your arms.
+Output: none
+Input: Freeze your left arm exactly where it is.
+Output: none
+Input: Resume the right arm.
+Output: none
+Input: Now on one foot.
+Output: none
+Input: Switch to the opposite foot.
+Output: none
+Input: Use the other hand.
+Output: none
+Input: Touch your left thumb to each fingertip, index first.
+Output: none
+Input: Roll a coin across your left knuckles.
+Output: none

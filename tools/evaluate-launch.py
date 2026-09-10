@@ -45,7 +45,7 @@ def main() -> int:
     inference_calls = []
     if args.local or args.infer_url:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-        from director import direct
+        from director import direct, PROGRAMS
         director = direct
     if args.infer_url:
         import programasweights as paw
@@ -58,7 +58,8 @@ def main() -> int:
             if key:
                 headers["X-API-Key"] = key
             request = urllib.request.Request(args.infer_url, data=json.dumps({
-                "program_id": program_id, "input": instruction, "temperature": 0, "max_tokens": 80,
+                "program_id": program_id, "input": instruction, "temperature": 0,
+                "max_tokens": 256 if program_id == PROGRAMS.get("sequence") else 80,
             }).encode(), headers=headers, method="POST")
             with urllib.request.urlopen(request, timeout=args.timeout) as result:
                 output = json.load(result)["output"]
@@ -98,6 +99,36 @@ def main() -> int:
         matches = output in case.get("expected", []) or (
             isinstance(output, str) and any(re.fullmatch(pattern, output) for pattern in case.get("expected_patterns", []))
         )
+        if "expected_steps" in case and isinstance(output, str):
+            try:
+                plan = json.loads(output)
+                expected = case["expected_steps"]
+                matches = (isinstance(plan, dict) and plan.get("kind") == "sequence"
+                           and isinstance(plan.get("steps"), list) and len(plan["steps"]) == len(expected)
+                           and all(isinstance(step, dict) and step.get("commands") in want["commands"]
+                                   and step.get("mode") == want["mode"]
+                                   and step.get("seconds") == want.get("seconds")
+                                   for step, want in zip(plan["steps"], expected)))
+            except (ValueError, TypeError):
+                matches = False
+        elif isinstance(output, str) and output.startswith("{"):
+            # Older body-action cases already describe temporal order. The
+            # explicit plan must preserve every action and count; simultaneous
+            # joint or style command blocks are never accepted this way.
+            try:
+                plan = json.loads(output)
+                for expected in case.get("expected", []):
+                    lines = expected.splitlines()
+                    if len(lines) < 2 or not all(line.startswith("action ") for line in lines):
+                        continue
+                    steps = plan.get("steps", []) if isinstance(plan, dict) else []
+                    if (plan.get("kind") == "sequence" and len(steps) == len(lines)
+                            and all(isinstance(step, dict) and step.get("commands") == line
+                                    and step.get("mode") == "perform" and "seconds" not in step
+                                    for step, line in zip(steps, lines))):
+                        matches = True
+            except (ValueError, TypeError, AttributeError):
+                matches = False
         if case.get("excluded_prefixes") and isinstance(output, str):
             matches = not any(output.startswith(prefix) for prefix in case["excluded_prefixes"])
         if "expected_route" in case:

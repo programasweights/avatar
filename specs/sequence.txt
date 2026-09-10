@@ -1,0 +1,90 @@
+Split one avatar instruction into an ordered plan, without choosing motion commands. Output ONLY one of:
+single
+unsupported
+or 2–4 ordered steps in this exact format:
+sequence
+MODE|TIME|INSTRUCTION
+MODE|TIME|INSTRUCTION
+
+MODE is perform or continue. TIME is auto or a numeric duration in seconds from 1 through 12 (decimals allowed). INSTRUCTION is a complete short direction with no pipe or newline. Never output JSON or commentary.
+
+Use sequence for explicitly successive actions: first/then/after that/next/finally, or an ordered numbered list. Preserve every action, order, side, joint, count, angle, constraint and stated duration. Expand omitted subjects/verbs using the preceding clause: "turn your head left, then right" becomes "Turn your head right." Do not replace unknown actions with known ones; include them for the next interpreter to validate. More than four steps or any explicit duration outside 1–12 seconds is unsupported.
+
+perform starts the next action after the previous action ends. It is the default for new dances, gestures, body actions, skills, and joint poses. continue changes the preceding ongoing motion: use it for explicit keep/continue/still dancing instructions, and for relative edits such as on one foot, switch feet, the other hand, reverse it, or slower. A named background dance being kept is not a separate step. Preserve it within the edit clause.
+
+single means no ordered plan. A single action repeated several times is single. Simultaneous actions joined by and/while/together/at the same time are single unless explicit successive language says otherwise. A dance with an arm-style modifier is single. Finger ripple order, fingertip touches and coin transfers are each one skill, not separate steps. Do not split ordinary punctuation or preservation clauses. Standalone playback commands, questions and unsupported requests are single. Do not drop a pause, unknown action or unsupported clause from a real sequence.
+
+Input: First bow, then jump twice.
+Output: sequence
+perform|auto|Bow.
+perform|auto|Jump twice.
+Input: Raise your left arm, then raise your right arm.
+Output: sequence
+perform|auto|Raise your left arm.
+perform|auto|Raise your right arm.
+Input: Turn your head left, then right, then look forward.
+Output: sequence
+perform|auto|Turn your head left.
+perform|auto|Turn your head right.
+perform|auto|Look forward.
+Input: Dance Gangnam for three seconds, then dance salsa for three seconds.
+Output: sequence
+perform|3|Dance Gangnam.
+perform|3|Dance salsa.
+Input: Dance Gangnam, then go on one foot, then switch to the opposite foot.
+Output: sequence
+perform|auto|Dance Gangnam.
+continue|auto|Go on one foot.
+continue|auto|Switch to the opposite foot.
+Input: First roll a coin across your left knuckles, then ripple your left fingers.
+Output: sequence
+perform|auto|Roll a coin across your left knuckles.
+perform|auto|Ripple your left fingers.
+Input: Wave hello with the right hand, then take a bow.
+Output: sequence
+perform|auto|Wave hello with the right hand.
+perform|auto|Take a bow.
+Input: Start salsa, then keep dancing but make only the left arm robotic for 2 seconds.
+Output: sequence
+perform|auto|Start salsa.
+continue|2|Keep dancing but make only the left arm robotic.
+Input: First ripple your right fingers, then reverse it, finally do it with the other hand.
+Output: sequence
+perform|auto|Ripple your right fingers.
+continue|auto|Reverse it.
+continue|auto|Do it with the other hand.
+Input: 1. Jump twice. 2. Bow. 3. Sit down.
+Output: sequence
+perform|auto|Jump twice.
+perform|auto|Bow.
+perform|auto|Sit down.
+Input: First bow, then juggle three balls.
+Output: sequence
+perform|auto|Bow.
+perform|auto|Juggle three balls.
+Input: First wave for 30 seconds, then bow.
+Output: unsupported
+Input: Bow, then jump, then sit, then walk, then run.
+Output: unsupported
+Input: Dance salsa and use robotic arms.
+Output: single
+Input: Raise your left arm and bend your right knee.
+Output: single
+Input: Keep the footwork. Make the arms robotic.
+Output: single
+Input: Keep Gangnam dancing while waving hello.
+Output: single
+Input: Touch your left thumb to each fingertip, index first.
+Output: single
+Input: Make a wave from pinky to thumb on your left hand.
+Output: single
+Input: Jump twice.
+Output: single
+Input: Stop.
+Output: single
+Input: Dance Gangnam Style.
+Output: single
+Input: Now on one foot.
+Output: single
+Input: Switch to the opposite foot.
+Output: single

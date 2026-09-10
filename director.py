@@ -45,7 +45,8 @@ def _load_function(program_id: str):
 
 
 def local_infer(program_id: str, instruction: str) -> str:
-    output = _load_function(program_id)(instruction, temperature=0, max_tokens=80)
+    output = _load_function(program_id)(instruction, temperature=0,
+                                        max_tokens=256 if program_id == PROGRAMS.get("sequence") else 80)
     if not isinstance(output, str):
         raise ValueError("PAW returned a non-text response")
     return output
@@ -200,8 +201,82 @@ def validate_actions(raw: str) -> str:
     return "\n".join(lines)
 
 
+def validate_arm_control(raw: str) -> str:
+    """An arm style is either bilateral or explicitly limited to one side."""
+    if not re.fullmatch(r"(?:arms|arm (?:left|right)) (?:natural|robot|wave|still)", raw):
+        raise ValueError("Invalid arm control command")
+    return raw
+
+
+def validate_sequence(raw: str) -> list[dict]:
+    """Parse the bounded splitter format before interpreting any clause."""
+    lines = raw.splitlines()
+    if not lines or lines[0] != "sequence" or not 3 <= len(lines) <= 5:
+        raise ValueError("A motion sequence needs 2–4 complete steps")
+    steps = []
+    total = 0.0
+    for line in lines[1:]:
+        fields = line.split("|")
+        if len(fields) != 3:
+            raise ValueError("Each sequence step needs mode, duration, and instruction")
+        mode, duration, clause = fields
+        if mode not in {"perform", "continue"}:
+            raise ValueError("Invalid sequence step mode")
+        if not clause.strip() or len(clause) > 400 or not clause.isprintable():
+            raise ValueError("Each sequence instruction needs 1–400 printable characters")
+        step = {"instruction": clause.strip(), "mode": mode}
+        if duration != "auto":
+            if not re.fullmatch(r"\d+(?:\.\d+)?", duration) or not 1 <= float(duration) <= 12:
+                raise ValueError("Each sequence duration must be auto or 1–12 seconds")
+            step["seconds"] = float(duration)
+            total += step["seconds"]
+        steps.append(step)
+    if total > 48:
+        raise ValueError("Explicit sequence durations cannot exceed 48 seconds")
+    return steps
+
+
 def direct(instruction: str, infer: Infer | None = None) -> dict:
-    """Interpret one direction. Every neural call runs sequentially and locally.
+    """Interpret an atomic direction or a fully validated ordered motion plan."""
+    if not isinstance(instruction, str) or not instruction.strip() or len(instruction) > 400:
+        raise ValueError("Provide a direction of 1–400 characters.")
+    infer = infer or local_infer
+    raw = infer(PROGRAMS["sequence"], instruction)
+    if not isinstance(raw, str):
+        raise ValueError("PAW returned a non-text response")
+    raw = raw.strip()
+    if raw == "single":
+        result = _direct_atomic(instruction, infer)
+        return {**result, "trace": {"sequence": raw, **result["trace"]}}
+    trace = {"sequence": raw, "route": "sequence", "steps": []}
+
+    def reject(reason: str) -> dict:
+        trace.update(route="unsupported", validation_error=reason)
+        return {"output": "unsupported", "trace": trace}
+
+    try:
+        steps = validate_sequence(raw)
+    except ValueError as exc:
+        return reject(str(exc))
+    plan = []
+    for step in steps:
+        try:
+            result = _direct_atomic(step["instruction"], infer)
+        except ValueError as exc:
+            trace["steps"].append({"instruction": step["instruction"], "validation_error": str(exc)})
+            return reject(f"Sequence step {len(plan) + 1}: {exc}")
+        trace["steps"].append({"instruction": step["instruction"], "trace": result["trace"]})
+        commands = result["output"]
+        if commands == "unsupported":
+            return reject(f"Sequence step {len(plan) + 1} is unsupported")
+        if any(line.split()[0] in {"playback", "freeze", "restore"} for line in commands.splitlines()):
+            return reject("Playback and frozen-pose edits cannot be placed inside a sequence")
+        plan.append({**step, "commands": commands})
+    return {"output": json.dumps({"kind": "sequence", "steps": plan}, separators=(",", ":")), "trace": trace}
+
+
+def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
+    """Interpret one direction with sequential calls to the inference provider.
 
     Every emitted command is validated. The trace records actual model decisions
     and any validated target repair; the director never guesses from user wording.
@@ -242,6 +317,11 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
         if playback not in {"pause", "resume", "restart"}:
             raise ValueError("Invalid playback control")
         return finish(f"playback {playback}", "playback")
+
+    arm = ask("arm_control")
+    trace["arm_control"] = arm
+    if arm != "none":
+        return finish(validate_arm_control(arm), "control")
 
     dance = ask("dance_extension")
     trace["dance_extension"] = dance

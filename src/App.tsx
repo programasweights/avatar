@@ -36,6 +36,7 @@ import CurveEditor from "./motion/CurveEditor";
 import type { Transport } from "./motion/MotionStage";
 import { initialCharacter, isGangnamExample, type CharacterLook } from "./motion/characters";
 import { createGangnam } from "./motion/gangnam";
+import { composeOrderedSequence, getOrderedSequenceCues, parseOrderedSequence } from "./motion/orderedSequence";
 import type { Axis, Curve, CurveNode, MotionProgram } from "./motion/types";
 import { findNode, sampleCurve, updateNode } from "./motion/engine";
 import {
@@ -67,7 +68,9 @@ type DexterityStudy =
   | "arm_wave"
   | "coin_roll";
 type Hand = "left" | "right";
-type SequenceCue = ReturnType<typeof createDexteritySequence>["cues"][number];
+type SequenceCue = Pick<ReturnType<typeof createDexteritySequence>["cues"][number], "id" | "label" | "instruction" | "start" | "duration"> & { step?: number; total?: number };
+const orderedCues = (program: MotionProgram): SequenceCue[] =>
+  getOrderedSequenceCues(program).map((cue, index, cues) => ({ ...cue, label: cue.instruction, step: index + 1, total: cues.length }));
 
 function sequenceCueAt(cues: SequenceCue[], time: number) {
   return (
@@ -359,7 +362,9 @@ export default function App() {
     cancelInference();
     accept(next);
     setOrigin("Edited motion");
-    if (keepSequence)
+    const cues = orderedCues(next);
+    if (cues.length) setSequenceCues(cues);
+    else if (keepSequence)
       setSequenceCues((cues) =>
         cues.map((cue) => ({
           ...cue,
@@ -485,7 +490,7 @@ export default function App() {
       setFrozen((items) => [...items, ...tokens]);
     }
     accept(next);
-    setSequenceCues([]);
+    setSequenceCues(orderedCues(next));
     setCaption(text);
     setOrigin("Your motion");
     // Select the smallest existing branch that represents the requested joints.
@@ -612,6 +617,30 @@ export default function App() {
   const onCanvas = useCallback((element: HTMLCanvasElement) => {
     canvas.current = element;
   }, []);
+  function armEditTargets(side?: string) {
+    return Object.keys(JOINTS).filter((target) =>
+      /_(clavicle|shoulder|elbow|wrist)$/.test(target) &&
+      (!side || target.startsWith(`${side}_`)),
+    );
+  }
+  function motionForTargetEdit(targets: string[], all = false) {
+    const released = frozen.filter((token) =>
+      all || token.targets.some((target) => targets.includes(target)),
+    );
+    return {
+      released,
+      restored: released.reduce(
+        (next, token) => restoreFrozen(next, token),
+        programRef.current,
+      ),
+    };
+  }
+  function changeArmStyle(style: ArmStyle) {
+    const { released, restored } = motionForTargetEdit(armEditTargets());
+    const next = replaceArms(restored, style);
+    edit(next);
+    setFrozen((items) => items.filter((token) => !released.includes(token)));
+  }
   useEffect(
     () => () => {
       abort.current?.abort();
@@ -626,6 +655,37 @@ export default function App() {
     text: string,
     source = "Your motion",
   ) {
+    const ordered = parseOrderedSequence(commands);
+    if (ordered) {
+      // Build every phase before touching the live program or its transport.
+      // A bad middle step must leave the entire current scene intact.
+      const { restored } = motionForTargetEdit([], true);
+      const { program: next } = composeOrderedSequence(restored, ordered, applyCommands);
+      validateRigProgram(next);
+      const cues = orderedCues(next);
+      const steps = ordered.steps.flatMap((step) => step.commands.split("\n").map((line) => line.trim()));
+      const handOnly = steps.every((line) =>
+        /^skill (finger_ripple|finger_touches|coin_roll) (left|right) (forward|reverse)$/.test(line) ||
+        /^(joint|wiggle) (left|right)_(thumb|index|middle|ring|pinky)_[123] [xyz] -?\d+(\.\d+)?$/.test(line) ||
+        /^(reverse current|hand (left|right|other)|tempo(?:_scale)? \d+(\.\d+)?)$/.test(line),
+      );
+      const performedHand = handOnly ? currentMotionHand(next) : undefined;
+      accept(next, true);
+      transport.current.loop = false;
+      setLoop(false);
+      if (steps.includes("dance gangnam")) chooseCharacter("gangnam");
+      setSequenceCues(cues);
+      setCaption(cues[0]?.instruction ?? text);
+      setRaw(commands);
+      setOrigin(source);
+      setSelected(next.root.id);
+      setDexterity(null);
+      setReverse(false);
+      if (performedHand) setHand(performedHand);
+      setFocus(performedHand ? `${performedHand}_hand` : "body");
+      setCameraReset((value) => value + 1);
+      return;
+    }
     const playback = /^playback (pause|resume|restart)$/.exec(commands.trim());
     if (playback) {
       // Transport commands keep the current scene, edits, and sequence intact.
@@ -657,18 +717,17 @@ export default function App() {
     // The showcase is a complete sequence. A new skill starts a new scene;
     // ordinary dance scenes retain their footwork when a skill is applied.
     const newScene = lines.some((line) => /^(dance|skill|action) /.test(line));
-    const editedTargets = lines
-      .filter((line) => /^(joint|wiggle) /.test(line))
-      .map((line) => line.split(" ")[1]);
-    const released = frozen.filter(
-      (token) =>
-        newScene ||
-        token.targets.some((target) => editedTargets.includes(target)),
-    );
-    const restored = released.reduce(
-      (next, token) => restoreFrozen(next, token),
-      programRef.current,
-    );
+    // Explicit edits release earlier pauses on the joints they replace.
+    // Decode validated command tokens here, never the user's wording.
+    const editedTargets = lines.flatMap((line) => {
+      const [op, target] = line.split(/\s+/);
+      if (op === "joint" || op === "wiggle") return [target];
+      if (op === "arms") return armEditTargets();
+      if (op === "arm") return armEditTargets(target);
+      if (op === "wave") return armEditTargets(target).filter((joint) => !joint.endsWith("_clavicle"));
+      return [];
+    });
+    const { released, restored } = motionForTargetEdit(editedTargets, newScene);
     const next = applyCommands(restored, commands);
     if (!newScene) rememberEdit();
     accept(next, newScene);
@@ -709,7 +768,7 @@ export default function App() {
       curlReferences.current.clear();
       sliderStart.current = null;
     }
-    setSequenceCues([]);
+    setSequenceCues(orderedCues(next));
     setCaption(text);
     setRaw(commands);
     setOrigin(source);
@@ -749,7 +808,7 @@ export default function App() {
             : "right_hand"
           : "body",
       );
-    } else if (lines.some((line) => /^(dance|action|arms|wave|support) /.test(line)))
+    } else if (lines.some((line) => /^(dance|action|arms|arm|wave|support) /.test(line)))
       setFocus("body");
     const wave = lines.find((line) => line.startsWith("wave "))?.split(" ");
     if (wave) {
@@ -1027,8 +1086,10 @@ export default function App() {
     );
   }
   function setJointAngle(value: number) {
-    const next = jointOffset(program, joint, axis, value);
+    const { released, restored } = motionForTargetEdit([joint]);
+    const next = jointOffset(restored, joint, axis, value);
     edit(next);
+    setFrozen((items) => items.filter((token) => !released.includes(token)));
     setSelected(findJointDetail(next, joint, axis)!.id);
   }
   function oneFinger() {
@@ -1145,7 +1206,7 @@ export default function App() {
             )}
             <div className="motion-caption">
               <span>
-                {activeCue ? activeCue.label.toUpperCase() : "DIRECTION"}
+                {activeCue?.step ? `STEP ${activeCue.step} OF ${activeCue.total}` : activeCue ? activeCue.label.toUpperCase() : "DIRECTION"}
               </span>
               <p>{displayedCaption}</p>
             </div>
@@ -1520,11 +1581,7 @@ export default function App() {
                             )[1] ?? "natural")
                           : "natural"
                       }
-                      onChange={(event) =>
-                        edit(
-                          replaceArms(program, event.target.value as ArmStyle),
-                        )
-                      }
+                      onChange={(event) => changeArmStyle(event.target.value as ArmStyle)}
                     >
                       <option value="natural">Natural</option>
                       <option value="robot">Robot</option>
@@ -1792,13 +1849,18 @@ export default function App() {
                     try {
                       const next = JSON.parse(json) as MotionProgram;
                       validateRigProgram(next);
+                      const cues = orderedCues(next);
                       cancelInference();
                       accept(next);
                       setFrozen([]);
                       setUndo([]);
                       curlReferences.current.clear();
                       sliderStart.current = null;
-                      setSequenceCues([]);
+                      setSequenceCues(cues);
+                      if (cues.length) {
+                        transport.current.loop = false;
+                        setLoop(false);
+                      }
                       setCaption(next.title);
                       setOrigin("Imported motion");
                       setDexterity(null);

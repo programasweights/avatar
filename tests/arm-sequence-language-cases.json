@@ -1,0 +1,522 @@
+{
+  "description": "Whole/per-side arm edits, ordered plans across motion families, held-out phrasing, atomic rejection, and original showcase regression. Ordered expectations compare every validated command block, mode and explicit duration. All inference must be remote and sequential for release verification.",
+  "cases": [
+    {
+      "id": "arms_keep_gangnam",
+      "category": "arms",
+      "instruction": "Keep Gangnam footwork but make the arms robotic.",
+      "expected": [
+        "arms robot"
+      ]
+    },
+    {
+      "id": "arms_still",
+      "category": "arms",
+      "instruction": "Keep dancing but hold both arms still.",
+      "expected": [
+        "arms still"
+      ]
+    },
+    {
+      "id": "arms_lower",
+      "category": "arms",
+      "instruction": "Lower both arms.",
+      "expected": [
+        "arms still"
+      ]
+    },
+    {
+      "id": "arm_lower_left",
+      "category": "arms",
+      "instruction": "Drop your left arm to your side.",
+      "expected": [
+        "arm left still"
+      ]
+    },
+    {
+      "id": "arm_lower_right_heldout",
+      "category": "arms",
+      "instruction": "Let the right arm hang by your side.",
+      "expected": [
+        "arm right still"
+      ]
+    },
+    {
+      "id": "arm_robot_left",
+      "category": "arms",
+      "instruction": "Keep doing Gangnam but make only the left arm robotic.",
+      "expected": [
+        "arm left robot"
+      ]
+    },
+    {
+      "id": "arm_natural_right",
+      "category": "arms",
+      "instruction": "Use natural swinging motion in your right arm.",
+      "expected": [
+        "arm right natural"
+      ]
+    },
+    {
+      "id": "arm_wave_left",
+      "category": "arms",
+      "instruction": "Make just the left arm move in waves.",
+      "expected": [
+        "arm left wave"
+      ]
+    },
+    {
+      "id": "arms_context_heldout",
+      "category": "arms",
+      "instruction": "Leave that footwork alone; give the arms mechanical movements.",
+      "expected": [
+        "arms robot"
+      ]
+    },
+    {
+      "id": "arm_context_heldout",
+      "category": "arms",
+      "instruction": "Same routine, but relax your left arm.",
+      "expected": [
+        "arm left still"
+      ]
+    },
+    {
+      "id": "arm_raise",
+      "category": "arms",
+      "instruction": "Raise your left arm 90 degrees.",
+      "expected": [
+        "joint left_shoulder z 90"
+      ]
+    },
+    {
+      "id": "elbow_angle",
+      "category": "arms",
+      "instruction": "Bend your left elbow 90 degrees.",
+      "expected": [
+        "joint left_elbow x -90"
+      ]
+    },
+    {
+      "id": "hand_hello",
+      "category": "arms",
+      "instruction": "Wave your right hand while keeping the dance going.",
+      "expected": [
+        "wave right"
+      ]
+    },
+    {
+      "id": "ordered_body",
+      "category": "ordered",
+      "instruction": "First bow, then jump twice.",
+      "expected_steps": [
+        {
+          "commands": [
+            "action bow 1"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action jump 2"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "ordered_arms",
+      "category": "ordered",
+      "instruction": "First raise your left arm 60 degrees, then raise your right arm 60 degrees.",
+      "expected_steps": [
+        {
+          "commands": [
+            "joint left_shoulder z 60"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "joint right_shoulder z -60"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "ordered_head",
+      "category": "ordered",
+      "instruction": "Turn your head left 30 degrees, then turn your head right 30 degrees.",
+      "expected_steps": [
+        {
+          "commands": [
+            "joint head y 30"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "joint head y -30"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "ordered_greeting",
+      "category": "ordered",
+      "instruction": "Wave your right hand, then bow.",
+      "expected_steps": [
+        {
+          "commands": [
+            "wave right"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action bow 1"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "ordered_dances",
+      "category": "ordered",
+      "instruction": "Dance Gangnam for three seconds, then dance salsa for three seconds.",
+      "expected_steps": [
+        {
+          "commands": [
+            "dance gangnam"
+          ],
+          "mode": "perform",
+          "seconds": 3
+        },
+        {
+          "commands": [
+            "dance salsa"
+          ],
+          "mode": "perform",
+          "seconds": 3
+        }
+      ]
+    },
+    {
+      "id": "ordered_skills",
+      "category": "ordered",
+      "instruction": "First roll a coin across your left knuckles, then ripple your left fingers.",
+      "expected_steps": [
+        {
+          "commands": [
+            "skill coin_roll left forward"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "skill finger_ripple left forward"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "ordered_support",
+      "category": "ordered",
+      "instruction": "Dance Gangnam, then go on one foot, then switch to the opposite foot.",
+      "expected_steps": [
+        {
+          "commands": [
+            "dance gangnam"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "support left"
+          ],
+          "mode": "continue"
+        },
+        {
+          "commands": [
+            "support other"
+          ],
+          "mode": "continue"
+        }
+      ]
+    },
+    {
+      "id": "ordered_heldout",
+      "category": "ordered_heldout",
+      "instruction": "Start with two jumps. Next, wave hello using the left hand. Finally, sit down.",
+      "expected_steps": [
+        {
+          "commands": [
+            "action jump 2"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "wave left"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action sit 1"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "ordered_lower_heldout",
+      "category": "ordered_heldout",
+      "instruction": "First put your left arm at your side, then put your right arm at your side.",
+      "expected_steps": [
+        {
+          "commands": [
+            "arm left still"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "arm right still"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "ordered_continue_heldout",
+      "category": "ordered_heldout",
+      "instruction": "Do Gangnam for 2 seconds, then keep dancing with robotic arms for 3 seconds.",
+      "expected_steps": [
+        {
+          "commands": [
+            "dance gangnam"
+          ],
+          "mode": "perform",
+          "seconds": 2
+        },
+        {
+          "commands": [
+            "arms robot"
+          ],
+          "mode": "continue",
+          "seconds": 3
+        }
+      ]
+    },
+    {
+      "id": "ordered_angles_heldout",
+      "category": "ordered_heldout",
+      "instruction": "First bend your left index finger 40 degrees for 2 seconds, then bend the right index finger 55 degrees for 2 seconds.",
+      "expected_steps": [
+        {
+          "commands": [
+            "joint left_index_1 z 40"
+          ],
+          "mode": "perform",
+          "seconds": 2
+        },
+        {
+          "commands": [
+            "joint right_index_1 z -55"
+          ],
+          "mode": "perform",
+          "seconds": 2
+        }
+      ]
+    },
+    {
+      "id": "unsupported_middle",
+      "category": "ordered_boundary",
+      "instruction": "First bow, then juggle three balls, then sit.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "too_many_steps",
+      "category": "ordered_boundary",
+      "instruction": "Bow, then jump, then sit, then walk, then run.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "duration_bounds",
+      "category": "ordered_boundary",
+      "instruction": "First wave for 30 seconds, then bow.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "sequence_playback",
+      "category": "ordered_boundary",
+      "instruction": "First jump, then pause, then bow.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "showcase_gangnam",
+      "category": "regression",
+      "instruction": "Dance Gangnam Style.",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "showcase_onefoot",
+      "category": "regression",
+      "instruction": "Now on one foot.",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "showcase_switch",
+      "category": "regression",
+      "instruction": "Switch to the opposite foot.",
+      "expected": [
+        "support other"
+      ]
+    },
+    {
+      "id": "showcase_ripple",
+      "category": "regression",
+      "instruction": "Make a wave from pinky to thumb on your left hand.",
+      "expected": [
+        "skill finger_ripple left forward"
+      ]
+    },
+    {
+      "id": "showcase_reverse",
+      "category": "regression",
+      "instruction": "Reverse the finger ripple on your left hand.",
+      "expected": [
+        "skill finger_ripple left reverse"
+      ]
+    },
+    {
+      "id": "showcase_touches",
+      "category": "regression",
+      "instruction": "Touch your left thumb to each fingertip, index first.",
+      "expected": [
+        "skill finger_touches left forward"
+      ]
+    },
+    {
+      "id": "showcase_coin",
+      "category": "regression",
+      "instruction": "Roll a coin across your left knuckles.",
+      "expected": [
+        "skill coin_roll left forward"
+      ]
+    },
+    {
+      "id": "showcase_finger",
+      "category": "regression",
+      "instruction": "Wiggle only the left index finger 65 degrees",
+      "expected": [
+        "wiggle left_index_1 z 65"
+      ]
+    },
+    {
+      "id": "playback_stop",
+      "category": "regression",
+      "instruction": "Stop.",
+      "expected": [
+        "playback pause"
+      ]
+    },
+    {
+      "id": "joint_pair",
+      "category": "regression",
+      "instruction": "Bend both index fingers 30 degrees.",
+      "expected": [
+        "joint left_index_1 z 30\njoint right_index_1 z -30"
+      ]
+    },
+    {
+      "id": "dance_modifier",
+      "category": "regression",
+      "instruction": "Dance salsa with robotic arms.",
+      "expected": [
+        "dance salsa\narms robot"
+      ]
+    },
+    {
+      "id": "finger_order_not_plan",
+      "category": "regression",
+      "instruction": "Touch your thumb to each fingertip, index first.",
+      "expected": [
+        "skill finger_touches left forward"
+      ]
+    },
+    {
+      "id": "heldout_arm_lower_2",
+      "instruction": "Let only the left arm rest by your side while the routine continues.",
+      "category": "heldout_arm",
+      "expected": [
+        "arm left still"
+      ]
+    },
+    {
+      "id": "heldout_support_floor_right",
+      "instruction": "Keep this dance going, with just your right foot on the ground.",
+      "category": "heldout_support",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "heldout_coin_generic",
+      "instruction": "Show a knuckle roll with a coin.",
+      "category": "heldout_skill",
+      "expected": [
+        "skill coin_roll left forward"
+      ]
+    },
+    {
+      "id": "heldout_finger_anatomy",
+      "instruction": "Send a wave from little finger to thumb on the right hand.",
+      "category": "heldout_skill",
+      "expected": [
+        "skill finger_ripple right forward"
+      ]
+    },
+    {
+      "id": "heldout_cross_family",
+      "instruction": "First bow, then jump twice, then wave hello with your left hand.",
+      "category": "heldout_ordered",
+      "expected_steps": [
+        {
+          "commands": [
+            "action bow 1"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action jump 2"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "wave left",
+            "arm left wave"
+          ],
+          "mode": "perform"
+        }
+      ]
+    }
+  ]
+}

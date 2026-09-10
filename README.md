@@ -110,6 +110,20 @@ the torso. A support-foot parameter keeps the opposite foot tucked between hops.
 Bilateral hand grasps and finger snaps are not implemented; those require
 additional reach and contact choreography.
 
+Edit either arm while the rest keeps moving: “Keep Gangnam footwork but make
+the arms robotic,” “Lower both arms,” or “Relax only the left arm.” A new arm
+direction replaces that arm’s earlier pose or freeze and keeps the other parts.
+
+Put different motions in one direction: “Wave your right hand, then bow,” or
+“First raise your left arm, then raise your right arm.” The planner interprets
+each step and builds one editable timeline with a caption for each phase.
+“Dance Gangnam for three seconds, then dance salsa for three seconds” sets
+explicit timing. “Dance Gangnam, then go on one foot, then switch to the opposite
+foot” keeps the dance running through the foot edits. Ordered plans support
+two to four steps; explicit step durations are 1–12 seconds, with 48 seconds
+for the complete plan. They play once. An unsupported step leaves the current
+creation intact.
+
 “Stop” or “Pause” holds the current pose. “Resume” continues the animation;
 “Replay” plays it from the beginning. These keep your motion and edits.
 To pause only one part, name it: “Stop just the ring finger.”

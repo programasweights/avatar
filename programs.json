@@ -4,7 +4,7 @@
   "joint": "b42df04b45eea1642ddb",
   "body": "bd42d81036de7429fb74",
   "body_fallback": "4fa031e988e33efffc57",
-  "dexterity": "94958731807aaeb84408",
+  "dexterity": "b452ac8c972d0e96c3e2",
   "edit_confirmation": "73f19db60929f666cdba",
   "edit_target": "8defb95ebb022c0787ec",
   "joint_motion": "6b0fee1223d7914dfc5c",
@@ -16,6 +16,8 @@
   "activity_scope": "68f0fa31420354136848",
   "action_composition": "0d484b2692e563a280f1",
   "activity_confirmation": "1f0e1d082c23d87a2262",
-  "dance_extension": "3c6333fe19062d7adc6e",
-  "dance_confirmation": "8133fc9f457fcba6162a"
+  "dance_extension": "44d8dcea056e001fee57",
+  "dance_confirmation": "8133fc9f457fcba6162a",
+  "sequence": "544d871b22d03f1f2922",
+  "arm_control": "70070c6b72800f71066e"
 }

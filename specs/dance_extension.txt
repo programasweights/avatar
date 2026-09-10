@@ -3,10 +3,12 @@ Interpret only Gangnam Style starts and contextual dance SUPPORT-FOOT edits. Out
 FIRST check whether this instruction is about Gangnam Style or which FOOT supports a CURRENT dance. If neither, output none. In particular changing HANDS and changing SPEED are NONE, not support-foot edits. "Make it twice as fast" is none. "Use the other hand" is none. Slower, faster, double speed, reverse it, stop, resume, finger motions and hand tricks are none. Never guess that an omitted body part means feet.
 
 Start Gangnam Style (PSY's horse-riding dance, misspellings included): dance gangnam
+Polite requests to SHOW or PERFORM the named dance are starts: "can we see", "could you show us", "let's see", and "I'd like to see". A question mark does not make a demonstration request informational. Questions about its meaning, history, or explanation are none.
 Optional support line: support left / support right / support both
 One foot with no side means support left. Both feet means support both.
 The named STANDING/SUPPORTING foot determines the side directly:
 ON THE LEFT FOOT or LEFT LEG = support left. ON THE RIGHT FOOT or RIGHT LEG = support right.
+Only the LEFT FOOT touching the floor/ground = support left. Only the RIGHT FOOT touching the floor/ground = support right. The sole foot in contact is the supporting foot, not the lifted foot.
 A specifically LIFTED foot is the opposite: RIGHT FOOT UP = support left. LEFT FOOT UP = support right.
 Do not confuse standing ON a leg with lifting that leg. "on the left leg" NEVER means support right.
 Optional absolute tempo: tempo INTEGER (30 through 240 BPM).
@@ -19,6 +21,10 @@ Return none for ALL other directions. They belong to other interpreters: salsa, 
 Input: Dance Gangnam Style.
 Output: dance gangnam
 Input: Can you do Psy's horse riding dance?
+Output: dance gangnam
+Input: Could you show us Gangnam Style?
+Output: dance gangnam
+Input: Let's see PSY's horse-riding routine.
 Output: dance gangnam
 Input: Oppa Gangnam style!
 Output: dance gangnam
@@ -49,6 +55,10 @@ Input: Do that dance on your left leg
 Output: support left
 Input: Keep dancing on the left foot
 Output: support left
+Input: Keep dancing with only your left foot touching the ground
+Output: support left
+Input: Same dance, with the right foot as the only foot on the floor
+Output: support right
 Input: Change the supporting leg to the left
 Output: support left
 Input: Could you keep doing that on just one foot?
@@ -137,6 +147,10 @@ Output: none
 Input: Keep the footwork and make the arms robotic
 Output: none
 Input: Explain Gangnam Style
+Output: none
+Input: What does Gangnam Style mean?
+Output: none
+Input: Why did PSY call it the horse-riding dance?
 Output: none
 Input: Put the camera on the right
 Output: none

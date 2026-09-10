@@ -407,8 +407,7 @@
       "instruction": "Can we see the horse dance from Gangnam Style?",
       "expected": [
         "dance gangnam"
-      ],
-      "known_limitation": "Desired behavior is retained as a failing held-out probe: this wording currently abstains. Direct requests such as Dance Gangnam Style and Do the horse-riding dance from Gangnam pass."
+      ]
     },
     {
       "id": "gangnam_51",

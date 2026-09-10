@@ -5,6 +5,7 @@ import {
   changeTempo,
   createDance,
   jointOffset,
+  replaceArm,
   replaceArms,
 } from "./skills";
 import type { ArmStyle, DanceStyle } from "./skills";
@@ -25,6 +26,7 @@ import {
   scaleTempo,
   waveHand,
 } from "./relative";
+import { composeOrderedSequence, parseOrderedSequence } from "./orderedSequence";
 
 export function validateRigProgram(program: MotionProgram) {
   const timeline = compileMotion(program);
@@ -62,6 +64,12 @@ export function applyCommands(
   current: MotionProgram,
   raw: string,
 ): MotionProgram {
+  const ordered = parseOrderedSequence(raw);
+  if (ordered) {
+    const { program } = composeOrderedSequence(current, ordered, applyCommands);
+    validateRigProgram(program);
+    return program;
+  }
   const lines = raw
     .trim()
     .split("\n")
@@ -88,7 +96,7 @@ export function applyCommands(
       ["forward", "reverse"].includes(c)
     )
       next = composeDexterity(
-        ["dexterity_sequence", "body_sequence", "body_action"].some((id) =>
+        ["dexterity_sequence", "body_sequence", "body_action", "ordered_sequence"].some((id) =>
           findNode(next.root, id),
         )
           ? createDance("idle", "still", next.bpm)
@@ -165,6 +173,13 @@ export function applyCommands(
         a === "robot" ? "robot" : "natural",
         next.bpm,
       );
+    else if (
+      op === "arm" &&
+      parts.length === 3 &&
+      ["left", "right"].includes(a) &&
+      ["natural", "robot", "wave", "still"].includes(b)
+    )
+      next = replaceArm(next, a as "left" | "right", b as ArmStyle);
     else if (
       op === "arms" &&
       parts.length === 2 &&

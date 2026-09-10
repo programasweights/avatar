@@ -55,7 +55,9 @@ def event(kind, text=''):
         output.write(json.dumps({'kind': kind, 'text': text, 'pid': os.getpid()}) + '\\n')
 
 def function(program_id):
-    if program_id in (${JSON.stringify(programs.playback_control)}, ${JSON.stringify(programs.dance_extension)}):
+    if program_id == ${JSON.stringify(programs.sequence)}:
+        return lambda *args, **kwargs: 'single'
+    if program_id in (${JSON.stringify(programs.playback_control)}, ${JSON.stringify(programs.arm_control)}, ${JSON.stringify(programs.dance_extension)}):
         return lambda *args, **kwargs: 'none'
     if program_id in (${JSON.stringify(programs.activity_scope)}, ${JSON.stringify(programs.activity_confirmation)}):
         return lambda *args, **kwargs: 'other'

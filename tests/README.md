@@ -87,6 +87,17 @@ or arbitrary simultaneous action found in the long tail of visitor inputs.
 
 ## Live release checks
 
+`arm-sequence-language-cases.json` covers complete and one-sided arm styles,
+lowering, background-dance preservation, ordered joint/body/dance/hand steps,
+explicit timing, unsupported steps, and the original showcase directions.
+Ordered expectations compare each command block, mode and duration, so keeping
+only the last action cannot pass. Run its real language checks sequentially:
+
+```sh
+.venv/bin/python tools/evaluate-launch.py --infer-url https://programasweights.com/api/v1/infer \
+  --cases tests/arm-sequence-language-cases.json --output /tmp/arm-sequence-language.json
+```
+
 These opt-in tests submit real requests to the hosted demo:
 
 ```sh
@@ -109,4 +120,12 @@ release check is sufficient:
 ```sh
 AVATAR_LIVE_PUBLIC=1 BASE_URL=https://programasweights.com \
   npx playwright test tests/public-gangnam.spec.ts --workers=1
+```
+
+Arm and ordered-motion checks verify the real public interface, limb poses,
+continuous dance timing, phase captions, and rejection without partial changes:
+
+```sh
+AVATAR_LIVE_PUBLIC=1 BASE_URL=https://programasweights.com \
+  npx playwright test tests/public-arm-sequences.spec.ts --workers=1
 ```
