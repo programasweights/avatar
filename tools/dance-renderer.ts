@@ -54,7 +54,7 @@ scene.add(floor);
 const grid = new THREE.GridHelper(16, 32, "#323144", "#232331");
 grid.position.y = -0.017;
 scene.add(grid);
-const camera = new THREE.PerspectiveCamera(31, W / H, 0.01, 50);
+let camera: THREE.PerspectiveCamera | THREE.OrthographicCamera = new THREE.PerspectiveCamera(31, W / H, 0.01, 50);
 const model = await new GLTFLoader().loadAsync(`${import.meta.env.BASE_URL}assets/gangnam-character.glb`);
 model.scene.traverse((object) => {
   if ((object as THREE.Mesh).isMesh) {
@@ -69,16 +69,22 @@ let program = createGangnam();
 let timeline = compileMotion(program);
 let cues: Cue[] = [];
 let orbit = true;
+let fixedAngle = 0.14;
+let clean = false;
+type ReferenceCamera = { height: number; position: [number, number, number]; target: [number, number, number] };
+let referenceCamera: ReferenceCamera | undefined;
 function prefix(node: MotionNode, label: string): MotionNode {
   return node.kind === "curve" || node.kind === "contact"
     ? { ...node, id: `${label}.${node.id}` }
     : { ...node, id: `${label}.${node.id}`, children: node.children.map((child) => prefix(child, label)) };
 }
 function initialize(
-  input?: { program: MotionProgram; cues?: Cue[] },
+  input?: { program: MotionProgram; cues?: Cue[]; camera?: ReferenceCamera },
   _side = "left",
   variation = "classic",
+  options: { fixedCamera?: boolean; clean?: boolean } = {},
 ) {
+  clean = options.clean ?? false;
   const classic = createGangnam();
   const oneFoot = createGangnam({ support: "left" });
   const duration = compileMotion(classic).duration;
@@ -89,27 +95,45 @@ function initialize(
     root: { id: "showcase", kind: "sequence", label: "Gangnam Style → one foot", children: [prefix(classic.root, "classic"), prefix(oneFoot.root, "one_foot")] },
   } : variation === "one-foot" ? oneFoot : classic);
   timeline = validateRigProgram(program);
+  referenceCamera = input?.camera;
+  if (referenceCamera) {
+    const { height, position, target } = referenceCamera;
+    if (!Number.isFinite(height) || height <= 0 || height > 20 ||
+      !Array.isArray(position) || !Array.isArray(target) ||
+      position.length !== 3 || target.length !== 3 ||
+      ![...position, ...target].every(Number.isFinite))
+      throw new Error("Expected a finite reference camera and positive view height.");
+    const half = height / 2;
+    camera = new THREE.OrthographicCamera(-half * W / H, half * W / H, half, -half, 0.01, 50);
+  } else camera = new THREE.PerspectiveCamera(31, W / H, 0.01, 50);
   cues = input ? (input.cues?.length ? input.cues : [
     { start: 0, duration: timeline.duration, instruction: program.title },
   ]) : (variation === "sequence" ? [
     { start: 0, duration, instruction: "Dance Gangnam Style." },
     { start: duration, duration, instruction: "Now on one foot." },
   ] : [{ start: 0, duration: timeline.duration, instruction: variation === "one-foot" ? "Gangnam Style. On one foot." : "Dance Gangnam Style." }]);
-  orbit = variation !== "one-foot";
+  orbit = !options.fixedCamera && variation !== "one-foot";
+  fixedAngle = options.fixedCamera ? 0 : 0.14;
   return { program, cues, width: W, height: H, duration: timeline.duration };
 }
 function pose(time: number) {
   const t = THREE.MathUtils.clamp(time, 0, timeline.duration);
   rig.apply(sampleTimeline(timeline, t), sampleContacts(timeline, t), timeline.props);
-  const angle = orbit ? 0.14 + Math.sin(Math.min(t / 6, 1) * Math.PI * 2) * 0.31 : 0.14;
-  camera.position.set(Math.sin(angle) * 4.6, 1.42, Math.cos(angle) * 4.6);
-  camera.lookAt(0, 0.96, 0);
+  if (referenceCamera) {
+    camera.position.fromArray(referenceCamera.position);
+    camera.lookAt(new THREE.Vector3().fromArray(referenceCamera.target));
+  } else {
+    const angle = orbit ? 0.14 + Math.sin(Math.min(t / 6, 1) * Math.PI * 2) * 0.31 : fixedAngle;
+    camera.position.set(Math.sin(angle) * 4.6, 1.42, Math.cos(angle) * 4.6);
+    camera.lookAt(0, 0.96, 0);
+  }
   renderer.render(scene, camera);
   return t;
 }
 function render(time: number, format: "jpeg" | "png" = "jpeg") {
   const t = pose(time);
   ctx.drawImage(renderer.domElement, 0, 0);
+  if (clean) return out.toDataURL(format === "png" ? "image/png" : "image/jpeg", 0.96).split(",")[1];
   const fade = ctx.createLinearGradient(0, 875, 0, H);
   fade.addColorStop(0, "rgba(16,17,25,0)");
   fade.addColorStop(1, "rgba(16,17,25,0.96)");

@@ -98,7 +98,10 @@ endorsed or official PSY asset.
 
 The character uses the bundled Quaternius CC0 skeleton and articulated hand
 geometry. All 65 bones retain their names, hierarchy and reference transforms;
-the new costume and face are skinned to that same armature. The default
+the new costume and face are skinned to that same armature. Jacket, sleeves
+and trousers form continuous fitted surfaces; the lapels follow the chest with
+curved fabric geometry. The original hand geometry and articulation are retained.
+The default
 `character.glb` is not changed. The original geometry added by this project is
 released under the repository's MIT license; the Quaternius portions retain
 their CC0 dedication above.

@@ -40,3 +40,32 @@ test("a custom full-body export uses the imported title rather than preset dance
     { start: 0, duration: result.duration, instruction: "My quiet standing study" },
   ]);
 });
+
+test("a reference export keeps its camera fixed while the measured motion plays", async ({ page }) => {
+  await page.goto("/tools/dance-renderer.html");
+  await page.waitForFunction(() => !!(window as any).__sequence);
+  const frames = await page.evaluate(() => {
+    const renderer = (window as any).__sequence;
+    renderer.initialize(undefined, "left", "classic", { fixedCamera: true });
+    return [renderer.inspect(0), renderer.inspect(0.35), renderer.inspect(1.2)];
+  });
+  expect(frames[1].camera).toEqual(frames[0].camera);
+  expect(frames[2].camera).toEqual(frames[0].camera);
+  expect(frames[1].joints).not.toEqual(frames[0].joints);
+});
+
+test("a calibrated reference camera stays aligned across frames and resets for normal exports", async ({ page }) => {
+  await page.goto("/tools/dance-renderer.html");
+  await page.waitForFunction(() => !!(window as any).__sequence);
+  const result = await page.evaluate((program) => {
+    const renderer = (window as any).__sequence;
+    renderer.initialize({ program, camera: { height: 2.15, position: [0, 1.03, 6], target: [0, 1.03, 0] } }, "left", "classic", { clean: true });
+    const first = renderer.inspect(0).camera;
+    const last = renderer.inspect(1).camera;
+    renderer.initialize();
+    return { first, last, normal: renderer.inspect(0).camera };
+  }, createDance("idle"));
+  expect(result.first.position).toEqual([0, 1.03, 6]);
+  expect(result.last).toEqual(result.first);
+  expect(result.normal).not.toEqual(result.first);
+});

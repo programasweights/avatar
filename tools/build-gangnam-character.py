@@ -178,23 +178,25 @@ def costume():
         obj = bpy.data.objects.get(name)
         if obj:
             bpy.data.objects.remove(obj, do_unlink=True)
-    # Round silhouette, restrained shoulder width, and straight fabric surfaces.
+    satin=material('Soft black silk lapels',(.010,.014,.021),.50)
+    satin.node_tree.nodes['Principled BSDF'].inputs['Specular IOR Level'].default_value=.23
+    # A stocky fitted silhouette and continuous inner sleeve roots.
     loft('Blue dinner jacket', [
-        (.965,0,.034,.176,.107),(.974,0,.032,.182,.113),
-        (1.04,0,.018,.193,.133),(1.14,0,.008,.197,.139),
-        (1.24,0,.005,.195,.138),(1.34,0,.018,.211,.138),
-        (1.42,0,.033,.234,.119),(1.48,0,.043,.228,.104),
+        (.965,0,.027,.207,.140),(.974,0,.026,.214,.145),
+        (1.04,0,.008,.228,.163),(1.14,0,.004,.233,.171),
+        (1.24,0,.008,.225,.164),(1.34,0,.020,.231,.154),
+        (1.42,0,.033,.238,.131),(1.48,0,.043,.228,.108),
         (1.512,0,.041,.170,.080),(1.532,0,.040,.075,.055)
     ], BLUE, weights_fn=torso_weights)
     # Black high-waisted trousers and naturally draped legs.
-    loft('Tuxedo waistband',[(.883,0,.035,.165,.097),(.95,0,.029,.178,.108),(1.016,0,.025,.176,.105)],BLACK,weights_fn=lambda z:{'pelvis':1})
+    loft('Tuxedo waistband',[(.883,0,.028,.190,.124),(.95,0,.022,.206,.137),(1.016,0,.018,.206,.138)],BLACK,weights_fn=lambda z:{'pelvis':1})
     for side,sign in [('l',1),('r',-1)]:
         def leg_weights(z,side=side):
             if z > .65: return {f'thigh_{side}':1}
             if z < .43: return {f'calf_{side}':1}
             t=(z-.43)/.22
             return {f'calf_{side}':1-t,f'thigh_{side}':t}
-        loft(f'{side} straight trouser leg',[(.071,sign*.114,.066,.065,.066),(.079,sign*.114,.068,.066,.067),(.15,sign*.114,.073,.066,.068),(.27,sign*.114,.060,.063,.067),(.45,sign*.114,.040,.065,.072),(.56,sign*.114,.033,.075,.083),(.69,sign*.114,.036,.085,.089),(.84,sign*.100,.035,.090,.097),(.95,sign*.090,.035,.092,.094)],BLACK,weights_fn=leg_weights)
+        loft(f'{side} straight trouser leg',[(.071,sign*.114,.066,.065,.066),(.079,sign*.114,.068,.066,.067),(.15,sign*.114,.073,.066,.068),(.27,sign*.114,.060,.063,.067),(.45,sign*.114,.040,.065,.072),(.56,sign*.114,.033,.075,.083),(.69,sign*.114,.036,.092,.103),(.84,sign*.100,.031,.105,.115),(.95,sign*.090,.025,.108,.115)],BLACK,weights_fn=leg_weights)
         # Patent loafers, toe box, and low black sole.
         ellipsoid(f'{side} patent loafer',(sign*.114,-.033,.065),(.070,.149,.063),SHOE,f'foot_{side}')
         ellipsoid(f'{side} sole',(sign*.114,-.034,.015),(.071,.148,.018),SOLE,f'foot_{side}')
@@ -202,7 +204,7 @@ def costume():
         def arm_weights(x,side=side):
             t=max(0,min(1,(abs(x)-.41)/.105))
             return {f'upperarm_{side}':1-t,f'lowerarm_{side}':t}
-        rings=[(.205,.057,1.452,.091,.093),(.26,.063,1.455,.090,.086),(.34,.069,1.455,.079,.074),(.44,.072,1.455,.066,.065),(.49,.071,1.455,.063,.060),(.59,.067,1.455,.055,.052),(.675,.065,1.455,.044,.042),(.687,.065,1.455,.044,.042)]
+        rings=[(.100,.052,1.475,.035,.032),(.155,.055,1.463,.071,.066),(.215,.061,1.455,.089,.083),(.27,.064,1.455,.087,.081),(.34,.069,1.455,.079,.074),(.44,.072,1.455,.066,.065),(.49,.071,1.455,.063,.060),(.59,.067,1.455,.055,.052),(.675,.065,1.455,.044,.042),(.687,.065,1.455,.044,.042)]
         if sign<0: rings=[(-x,y,z,r1,r2) for x,y,z,r1,r2 in reversed(rings)]
         loft(f'{side} tailored sleeve',rings,BLUE,direction='x',weights_fn=arm_weights)
         cuff=[(sign*x,.065,1.455,.041,.040) for x in (.684,.687,.709,.711)]
@@ -213,12 +215,13 @@ def costume():
     # Crisp white shirt panel and wide satin peak lapels, shaped to the jacket front.
     # Conform shirt and lapels to the round torso; a flat panel would cut through it.
     def front_y(x, z):
-        anchors=[(.974,.032,.182,.113),(1.04,.018,.193,.133),(1.14,.008,.197,.139),(1.24,.005,.195,.138),(1.34,.018,.211,.138),(1.42,.033,.234,.119),(1.48,.043,.228,.104),(1.512,.041,.170,.080),(1.532,.040,.075,.055)]
+        anchors=[(.974,.026,.214,.145),(1.04,.008,.228,.163),(1.14,.004,.233,.171),(1.24,.008,.225,.164),(1.34,.020,.231,.154),(1.42,.033,.238,.131),(1.48,.043,.228,.108),(1.512,.041,.170,.080),(1.532,.040,.075,.055)]
         for a,b in zip(anchors,anchors[1:]):
             if a[0] <= z <= b[0]:
                 t=(z-a[0])/(b[0]-a[0]); cy=a[1]*(1-t)+b[1]*t;rx=a[2]*(1-t)+b[2]*t;ry=a[3]*(1-t)+b[3]*t
                 return cy-ry*math.sqrt(max(.05,1-(x/rx)**2))-.007
-        return -.15
+        _,cy,rx,ry=anchors[-1 if z>anchors[-1][0] else 0]
+        return cy-ry*math.sqrt(max(.05,1-(x/rx)**2))-.007
     vertices=[]; faces=[]
     for z,width in [(1.187,.01),(1.23,.032),(1.29,.047),(1.36,.066),(1.42,.09),(1.48,.076),(1.528,.052)]:
         for j in range(9):
@@ -229,8 +232,20 @@ def costume():
     mesh('White shirt front',vertices,faces,WHITE,weights=[costume_weights(Vector(p)) for p in vertices])
     for sign in (-1,1):
         def mirrored(points):return [(sign*x, min(y,front_y(x,z)-.004),z) for x,y,z in points]
-        panel(f'{sign} satin peaked lapel',mirrored([(.060,-.038,1.529),(.132,-.059,1.493),(.163,-.093,1.42),(.126,-.112,1.425),(.137,-.127,1.372),(.021,-.147,1.175),(.061,-.139,1.337),(.094,-.103,1.423)]),LAPEL)
-        panel(f'{sign} shirt collar',mirrored([(.013,-.065,1.533),(.061,-.044,1.529),(.080,-.078,1.470),(.035,-.091,1.490)]),WHITE)
+        # A fitted quad ribbon follows the chest, with a soft fold and small peak.
+        # A single nonplanar polygon produces long, visibly angular triangles.
+        rows=[(1.525,.055,.072),(1.497,.068,.120),(1.466,.075,.145),(1.430,.076,.163),(1.409,.069,.133),(1.365,.058,.126),(1.315,.046,.103),(1.260,.027,.076),(1.202,.003,.038)]
+        lapel_vertices=[];lapel_faces=[]
+        for z,inner,outer in rows:
+            for j in range(7):
+                t=j/6;x=inner+(outer-inner)*t
+                lapel_vertices.append((sign*x,front_y(x,z)-.004-.002*math.sin(t*math.pi),z))
+        for i in range(len(rows)-1):
+            for j in range(6):
+                a=i*7+j;lapel_faces.append((a,a+1,a+8,a+7))
+        lapel=mesh(f'{sign} fitted satin lapel',lapel_vertices,lapel_faces,satin,weights=[costume_weights(Vector(p)) for p in lapel_vertices],subdivision=1)
+        modifier=lapel.modifiers.new('Lapel fabric edge','SOLIDIFY');modifier.thickness=.002
+        panel(f'{sign} shirt collar',mirrored([(.012,-.042,1.534),(.059,-.044,1.527),(.064,-.077,1.483),(.029,-.083,1.497)]),WHITE)
         # A gently folded bow tie, not flat triangles.
         points=mirrored([(.009,-.094,1.489),(.047,-.089,1.509),(.051,-.089,1.466),(.009,-.094,1.477)])
         panel(f'{sign} bow tie wing',points,LAPEL,thickness=.009,bevel=.004)
@@ -238,14 +253,14 @@ def costume():
         panel(f'{sign} jacket pocket',mirrored([(.100,-.124,1.132),(.176,-.082,1.151),(.176,-.083,1.132),(.100,-.125,1.111)]),BLUE_DARK,'spine_01')
     ellipsoid('Bow tie knot',(0,-.101,1.483),(.013,.009,.019),LAPEL,'spine_03',24,16)
     for z in (1.19,1.075):
-        ellipsoid('Jacket button',(0,-.14 if z>1.1 else -.124,z),(.011,.005,.011),LAPEL,'spine_01' if z<1.1 else 'spine_02',20,12)
-    panel('White pocket square',[(.105,-.118,1.40),(.148,-.102,1.406),(.142,-.108,1.424),(.13,-.108,1.415),(.117,-.116,1.429)],WHITE)
+        ellipsoid('Jacket button',(0,front_y(0,z)-.006,z),(.011,.005,.011),LAPEL,'spine_01' if z<1.1 else 'spine_02',20,12)
+    panel('White pocket square',[(x,front_y(x,z)-.006,z) for x,z in [(.105,1.40),(.148,1.406),(.142,1.424),(.13,1.415),(.117,1.429)]],WHITE)
 
 
 def face():
     # Original stylized likeness: round cheeks, broad jaw, small confident smile.
-    rings=[(1.573,0,.013,.041,.040),(1.595,0,.012,.075,.068),
-           (1.625,0,.014,.100,.085),(1.662,0,.020,.112,.098),
+    rings=[(1.563,0,.013,.038,.035),(1.578,0,.013,.069,.056),(1.600,0,.012,.096,.081),
+           (1.630,0,.014,.117,.094),(1.662,0,.020,.120,.103),
            (1.70,0,.023,.110,.099),(1.742,0,.028,.103,.098),
            (1.785,0,.033,.093,.083),(1.812,0,.035,.065,.057),
            (1.827,0,.035,.010,.010)]
@@ -260,8 +275,8 @@ def face():
     for sign in (-1,1):
         ellipsoid(f'{sign} nose wing',(sign*.020,-.095,1.669),(.013,.014,.011),SKIN,'Head',24,16)
         ellipsoid(f'{sign} nostril',(sign*.016,-.106,1.664),(.006,.003,.0025),SKIN_SHADOW,'Head',20,12)
-    tube('Confident smile',[(-.034,-.075,1.634),(-.017,-.083,1.632),(0,-.087,1.630),(.018,-.083,1.632),(.034,-.075,1.636)],.003,LIP,'Head')
-    tube('Lower lip',[(-.020,-.080,1.625),(0,-.085,1.623),(.020,-.080,1.625)],.004,SKIN_LIP,'Head')
+    tube('Confident smile',[(-.041,-.083,1.634),(-.023,-.091,1.629),(0,-.094,1.627),(.023,-.091,1.629),(.041,-.083,1.636)],.003,LIP,'Head')
+    tube('Lower lip',[(-.025,-.088,1.622),(0,-.093,1.620),(.025,-.088,1.622)],.004,SKIN_LIP,'Head')
     # Thick wayfarer-style sunglasses with dark blue lenses and metallic corner pins.
     def lens_outline(cx, factor=1):
         # Rounded rectangular outline, angled down slightly toward the outside.
@@ -334,7 +349,7 @@ def weld_garment(names, name, mat, weights_fn):
     bpy.ops.object.select_all(action='DESELECT');bpy.context.view_layer.objects.active=obj;obj.select_set(True)
     modifier=obj.modifiers.new('Continuous tailored garment','REMESH');modifier.mode='VOXEL';modifier.voxel_size=.004;modifier.use_smooth_shade=True
     bpy.ops.object.modifier_apply(modifier=modifier.name)
-    modifier=obj.modifiers.new('Relax the fabric surface','SMOOTH');modifier.factor=.55;modifier.iterations=5
+    modifier=obj.modifiers.new('Relax the fabric surface','SMOOTH');modifier.factor=.6;modifier.iterations=12
     bpy.ops.object.modifier_apply(modifier=modifier.name)
     modifier=obj.modifiers.new('Efficient browser garment','DECIMATE');modifier.ratio=.18
     bpy.ops.object.modifier_apply(modifier=modifier.name)
@@ -358,7 +373,7 @@ def cache_original_skin(body):
 
 def costume_weights(co):
     result={}
-    for position,index,distance in SOURCE_SKIN_TREE.find_n(co,8):
+    for position,index,distance in SOURCE_SKIN_TREE.find_n(co,24):
         influence=1/(distance*distance+.0001)
         for name,weight in SOURCE_SKIN_WEIGHTS[index].items():
             result[name]=result.get(name,0)+weight*influence

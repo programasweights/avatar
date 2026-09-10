@@ -12,7 +12,7 @@ const value = (flag, fallback) =>
   args.includes(flag) ? args[args.indexOf(flag) + 1] : fallback;
 if (args.includes("--help")) {
   console.log(
-    "npm run render -- [--input motion.json] [--output exports/showcase.mp4] [--side left|right] [--preview] [--dance --variation classic|one-foot|sequence] [--duration seconds]",
+    "npm run render -- [--input motion.json] [--output exports/showcase.mp4] [--side left|right] [--preview] [--dance --variation classic|one-foot|sequence] [--duration seconds] [--fps 24] [--fixed-camera] [--camera camera.json] [--clean]",
   );
   process.exit(0);
 }
@@ -20,6 +20,9 @@ const side = value("--side", "left");
 const dance = args.includes("--dance");
 const variation = value("--variation", "classic");
 const durationLimit = args.includes("--duration") ? Number(value("--duration")) : undefined;
+const fps = Number(value("--fps", "24"));
+if (!Number.isInteger(fps) || fps < 15 || fps > 60)
+  throw new Error("Choose an integer --fps between 15 and 60.");
 if (durationLimit !== undefined && (!Number.isFinite(durationLimit) || durationLimit <= 0))
   throw new Error("Choose a positive --duration in seconds.");
 if (!["classic", "one-foot", "sequence"].includes(variation))
@@ -40,6 +43,10 @@ let input;
 if (args.includes("--input")) {
   const data = JSON.parse(await readFile(resolve(value("--input")), "utf8"));
   input = data.program ? data : { program: data };
+}
+if (args.includes("--camera")) {
+  if (!dance || !input) throw new Error("--camera requires --dance and --input.");
+  input.camera = JSON.parse(await readFile(resolve(value("--camera")), "utf8"));
 }
 await mkdir(dirname(output), { recursive: true });
 const server = await createServer({
@@ -70,8 +77,8 @@ try {
   );
   await page.waitForFunction(() => !!window.__sequence);
   const result = await page.evaluate(
-    ({ input, side, variation }) => window.__sequence.initialize(input, side, variation),
-    { input, side, variation },
+    ({ input, side, variation, fixedCamera, clean }) => window.__sequence.initialize(input, side, variation, { fixedCamera, clean }),
+    { input, side, variation, fixedCamera: args.includes("--fixed-camera"), clean: args.includes("--clean") },
   );
   await writeFile(
     output.replace(/\.[^.]+$/, "") + ".json",
@@ -106,8 +113,7 @@ try {
     );
     console.log(`Preview frames saved in ${dirname(output)}`);
   } else {
-    const fps = 24,
-      frames = Math.ceil(renderDuration * fps);
+    const frames = Math.ceil(renderDuration * fps);
     encoder = spawn(
       ffmpeg,
       [
@@ -161,7 +167,7 @@ try {
     const [code] = await done;
     if (code !== 0) throw new Error(stderr);
     encoder = undefined;
-    console.log(`Saved ${output} (${frames} frames, 24 fps, 1080 × 1080)`);
+    console.log(`Saved ${output} (${frames} frames, ${fps} fps, 1080 × 1080)`);
   }
 } finally {
   encoder?.kill("SIGTERM");

@@ -15,7 +15,9 @@ type Keys = [number, number][];
 const constant = (value: number): Curve => ({ kind: "constant", value });
 const keys = (points: Keys): Curve => ({
   kind: "keys",
-  interpolation: "smooth",
+  // These points already sample authored easing. Easing every sample again
+  // stops the joint at each key, producing a visible mechanical stutter.
+  interpolation: "linear",
   points: points.map(([beat, value]) => [beat / BEATS, value]),
 });
 const group = (
@@ -232,7 +234,10 @@ export function createGangnam({
         "Compress → spring → land",
         "root",
         "y",
-        beatCurve((_beat, phase) => beatShape(bodyShape, phase)),
+        beatCurve((beat, phase) => {
+          const emphasis = beat % 4 === 3 ? 1.1 : beat % 2 === 1 ? 0.94 : 1;
+          return -0.145 + (beatShape(bodyShape, phase) + 0.145) * emphasis;
+        }),
         "position",
       ),
       leaf(
@@ -276,10 +281,12 @@ export function createGangnam({
     balance,
     group("torso.groove", "Torso and gaze · keep the rhythm", [
       leaf("torso.lean", "Forward riding lean", "hips", "x", constant(7)),
-      leaf("torso.chest", "Chest · stay upright", "chest", "x", constant(-5)),
+      leaf("torso.chest", "Chest · follow the rebound", "chest", "x", {
+        kind: "sine", amplitude: 2.5, cycles: 16, phase: -0.08, offset: -5,
+      }),
       leaf("torso.twist", "Shoulders · small counter-rotation", "chest", "y", {
         kind: "sine",
-        amplitude: 3,
+        amplitude: 5,
         cycles: 8,
       }),
       leaf(
@@ -287,8 +294,14 @@ export function createGangnam({
         "Chin · nod on the beat",
         "head",
         "x",
-        beatCurve((_beat, phase) => 2 + 3 * Math.sin(2 * Math.PI * phase)),
+        { kind: "sine", amplitude: 4, cycles: 16, phase: -0.12, offset: 2 },
       ),
+      leaf("torso.head_tilt", "Head · loose side-to-side groove", "head", "z", {
+        kind: "sine", amplitude: 2.5, cycles: 8, phase: -0.1,
+      }),
+      leaf("torso.gaze", "Gaze · keep playing to the audience", "head", "y", {
+        kind: "sine", amplitude: 4, cycles: 2,
+      }),
     ]),
   ]);
 
@@ -297,13 +310,13 @@ export function createGangnam({
   // above the head and circles it while the left hand keeps the reins.
   const reins = {
     left: {
-      shoulder: [-52, -14.7, -14],
-      elbow: [-26.5, -0.7, -31.6],
+      shoulder: [-56, -14.7, -14],
+      elbow: [-28.5, -0.7, -31.6],
       wrist: [81.7, -44, 88],
     },
     right: {
-      shoulder: [-50.5, -0.9, 8.6],
-      elbow: [-33, 7.8, 53],
+      shoulder: [-54.5, -0.9, 8.6],
+      elbow: [-35, 7.8, 53],
       wrist: [88.7, 35.3, -86.7],
     },
   };
@@ -323,8 +336,8 @@ export function createGangnam({
     fn: (beat: number, lassoAmount: number) => number,
   ): Curve => {
     const points: Keys = [];
-    for (let tick = 0; tick <= BEATS * 4; tick++) {
-      const beat = tick / 4;
+    for (let tick = 0; tick <= BEATS * 8; tick++) {
+      const beat = tick / 8;
       const amount =
         beat < 7.5
           ? 0
@@ -363,9 +376,9 @@ export function createGangnam({
                 // and forearm gives the lasso a clear orbit rather than a static fist.
                 const pump = Math.sin(2 * Math.PI * beat);
                 if (joint === "shoulder" && axis === "x")
-                  value += (1 - amount) * 5 * pump;
+                  value += (1 - amount) * 8 * pump;
                 if (joint === "elbow" && axis === "x")
-                  value -= (1 - amount) * 3 * pump;
+                  value -= (1 - amount) * 6 * Math.sin(2 * Math.PI * (beat - 0.125));
                 if (side === "right") {
                   if (joint === "shoulder" && axis === "x")
                     value += amount * 13 * Math.cos(Math.PI * beat);

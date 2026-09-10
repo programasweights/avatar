@@ -158,6 +158,11 @@ Use `--variation one-foot` to render just that variation, or `--input motion.jso
 with `--dance` for your own full-body motion on the blue-tux character.
 Add `--duration 10.5` to the sequence command for the shorter showcase cut.
 
+For reference comparisons, `--fps 25 --fixed-camera --clean` renders the full-body
+motion at 25 fps with a stationary frontal camera and no captions. The optional
+[reference fitting tool](tools/REFERENCE.md) converts timestamped joint
+measurements into the same editable motion-tree format.
+
 ## How it works
 
 - `director.py`, `programs.json`, `specs/`: small pretrained language functions
