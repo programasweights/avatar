@@ -186,7 +186,7 @@ test("public Gangnam directions change support feet while preserving the dance a
       let hasTuxedo = false;
       (window as any).__motion?.rig.scene.traverse((object: any) => {
         const materials = Array.isArray(object.material) ? object.material : [object.material];
-        if (materials.some((material: any) => material?.name === "Cobalt blue wool tuxedo"))
+        if (materials.some((material: any) => material?.name === "Muted periwinkle blue wool tuxedo"))
           hasTuxedo = true;
       });
       return hasTuxedo;

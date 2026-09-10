@@ -10,6 +10,7 @@
     "test": "playwright test",
     "render": "node tools/render.mjs",
     "test:director": "python3 -m unittest discover -s tests -p 'test_director.py'",
+    "test:character": "python3 -m unittest discover -s tests -p 'test_character_asset.py'",
     "test:worker": "node --test tests/paw-worker.test.mjs"
   },
   "dependencies": {
