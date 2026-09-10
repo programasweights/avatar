@@ -1,6 +1,40 @@
 import { expect, test } from "@playwright/test";
 
-test("the Gangnam deep link opens the actual dancing character and survives its first asset request failing", async ({ page }) => {
+test.use({
+  launchOptions: { args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-webgl", "--enable-unsafe-swiftshader"] },
+});
+
+test("the dedicated Gangnam URL opens the dancing character and survives refresh", async ({ page }) => {
+  await page.goto("/avatar/gangnam?dbg=1&quality=low");
+  for (const refresh of [false, true]) {
+    if (refresh) await page.reload();
+    await page.waitForFunction(() => !!(window as any).__motion);
+    await expect(page.getByText("Loading the character…")).toBeHidden();
+    await expect(page.getByText("Example · Gangnam Style", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Pause current motion", exact: true })).toBeVisible();
+    const state = await page.evaluate(() => (window as any).__motionStudio.snapshot());
+    expect(state.character).toBe("gangnam");
+    expect(state.program.dance).toEqual({ style: "gangnam", support: "both" });
+    expect(state.focus).toBe("body");
+    expect(state.playing).toBe(true);
+    expect(state.loop).toBe(true);
+    await expect(page.getByRole("alert")).toHaveCount(0);
+  }
+});
+
+test("the dedicated path takes precedence over example queries while honoring an explicit character", async ({ page }) => {
+  for (const character of [undefined, "jade"]) {
+    await page.goto(`/avatar/gangnam?example=coin&dbg=1&quality=low${character ? `&character=${character}` : ""}`);
+    await page.waitForFunction(() => !!(window as any).__motion);
+    await expect(page.getByText("Loading the character…")).toBeHidden();
+    const state = await page.evaluate(() => (window as any).__motionStudio.snapshot());
+    expect(state.program.dance).toEqual({ style: "gangnam", support: "both" });
+    expect(state.character).toBe(character ?? "gangnam");
+    expect(state.playing).toBe(true);
+  }
+});
+
+test("the legacy Gangnam query opens the dance and survives its first asset request failing", async ({ page }) => {
   let downloads = 0;
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -65,7 +99,7 @@ test("a direction selects the dance and costume; a foot edit and stop preserve t
 });
 
 test("the original hand demo remains available after loading Gangnam", async ({ page }) => {
-  await page.goto("/?example=gangnam&dbg=1&quality=low");
+  await page.goto("/avatar/gangnam?dbg=1&quality=low");
   await page.waitForFunction(() => !!(window as any).__motion);
   await page.getByText("More motions", { exact: true }).click();
   await page.getByRole("button", { name: "Load hand demo", exact: true }).click();
@@ -78,4 +112,17 @@ test("the original hand demo remains available after loading Gangnam", async ({ 
   ]);
   expect(state.focus).toBe("left_hand");
   expect(state.loop).toBe(false);
+});
+
+test("the ordinary avatar and coin links still open the original hand sequence", async ({ page }) => {
+  for (const query of ["", "&example=coin"]) {
+    await page.goto(`/avatar?dbg=1&quality=low${query}`);
+    await page.waitForFunction(() => !!(window as any).__motion);
+    const state = await page.evaluate(() => (window as any).__motionStudio.snapshot());
+    expect(state.character).toBe("jade");
+    expect(state.program.dance?.style).not.toBe("gangnam");
+    expect(state.focus).toBe("left_hand");
+    expect(state.cues.some((cue: any) => cue.instruction === "Roll a coin across your left knuckles.")).toBe(true);
+    await expect(page.getByText("Example · Hand sequence", { exact: true })).toBeVisible();
+  }
 });

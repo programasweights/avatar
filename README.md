@@ -15,7 +15,7 @@ The studio includes a complete hand sequence, dance studies, 52 articulated
 joints, editable motion trees and video export. Small [PAW](https://programasweights.com)
 functions turn language into validated commands; the motion engine animates the character.
 
-[Try Gangnam Style](https://programasweights.com/avatar?example=gangnam) with the
+[Try Gangnam Style](https://programasweights.com/avatar/gangnam) with the
 blue-tux character. Apply “Dance Gangnam Style.”, then “Now on one foot.” and
 “Switch to the opposite foot.” The foot changes preserve the upper-body
 choreography and joint edits. The dance is an authored 16-beat motion tree with

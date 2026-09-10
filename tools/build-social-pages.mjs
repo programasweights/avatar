@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 const dist = resolve(process.argv[2] || "dist");
 const original = await readFile(resolve(dist, "index.html"), "utf8");
 let html = original;
-const url = "https://programasweights.com/avatar?example=gangnam";
+const url = "https://programasweights.com/avatar/gangnam";
 const title = "Gangnam Style. Your direction. — Avatar Director";
 const description = "Direct a dancing avatar with words. Dance Gangnam Style, keep it going on one foot, then switch to the opposite foot.";
 const image = "https://programasweights.com/avatar/share-gangnam-v1.png";

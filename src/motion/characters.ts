@@ -1,10 +1,15 @@
 export type CharacterLook = "jade" | "gangnam" | "mixamo";
 
-export function initialCharacter(search = window.location.search): CharacterLook {
+export function isGangnamExample(search = window.location.search, pathname = window.location.pathname): boolean {
+  return pathname.replace(/\/$/, "") === "/avatar/gangnam"
+    || new URLSearchParams(search).get("example") === "gangnam";
+}
+
+export function initialCharacter(search = window.location.search, pathname = window.location.pathname): CharacterLook {
   const query = new URLSearchParams(search);
   const requested = query.get("character");
   if (requested === "mixamo" || requested === "gangnam" || requested === "jade") return requested;
-  return query.get("example") === "gangnam" ? "gangnam" : "jade";
+  return isGangnamExample(search, pathname) ? "gangnam" : "jade";
 }
 
 export function characterUrl(character: CharacterLook) {

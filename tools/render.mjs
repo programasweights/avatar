@@ -53,7 +53,7 @@ if (args.includes("--interaction")) {
   recording = JSON.parse(await readFile(path, "utf8"));
   input = { launchPrograms: recording.programs };
   const recordedUrl = new URL(recording.sourceUrl);
-  if (!recording.complete || recordedUrl.origin !== "https://programasweights.com" || recordedUrl.pathname !== "/avatar")
+  if (!recording.complete || recordedUrl.origin !== "https://programasweights.com" || !["/avatar", "/avatar/gangnam"].includes(recordedUrl.pathname))
     throw new Error("Expected genuine input captured from the public avatar interface.");
   if (["both", "left", "right"].some((support) => !recording.programs?.[support]?.root))
     throw new Error("The interaction recording must include all three returned motion programs.");

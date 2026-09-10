@@ -34,7 +34,7 @@ import {
 import type { FrozenRotation } from "./motion/editing";
 import CurveEditor from "./motion/CurveEditor";
 import type { Transport } from "./motion/MotionStage";
-import { initialCharacter, type CharacterLook } from "./motion/characters";
+import { initialCharacter, isGangnamExample, type CharacterLook } from "./motion/characters";
 import { createGangnam } from "./motion/gangnam";
 import type { Axis, Curve, CurveNode, MotionProgram } from "./motion/types";
 import { findNode, sampleCurve, updateNode } from "./motion/engine";
@@ -143,9 +143,7 @@ function CurvePlot({ curve }: { curve: Curve }) {
   );
 }
 export default function App() {
-  const [startsWithGangnam] = useState(() =>
-    new URLSearchParams(window.location.search).get("example") === "gangnam",
-  );
+  const [startsWithGangnam] = useState(() => isGangnamExample());
   const [initialSequence] = useState(() => startsWithGangnam
     ? { program: createGangnam(), cues: [] as SequenceCue[] }
     : createDexteritySequence());
