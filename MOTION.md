@@ -33,6 +33,11 @@ The 52 supported IDs are in [rigDefinition.ts](src/motion/rigDefinition.ts).
 Finger Z is curl, with positive angles on the left and negative on the right.
 Larger joints use body axes. `root` moves the entire character;
 `left_foot_ik` and `right_foot_ik` specify foot offsets for the leg solver.
+`left_knee_pole` and `right_knee_pole` use position-channel X/Y/Z components
+as a **direction**, rather than a distance. They choose the knee's bend plane
+while the foot follows its contact target. The default is forward, `[0, 0, 1]`;
+`[1, 0, 0.4]` turns the left knee outward. Directions follow whole-body turns.
+Zero or degenerate directions use a stable fallback.
 
 A `contact` either brings a thumb tip to another fingertip or moves a procedural
 coin between knuckles. Contact weights, transfer progress and visibility are
@@ -51,6 +56,13 @@ Whole-body actions are built in [bodyActions.ts](src/motion/bodyActions.ts).
 commands form a sequence with pose transitions between steps. Foot targets
 follow whole-body turns, so a turn followed by a gait retains its new facing.
 Walking and running stay in place; finite sequences stop at their final pose.
+
+[gangnam.ts](src/motion/gangnam.ts) builds a 16-beat horse-riding and lasso
+phrase. Its optional `dance` descriptor records `style: "gangnam"` and
+`support: "both" | "left" | "right"`. `dance gangnam` starts this routine;
+`support left`, `support right`, `support other` and `support both` replace
+only its footwork and balance branches. Arm and finger edits and the current
+tempo remain intact. Support edits require a compatible Gangnam tree.
 
 Follow-up commands transform the current tree in [relative.ts](src/motion/relative.ts):
 `hand other` mirrors the active hand choreography and compatible detail edits;

@@ -34,6 +34,8 @@ import {
 import type { FrozenRotation } from "./motion/editing";
 import CurveEditor from "./motion/CurveEditor";
 import type { Transport } from "./motion/MotionStage";
+import { initialCharacter, type CharacterLook } from "./motion/characters";
+import { createGangnam } from "./motion/gangnam";
 import type { Axis, Curve, CurveNode, MotionProgram } from "./motion/types";
 import { findNode, sampleCurve, updateNode } from "./motion/engine";
 import {
@@ -141,7 +143,13 @@ function CurvePlot({ curve }: { curve: Curve }) {
   );
 }
 export default function App() {
-  const [initialSequence] = useState(() => createDexteritySequence());
+  const [startsWithGangnam] = useState(() =>
+    new URLSearchParams(window.location.search).get("example") === "gangnam",
+  );
+  const [initialSequence] = useState(() => startsWithGangnam
+    ? { program: createGangnam(), cues: [] as SequenceCue[] }
+    : createDexteritySequence());
+  const [character, setCharacter] = useState<CharacterLook>(() => initialCharacter());
   const [program, setProgram] = useState<MotionProgram>(
     initialSequence.program,
   );
@@ -150,15 +158,15 @@ export default function App() {
   const transport = useRef<Transport>({
     time: 0,
     playing: true,
-    loop: false,
+    loop: startsWithGangnam,
     duration: timeline.duration,
   });
   const [time, setTime] = useState(0),
     [playing, setPlaying] = useState(true),
-    [loop, setLoop] = useState(false);
+    [loop, setLoop] = useState(startsWithGangnam);
   const [instruction, setInstruction] = useState(""),
-    [caption, setCaption] = useState(initialSequence.cues[0].instruction);
-  const [origin, setOrigin] = useState("Example · Hand sequence"),
+    [caption, setCaption] = useState(startsWithGangnam ? "Dance Gangnam Style." : initialSequence.cues[0].instruction);
+  const [origin, setOrigin] = useState(startsWithGangnam ? "Example · Gangnam Style" : "Example · Hand sequence"),
     [raw, setRaw] = useState("");
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -166,7 +174,7 @@ export default function App() {
   const [selected, setSelected] = useState(initialSequence.program.root.id),
     [skeleton, setSkeleton] = useState(false);
   const [focus, setFocus] = useState<"body" | "left_hand" | "right_hand">(
-    "left_hand",
+    startsWithGangnam ? "body" : "left_hand",
   );
   const [dexterity, setDexterity] = useState<DexterityStudy | null>(null),
     [hand, setHand] = useState<Hand>("left"),
@@ -214,6 +222,7 @@ export default function App() {
       hand: Hand;
       reverse: boolean;
       dexterity: DexterityStudy | null;
+      character: CharacterLook;
     }[]
   >([]);
   const selectedTargets = useMemo(
@@ -301,6 +310,12 @@ export default function App() {
     setBusy(false);
     setSequenceProgress("");
   };
+  function chooseCharacter(next: CharacterLook) {
+    if (next !== character) {
+      setReady(false);
+      setCharacter(next);
+    }
+  }
   function startOver() {
     cancelInference();
     if (recorder.current?.state === "recording") recorder.current.stop();
@@ -369,6 +384,7 @@ export default function App() {
       hand,
       reverse,
       dexterity,
+      character,
     };
     setUndo((items) => [...items.slice(-19), previous]);
   }
@@ -515,6 +531,7 @@ export default function App() {
     setHand(previous.hand);
     setReverse(previous.reverse);
     setDexterity(previous.dexterity);
+    chooseCharacter(previous.character);
     setUndo((items) => items.slice(0, -1));
     setOrigin("Edited motion");
     sliderStart.current = null;
@@ -566,6 +583,7 @@ export default function App() {
         origin,
         playing: transport.current.playing,
         loop: transport.current.loop,
+        character,
       }),
       seek: (value: number) => {
         transport.current.time = value;
@@ -586,6 +604,7 @@ export default function App() {
     sequenceCues,
     displayedCaption,
     origin,
+    character,
   ]);
   const onTick = useCallback((t: number, p: boolean) => {
     setTime(t);
@@ -655,6 +674,11 @@ export default function App() {
     const next = applyCommands(restored, commands);
     if (!newScene) rememberEdit();
     accept(next, newScene);
+    if (lines.includes("dance gangnam")) chooseCharacter("gangnam");
+    if (next.dance?.style === "gangnam") {
+      transport.current.loop = true;
+      setLoop(true);
+    }
     const actionLines = lines.filter((line) => line.startsWith("action "));
     if (actionLines.length) {
       // Arm modifiers do not turn a lone gait into a finite sequence.
@@ -727,7 +751,7 @@ export default function App() {
             : "right_hand"
           : "body",
       );
-    } else if (lines.some((line) => /^(dance|action|arms|wave) /.test(line)))
+    } else if (lines.some((line) => /^(dance|action|arms|wave|support) /.test(line)))
       setFocus("body");
     const wave = lines.find((line) => line.startsWith("wave "))?.split(" ");
     if (wave) {
@@ -782,22 +806,25 @@ export default function App() {
   }
   function study(style: DanceStyle) {
     cancelInference();
-    accept(
-      createDance(style, style === "robot" ? "robot" : "natural", program.bpm),
-      true,
-    );
+    const next = createDance(style, style === "robot" ? "robot" : "natural", style === "gangnam" ? 132 : program.bpm);
+    accept(next, true);
     setSequenceCues([]);
     setCaption(
-      style === "idle" ? "Stand still." : `Dance ${style.replace("_", "-")}.`,
+      style === "idle" ? "Stand still." : style === "gangnam" ? "Dance Gangnam Style." : `Dance ${style.replace("_", "-")}.`,
     );
     setOrigin(
-      `Example · ${style === "idle" ? "Stand still" : style === "cha_cha" ? "Cha-cha" : style === "salsa" ? "Salsa" : "Robot"}`,
+      `Example · ${style === "idle" ? "Stand still" : style === "gangnam" ? "Gangnam Style" : style === "cha_cha" ? "Cha-cha" : style === "salsa" ? "Salsa" : "Robot"}`,
     );
     setRaw("");
-    setSelected("motion");
+    setSelected(next.root.id);
     setFocus("body");
     setDexterity(null);
     setReverse(false);
+    if (style === "gangnam") {
+      transport.current.loop = true;
+      setLoop(true);
+      chooseCharacter("gangnam");
+    }
   }
   function dexterityStudy(
     skill: DexterityStudy,
@@ -917,13 +944,17 @@ export default function App() {
       setError("This browser does not support video recording.");
       return;
     }
-    const source = canvas.current;
     const output = document.createElement("canvas");
     output.width = 1080;
     output.height = 1080;
     const ctx = output.getContext("2d")!;
     const draw = () => {
       if (rec.state !== "recording") return;
+      const source = canvas.current;
+      if (!source?.isConnected) {
+        recordFrame.current = requestAnimationFrame(draw);
+        return;
+      }
       const currentCue = sequenceCueAt(
         sequenceCuesRef.current,
         transport.current.time,
@@ -1033,6 +1064,7 @@ export default function App() {
         <div className="motion-demo-layout">
           <section className="motion-stage" aria-label="Avatar preview">
             <MotionStage
+              character={character}
               timeline={timeline}
               transport={transport}
               skeleton={skeleton}
@@ -1196,7 +1228,7 @@ export default function App() {
               </div>
               <textarea
                 aria-label="Direction"
-                placeholder="Wiggle only the left index finger 65 degrees"
+                placeholder={program.dance?.style === "gangnam" ? "Now on one foot" : "Wiggle only the left index finger 65 degrees"}
                 value={instruction}
                 onChange={(event) => setInstruction(event.target.value)}
                 maxLength={400}
@@ -1243,6 +1275,12 @@ export default function App() {
             <div className="motion-quick-examples" aria-label="Example motions">
               <p className="motion-examples-label">Load an example</p>
               <div className="motion-example-buttons">
+                <button
+                  onClick={() => study("gangnam")}
+                  aria-pressed={program.dance?.style === "gangnam"}
+                >
+                  Gangnam Style
+                </button>
                 <button
                   onClick={() => dexterityStudy("finger_ripple")}
                   aria-pressed={dexterity === "finger_ripple"}
@@ -1440,6 +1478,18 @@ export default function App() {
                   </button>
                 </div>
                 <div className="motion-global-controls">
+                  <label>
+                    Character
+                    <select
+                      aria-label="Character"
+                      value={character}
+                      onChange={(event) => chooseCharacter(event.target.value as CharacterLook)}
+                    >
+                      <option value="jade">Classic avatar</option>
+                      <option value="gangnam">Blue tux</option>
+                      {character === "mixamo" && <option value="mixamo">Your Mixamo character</option>}
+                    </select>
+                  </label>
                   <label>
                     Tempo{" "}
                     <span>

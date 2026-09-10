@@ -27,6 +27,8 @@ export const VALID_TARGETS = new Set([
   "root",
   "left_foot_ik",
   "right_foot_ik",
+  "left_knee_pole",
+  "right_knee_pole",
   "left_hand_camera",
   "right_hand_camera",
 ]);
@@ -180,7 +182,7 @@ export class MotionRig {
             .sub(this.rootReference)
             .applyQuaternion(rootRotation)
             .add(this.rootReference);
-        this.solveLeg(side, target, rootRotation);
+        this.solveLeg(side, target, rootRotation, positions.get(`${side}_knee_pole`));
       }
     }
     // Explicit leg rotation tracks are FK edits on top of the solved stance.
@@ -222,7 +224,7 @@ export class MotionRig {
     );
     bone.updateWorldMatrix(false, true);
   }
-  private solveLeg(side: string, target: Vector3, rootRotation?: Quaternion) {
+  private solveLeg(side: string, target: Vector3, rootRotation?: Quaternion, kneeDirection?: Vector3) {
     const hip = this.joints.get(`${side}_hip`)!.bone;
     const knee = this.joints.get(`${side}_knee`)!.bone;
     const ankleRef = this.joints.get(`${side}_ankle`)!;
@@ -242,9 +244,19 @@ export class MotionRig {
     const along =
       (upper * upper - lower * lower + distance * distance) / (2 * distance);
     const height = Math.sqrt(Math.max(0, upper * upper - along * along));
-    const pole = new Vector3(0, 0, 1);
+    // The pole sets the knee's bend plane without moving the planted foot.
+    // Existing motions retain the forward-facing default; new dances can turn
+    // the knees outward independently of the contact trajectory.
+    const pole = kneeDirection?.clone() ?? new Vector3(0, 0, 1);
+    if (pole.lengthSq() < 1e-12) pole.set(0, 0, 1);
     if (rootRotation) pole.applyQuaternion(rootRotation);
-    pole.addScaledVector(direction, -pole.dot(direction)).normalize();
+    pole.addScaledVector(direction, -pole.dot(direction));
+    if (pole.lengthSq() < 1e-12) {
+      pole.set(0, 0, 1);
+      if (Math.abs(pole.dot(direction)) > 0.9) pole.set(1, 0, 0);
+      pole.addScaledVector(direction, -pole.dot(direction));
+    }
+    pole.normalize();
     const kneeTarget = h
       .clone()
       .addScaledVector(direction, along)

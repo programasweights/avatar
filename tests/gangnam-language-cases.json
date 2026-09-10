@@ -1,0 +1,494 @@
+{
+  "description": "Remote acceptance for Gangnam starts, current-dance support edits, bounds, and previous showcase phrases. A support command preserves the current dance and is rejected by the editor when the current motion cannot support it. Some paraphrases are held out of the training specification. Pose and contact behavior are checked separately in browser tests.",
+  "cases": [
+    {
+      "id": "gangnam_00",
+      "category": "gangnam_start",
+      "instruction": "Dance Gangnam Style.",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "gangnam_01",
+      "category": "gangnam_start",
+      "instruction": "Do Gangnam Style",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "gangnam_02",
+      "category": "gangnam_start",
+      "instruction": "Gangnam style",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "gangnam_03",
+      "category": "gangnam_start",
+      "instruction": "Can you perform the Gangnam Style dance?",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "gangnam_04",
+      "category": "gangnam_start",
+      "instruction": "Do the dance from Gangnam Style",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "gangnam_05",
+      "category": "gangnam_start",
+      "instruction": "Dance like PSY in Gangnam Style",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "gangnam_06",
+      "category": "gangnam_start",
+      "instruction": "Do the horse-riding dance from Gangnam",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "gangnam_07",
+      "category": "gangnam_start",
+      "instruction": "Oppa Gangnam style!",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "gangnam_08",
+      "category": "gangnam_start",
+      "instruction": "Dance gangnam stile",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "gangnam_09",
+      "category": "gangnam_support",
+      "instruction": "Now on one foot.",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "gangnam_10",
+      "category": "gangnam_support",
+      "instruction": "Now on your right foot.",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "gangnam_11",
+      "category": "gangnam_support",
+      "instruction": "Both feet again.",
+      "expected": [
+        "support both"
+      ]
+    },
+    {
+      "id": "gangnam_12",
+      "category": "gangnam_support",
+      "instruction": "Same dance, but on the left leg.",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "gangnam_13",
+      "category": "gangnam_support",
+      "instruction": "Could you keep doing that on just one foot?",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "gangnam_14",
+      "category": "gangnam_support",
+      "instruction": "Switch to the opposite foot.",
+      "expected": [
+        "support other"
+      ]
+    },
+    {
+      "id": "gangnam_15",
+      "category": "gangnam_support",
+      "instruction": "Go back to using both feet.",
+      "expected": [
+        "support both"
+      ]
+    },
+    {
+      "id": "gangnam_16",
+      "category": "gangnam_support",
+      "instruction": "Keep dancing with your left foot off the ground.",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "gangnam_17",
+      "category": "gangnam_support",
+      "instruction": "Do the same routine while keeping the right foot up.",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "gangnam_18",
+      "category": "gangnam_support",
+      "instruction": "Bring back the original footwork.",
+      "expected": [
+        "support both"
+      ]
+    },
+    {
+      "id": "gangnam_19",
+      "category": "gangnam_support",
+      "instruction": "Keep it going on the right leg.",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "gangnam_20",
+      "category": "gangnam_support",
+      "instruction": "Change the supporting leg to the left.",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "gangnam_21",
+      "category": "gangnam_parameters",
+      "instruction": "Dance Gangnam Style on your left foot",
+      "expected": [
+        "dance gangnam\nsupport left"
+      ]
+    },
+    {
+      "id": "gangnam_22",
+      "category": "gangnam_parameters",
+      "instruction": "Do Gangnam on the right leg",
+      "expected": [
+        "dance gangnam\nsupport right"
+      ]
+    },
+    {
+      "id": "gangnam_23",
+      "category": "gangnam_parameters",
+      "instruction": "Gangnam with one foot raised",
+      "expected": [
+        "dance gangnam\nsupport left"
+      ]
+    },
+    {
+      "id": "gangnam_24",
+      "category": "gangnam_parameters",
+      "instruction": "Dance Gangnam Style at 120 BPM",
+      "expected": [
+        "dance gangnam\ntempo 120"
+      ]
+    },
+    {
+      "id": "gangnam_25",
+      "category": "gangnam_parameters",
+      "instruction": "Gangnam on the right foot at 100 BPM",
+      "expected": [
+        "dance gangnam\nsupport right\ntempo 100"
+      ]
+    },
+    {
+      "id": "gangnam_26",
+      "category": "gangnam_parameters",
+      "instruction": "Keep this dance on your left leg at 108 BPM",
+      "expected": [
+        "support left\ntempo 108"
+      ]
+    },
+    {
+      "id": "gangnam_27",
+      "category": "gangnam_unsupported",
+      "instruction": "Dance Gangnam and then do a backflip",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gangnam_28",
+      "category": "gangnam_unsupported",
+      "instruction": "Dance Gangnam at 250 BPM",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gangnam_29",
+      "category": "gangnam_unsupported",
+      "instruction": "Do Gangnam three times",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gangnam_30",
+      "category": "gangnam_unsupported",
+      "instruction": "Dance Gangnam for 30 seconds",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gangnam_31",
+      "category": "gangnam_unsupported",
+      "instruction": "Do Gangnam and roll a coin on your head",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gangnam_32",
+      "category": "gangnam_unsupported",
+      "instruction": "Dance Gangnam with your right elbow bent 45 degrees",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gangnam_33",
+      "category": "gangnam_regression",
+      "instruction": "Stop",
+      "expected": [
+        "playback pause"
+      ]
+    },
+    {
+      "id": "gangnam_34",
+      "category": "gangnam_regression",
+      "instruction": "Pause",
+      "expected": [
+        "playback pause"
+      ]
+    },
+    {
+      "id": "gangnam_35",
+      "category": "gangnam_regression",
+      "instruction": "Resume",
+      "expected": [
+        "playback resume"
+      ]
+    },
+    {
+      "id": "gangnam_36",
+      "category": "gangnam_regression",
+      "instruction": "Replay",
+      "expected": [
+        "playback restart"
+      ]
+    },
+    {
+      "id": "gangnam_37",
+      "category": "gangnam_regression",
+      "instruction": "Make a wave from pinky to thumb on your left hand.",
+      "expected": [
+        "skill finger_ripple left forward"
+      ]
+    },
+    {
+      "id": "gangnam_38",
+      "category": "gangnam_regression",
+      "instruction": "Reverse the finger ripple on your left hand.",
+      "expected": [
+        "skill finger_ripple left reverse"
+      ]
+    },
+    {
+      "id": "gangnam_39",
+      "category": "gangnam_regression",
+      "instruction": "Touch your left thumb to each fingertip, index first.",
+      "expected": [
+        "skill finger_touches left forward"
+      ]
+    },
+    {
+      "id": "gangnam_40",
+      "category": "gangnam_regression",
+      "instruction": "Roll a coin across your left knuckles.",
+      "expected": [
+        "skill coin_roll left forward"
+      ]
+    },
+    {
+      "id": "gangnam_41",
+      "category": "gangnam_regression",
+      "instruction": "Jump on your left foot",
+      "expected": [
+        "action jump 1 left"
+      ]
+    },
+    {
+      "id": "gangnam_42",
+      "category": "gangnam_regression",
+      "instruction": "Jump twice then bow",
+      "expected": [
+        "action jump 2\naction bow 1"
+      ]
+    },
+    {
+      "id": "gangnam_43",
+      "category": "gangnam_regression",
+      "instruction": "Kick without moving arms",
+      "expected": [
+        "action kick_right 1\narms still"
+      ]
+    },
+    {
+      "id": "gangnam_44",
+      "category": "gangnam_regression",
+      "instruction": "Dance salsa",
+      "expected": [
+        "dance salsa"
+      ]
+    },
+    {
+      "id": "gangnam_45",
+      "category": "gangnam_regression",
+      "instruction": "Hold hands together",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gangnam_46",
+      "category": "gangnam_regression",
+      "instruction": "Snap with your thumb and middle finger",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gangnam_47",
+      "category": "gangnam_regression",
+      "instruction": "Use the other hand",
+      "expected": [
+        "hand other"
+      ]
+    },
+    {
+      "id": "gangnam_48",
+      "category": "gangnam_regression",
+      "instruction": "Make it twice as fast",
+      "expected": [
+        "tempo_scale 2"
+      ]
+    },
+    {
+      "id": "gangnam_49",
+      "category": "gangnam_unseen",
+      "instruction": "Please perform PSY\u2019s Gangnam routine.",
+      "expected": [
+        "dance gangnam"
+      ]
+    },
+    {
+      "id": "gangnam_50",
+      "category": "gangnam_unseen",
+      "instruction": "Can we see the horse dance from Gangnam Style?",
+      "expected": [
+        "dance gangnam"
+      ],
+      "known_limitation": "Desired behavior is retained as a failing held-out probe: this wording currently abstains. Direct requests such as Dance Gangnam Style and Do the horse-riding dance from Gangnam pass."
+    },
+    {
+      "id": "gangnam_51",
+      "category": "gangnam_unseen",
+      "instruction": "Keep the routine going with only the left foot touching the floor.",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "gangnam_52",
+      "category": "gangnam_unseen",
+      "instruction": "Do that dance balanced on the right leg.",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "gangnam_53",
+      "category": "gangnam_unseen",
+      "instruction": "Keep your right foot lifted while the dance continues.",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "gangnam_54",
+      "category": "gangnam_unseen",
+      "instruction": "Continue the choreography with the left foot raised.",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "gangnam_55",
+      "category": "gangnam_unseen",
+      "instruction": "Same steps, but change which foot you are standing on.",
+      "expected": [
+        "support other"
+      ]
+    },
+    {
+      "id": "gangnam_56",
+      "category": "gangnam_unseen",
+      "instruction": "Return to the normal two-foot version.",
+      "expected": [
+        "support both"
+      ]
+    },
+    {
+      "id": "gangnam_57",
+      "category": "gangnam_unseen",
+      "instruction": "Gangnam Style, 96 beats per minute.",
+      "expected": [
+        "dance gangnam\ntempo 96"
+      ]
+    },
+    {
+      "id": "gangnam_58",
+      "category": "gangnam_unseen",
+      "instruction": "Gangnam on the left leg at 144 BPM.",
+      "expected": [
+        "dance gangnam\nsupport left\ntempo 144"
+      ]
+    },
+    {
+      "id": "gangnam_59",
+      "category": "gangnam_showcase_exact",
+      "instruction": "Switch feet",
+      "expected": [
+        "support other"
+      ]
+    },
+    {
+      "id": "gangnam_60",
+      "category": "gangnam_showcase_exact",
+      "instruction": "Now on your left foot.",
+      "expected": [
+        "support left"
+      ]
+    }
+  ]
+}

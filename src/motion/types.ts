@@ -64,6 +64,10 @@ export interface MotionProgram {
   bpm: number;
   root: MotionNode;
   props?: MotionProp[];
+  dance?: {
+    style: "gangnam";
+    support: "both" | "left" | "right";
+  };
 }
 export interface Track extends CurveNode {
   start: number;

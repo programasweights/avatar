@@ -12,11 +12,18 @@ const value = (flag, fallback) =>
   args.includes(flag) ? args[args.indexOf(flag) + 1] : fallback;
 if (args.includes("--help")) {
   console.log(
-    "npm run render -- [--input motion.json] [--output exports/showcase.mp4] [--side left|right] [--preview]",
+    "npm run render -- [--input motion.json] [--output exports/showcase.mp4] [--side left|right] [--preview] [--dance --variation classic|one-foot|sequence] [--duration seconds]",
   );
   process.exit(0);
 }
 const side = value("--side", "left");
+const dance = args.includes("--dance");
+const variation = value("--variation", "classic");
+const durationLimit = args.includes("--duration") ? Number(value("--duration")) : undefined;
+if (durationLimit !== undefined && (!Number.isFinite(durationLimit) || durationLimit <= 0))
+  throw new Error("Choose a positive --duration in seconds.");
+if (!["classic", "one-foot", "sequence"].includes(variation))
+  throw new Error("Choose --variation classic, one-foot, or sequence.");
 if (!["left", "right"].includes(side))
   throw new Error("Choose --side left or right.");
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -59,23 +66,24 @@ try {
   await page.routeWebSocket("**", () => {});
   page.on("pageerror", (error) => console.error(error.message));
   await page.goto(
-    new URL("tools/renderer.html", server.resolvedUrls.local[0]).href,
+    new URL(dance ? "tools/dance-renderer.html" : "tools/renderer.html", server.resolvedUrls.local[0]).href,
   );
   await page.waitForFunction(() => !!window.__sequence);
   const result = await page.evaluate(
-    ({ input, side }) => window.__sequence.initialize(input, side),
-    { input, side },
+    ({ input, side, variation }) => window.__sequence.initialize(input, side, variation),
+    { input, side, variation },
   );
   await writeFile(
     output.replace(/\.[^.]+$/, "") + ".json",
     JSON.stringify(result.program, null, 2) + "\n",
   );
+  const renderDuration = Math.min(result.duration, durationLimit ?? Infinity);
   if (preview) {
     const observations = [];
     for (const fraction of [
       0, 0.1, 0.22, 0.35, 0.45, 0.54, 0.6, 0.64, 0.7, 0.8, 0.95,
     ]) {
-      const time = result.duration * fraction;
+      const time = renderDuration * fraction;
       const data = await page.evaluate(
         (time) => window.__sequence.render(time, "png"),
         time,
@@ -99,7 +107,7 @@ try {
     console.log(`Preview frames saved in ${dirname(output)}`);
   } else {
     const fps = 24,
-      frames = Math.ceil(result.duration * fps);
+      frames = Math.ceil(renderDuration * fps);
     encoder = spawn(
       ffmpeg,
       [

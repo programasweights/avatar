@@ -1,5 +1,6 @@
 import { compileMotion, findNode } from "./engine";
 import { removeWaveOverlay } from "./waveOverlay";
+import { createGangnam, GANGNAM_BPM } from "./gangnam";
 import type {
   Axis,
   Curve,
@@ -9,9 +10,10 @@ import type {
   MotionProgram,
 } from "./types";
 
-export type DanceStyle = "salsa" | "cha_cha" | "robot" | "idle";
+export type DanceStyle = "salsa" | "cha_cha" | "robot" | "idle" | "gangnam";
 export type ArmStyle = "natural" | "robot" | "wave" | "still";
 export const STYLE_LABELS: Record<DanceStyle, string> = {
+  gangnam: "Gangnam Style · horse-riding and lasso",
   salsa: "Salsa · on 1",
   cha_cha: "Cha-cha · 2, 3, 4 & 1",
   robot: "Robot · hit and hold",
@@ -201,8 +203,12 @@ export function armBranch(
 export function createDance(
   style: DanceStyle,
   armStyle: ArmStyle = style === "robot" ? "robot" : "natural",
-  bpm = 108,
+  bpm = style === "gangnam" ? GANGNAM_BPM : 108,
 ): MotionProgram {
+  if (style === "gangnam") {
+    const program = createGangnam({ bpm });
+    return armStyle === "natural" ? program : replaceArms(program, armStyle);
+  }
   const duration = (8 * 60) / bpm;
   let feet: GroupNode;
   if (style === "salsa")

@@ -49,6 +49,12 @@ export function compileMotion(program: MotionProgram): Timeline {
     );
   const tracks: Track[] = [];
   const contacts: ContactTrack[] = [];
+  if (
+    program.dance !== undefined &&
+    (program.dance?.style !== "gangnam" ||
+      !["both", "left", "right"].includes(program.dance.support))
+  )
+    throw new Error("Invalid dance configuration.");
   if (program.props !== undefined) {
     if (!Array.isArray(program.props) || program.props.length > 8)
       throw new Error("At most eight props are supported.");

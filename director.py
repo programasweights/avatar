@@ -135,6 +135,26 @@ def validate_dexterity(raw: str) -> str:
     return " ".join(parts)
 
 
+def validate_dance_extension(raw: str) -> str:
+    """Keep a dance start distinct from a support edit of the current tree."""
+    lines = raw.splitlines()
+    if not lines or len(lines) > 3:
+        raise ValueError("Invalid dance extension command")
+    start = lines[0] == "dance gangnam"
+    remaining = lines[1:] if start else lines
+    if remaining and re.fullmatch(r"support (left|right|both|other)", remaining[0]):
+        if start and remaining[0] == "support other":
+            raise ValueError("A new dance needs an explicit support foot")
+        remaining = remaining[1:]
+    elif not start:
+        raise ValueError("A dance edit needs a support-foot command")
+    if remaining:
+        match = re.fullmatch(r"tempo (\d+)", remaining[0])
+        if len(remaining) != 1 or not match or not 30 <= int(match[1]) <= 240:
+            raise ValueError("Invalid dance extension modifier")
+    return "\n".join(lines)
+
+
 def validate_edit(raw: str) -> str:
     if raw == "none":
         return raw
@@ -222,6 +242,23 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
         if playback not in {"pause", "resume", "restart"}:
             raise ValueError("Invalid playback control")
         return finish(f"playback {playback}", "playback")
+
+    dance = ask("dance_extension")
+    trace["dance_extension"] = dance
+    if dance != "none":
+        confirmation = ask("dance_confirmation")
+        trace["dance_confirmation"] = confirmation
+        if confirmation not in {"yes", "no"}:
+            raise ValueError("Invalid dance domain confirmation")
+        if confirmation == "yes":
+            if dance == "unsupported":
+                return finish(dance)
+            try:
+                command = validate_dance_extension(dance)
+            except ValueError as exc:
+                trace["validation_error"] = str(exc)
+                return finish("unsupported")
+            return finish(command, "body" if command.startswith("dance ") else "control")
 
     activity = ask("activity_scope")
     trace["activity_scope"] = activity

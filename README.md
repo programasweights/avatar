@@ -15,6 +15,14 @@ The studio includes a complete hand sequence, dance studies, 52 articulated
 joints, editable motion trees and video export. Small [PAW](https://programasweights.com)
 functions turn language into validated commands; the motion engine animates the character.
 
+[Try Gangnam Style](https://programasweights.com/avatar?example=gangnam) with the
+blue-tux character. Apply “Dance Gangnam Style,” then “Now on one foot,” “Switch
+feet,” or “Both feet again.” The foot changes preserve the upper-body
+choreography and joint edits. The dance is an authored 16-beat motion tree with
+separate footwork, balance, torso, arm and finger branches. It is a stylized
+recreation, with an original Blender costume and face on the same articulated rig.
+[Watch the dance and one-foot edit](https://programasweights.com/avatar/gangnam-director.mp4).
+
 ## Run
 
 Requires Node.js 22.12 or newer.
@@ -136,6 +144,19 @@ npm run render -- --input motion.json --output exports/my-motion.mp4
 
 Use `--side right` for the default right-hand showcase, or `--preview` to
 inspect still frames before encoding a video.
+
+Render the full-body Gangnam study, including its camera orbit:
+
+```sh
+npm run render -- --dance --output exports/gangnam.mp4
+npm run render -- --dance --variation sequence --output exports/gangnam-one-foot.mp4
+```
+
+The second version shows the dance followed by the one-foot variation. These
+exports use the same character and curves as the studio and contain no music.
+Use `--variation one-foot` to render just that variation, or `--input motion.json`
+with `--dance` for your own full-body motion on the blue-tux character.
+Add `--duration 10.5` to the sequence command for the shorter showcase cut.
 
 ## How it works
 

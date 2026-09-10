@@ -1,0 +1,17 @@
+export type CharacterLook = "jade" | "gangnam" | "mixamo";
+
+export function initialCharacter(search = window.location.search): CharacterLook {
+  const query = new URLSearchParams(search);
+  const requested = query.get("character");
+  if (requested === "mixamo" || requested === "gangnam" || requested === "jade") return requested;
+  return query.get("example") === "gangnam" ? "gangnam" : "jade";
+}
+
+export function characterUrl(character: CharacterLook) {
+  const file = character === "mixamo"
+    ? "local-assets/character.glb"
+    : character === "gangnam"
+      ? "assets/gangnam-character.glb"
+      : "assets/character.glb";
+  return `${import.meta.env.BASE_URL}${file}`;
+}

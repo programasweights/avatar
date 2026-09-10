@@ -10,6 +10,7 @@ import {
 import type { ArmStyle, DanceStyle } from "./skills";
 import { JOINTS, VALID_TARGETS } from "./rig";
 import { composeDexterity } from "./composeDexterity";
+import { changeGangnamSupport, createGangnam } from "./gangnam";
 import type { DexteritySkill } from "./dexterity";
 import {
   BODY_ACTIONS,
@@ -52,6 +53,8 @@ export function validateRigProgram(program: MotionProgram) {
       );
     if (track.target.endsWith("_ik") && track.channel !== "position")
       throw new Error("Foot IK targets use position channels.");
+    if (track.target.endsWith("_knee_pole") && track.channel !== "position")
+      throw new Error("Knee directions use position channels.");
   }
   return timeline;
 }
@@ -144,6 +147,14 @@ export function applyCommands(
       ["left", "right"].includes(a)
     )
       next = waveHand(next, a as "left" | "right");
+    else if (
+      op === "support" &&
+      parts.length === 2 &&
+      ["both", "left", "right", "other"].includes(a)
+    )
+      next = changeGangnamSupport(next, a as "both" | "left" | "right" | "other");
+    else if (op === "dance" && parts.length === 2 && a === "gangnam")
+      next = createGangnam();
     else if (
       op === "dance" &&
       parts.length === 2 &&

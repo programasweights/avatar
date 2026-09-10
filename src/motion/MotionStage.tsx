@@ -17,14 +17,7 @@ import { frameHand, frameHandOrbit } from "./handCamera";
 import { JointSelection } from "./stageSelection";
 import { retryCharacterDownloads } from "./characterLoader";
 import StageBoundary from "./StageBoundary";
-
-function characterUrl() {
-  const character =
-    new URLSearchParams(window.location.search).get("character") === "mixamo"
-      ? "local-assets/character.glb"
-      : "assets/character.glb";
-  return `${import.meta.env.BASE_URL}${character}`;
-}
+import { characterUrl, initialCharacter, type CharacterLook } from "./characters";
 
 export interface Transport {
   time: number;
@@ -33,6 +26,7 @@ export interface Transport {
   duration: number;
 }
 interface Props {
+  character?: CharacterLook;
   timeline: Timeline;
   transport: React.MutableRefObject<Transport>;
   skeleton: boolean;
@@ -44,8 +38,10 @@ interface Props {
   onCanvas: (canvas: HTMLCanvasElement) => void;
 }
 type CameraFrame = { position: Vector3; target: Vector3; up: Vector3 };
-const bodyFrame = (): CameraFrame => ({
-  position: new Vector3(2.5, 1.8, 4.5),
+const bodyFrame = (character?: CharacterLook): CameraFrame => ({
+  position: character === "gangnam"
+    ? new Vector3(0.45, 1.55, 4.5)
+    : new Vector3(2.5, 1.8, 4.5),
   target: new Vector3(0, 0.95, 0),
   up: new Vector3(0, 1, 0),
 });
@@ -110,6 +106,7 @@ export function motionHandFrame(
   };
 }
 function Actor({
+  character = initialCharacter(),
   timeline,
   transport,
   skeleton,
@@ -119,7 +116,7 @@ function Actor({
   onTick,
   onReady,
 }: Omit<Props, "onCanvas">) {
-  const gltf = useGLTF(characterUrl(), true, true, retryCharacterDownloads);
+  const gltf = useGLTF(characterUrl(character), true, true, retryCharacterDownloads);
   const scene = useMemo(() => clone(gltf.scene), [gltf.scene]);
   const rig = useMemo(
     () => new MotionRig(scene, gltf.animations),
@@ -211,6 +208,12 @@ function Actor({
       timeline.props,
     );
     selection.update();
+    if (!cameraReady.current && focus === "body") {
+      const frame = bodyFrame(character);
+      camera.position.copy(frame.position);
+      controls.current?.target.copy(frame.target);
+      camera.lookAt(frame.target);
+    }
     const changedFocus =
       focusRef.current !== focus || cameraResetRef.current !== cameraReset;
     focusRef.current = focus;
@@ -231,7 +234,7 @@ function Actor({
       const progress = Math.min(transition.current.elapsed / 0.6, 1);
       const destination =
         focus === "body"
-          ? bodyFrame()
+          ? bodyFrame(character)
           : motionHandFrame(rig.joints, timeline, side, state.time);
       const frame = blendFrame(transition.current.from, destination, progress);
       camera.position.copy(frame.position);
@@ -283,7 +286,7 @@ export default function MotionStage(props: Props) {
   const lowQuality =
     new URLSearchParams(window.location.search).get("quality") === "low";
   return (
-    <StageBoundary onRetry={() => useGLTF.clear(characterUrl())}>
+    <StageBoundary key={props.character} onRetry={() => useGLTF.clear(characterUrl(props.character ?? initialCharacter()))}>
       <Canvas
         shadows={!lowQuality}
         dpr={lowQuality ? 1 : [1, 1.5]}
@@ -301,6 +304,13 @@ export default function MotionStage(props: Props) {
           castShadow
           shadow-mapSize={[2048, 2048]}
           shadow-bias={-0.0002}
+          shadow-normalBias={0.008}
+          shadow-camera-near={0.5}
+          shadow-camera-far={15}
+          shadow-camera-left={-3}
+          shadow-camera-right={3}
+          shadow-camera-top={3}
+          shadow-camera-bottom={-3}
         />
         <directionalLight
           position={[-3, 3, 1]}

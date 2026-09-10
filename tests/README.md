@@ -91,10 +91,22 @@ These opt-in tests submit real requests to the hosted demo:
 
 ```sh
 AVATAR_LIVE_PUBLIC=1 BASE_URL=https://programasweights.com \
-  npx playwright test tests/tweet.spec.ts tests/public.spec.ts tests/public-controls.spec.ts --workers=1
+  npx playwright test tests/tweet.spec.ts tests/public.spec.ts tests/public-controls.spec.ts tests/public-gangnam.spec.ts --workers=1
 ```
 
 They verify the exact showcase phrases and the resulting rendered motion,
 including the full sequence created by **Recreate demo from prompts**.
 The control test follows real hosted results through stop/resume, still-arm
 kicks and running, and counted hops on each support foot.
+
+The Gangnam test starts over with the jade character, types the five showcase
+directions sequentially, and verifies the loaded blue tuxedo, actual foot
+positions, preserved upper-body branches and tempo, and the final paused pose.
+It saves the real API responses, bone samples, screenshots and a browser video.
+It uses no inference mocks. Run it by itself after deployment when a focused
+release check is sufficient:
+
+```sh
+AVATAR_LIVE_PUBLIC=1 BASE_URL=https://programasweights.com \
+  npx playwright test tests/public-gangnam.spec.ts --workers=1
+```
