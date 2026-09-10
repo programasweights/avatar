@@ -121,3 +121,20 @@ A Python environment with `bpy` can run the script directly. `--source` and
 `--output` override the default bundled input and Gangnam output paths. The
 optional `.blend` contains the editable rest-pose character; `--preview`
 renders a studio still. Neither optional artifact is needed by the web app.
+
+## Optional launch-video audio
+
+The launch clip's optional electronic accompaniment is an original composition
+and recording synthesized by [`tools/make-gangnam-beat.py`](tools/make-gangnam-beat.py)
+from oscillators and seeded filtered noise. It contains no samples, melody or
+recording from “Gangnam Style,” and uses no downloaded audio or neural models.
+The original script and generated audio are released under this repository's
+MIT license.
+
+The default groove is 20 beats at 132 BPM. Its 0.3-beat starting offset matches
+the choreography, putting the next whole beat at 0.31818 seconds. To reproduce
+the stereo WAV and its timing/provenance metadata with Python and NumPy:
+
+```sh
+python3 tools/make-gangnam-beat.py --output /tmp/launch-beat.wav
+```

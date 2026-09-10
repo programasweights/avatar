@@ -12,7 +12,7 @@ const value = (flag, fallback) =>
   args.includes(flag) ? args[args.indexOf(flag) + 1] : fallback;
 if (args.includes("--help")) {
   console.log(
-    "npm run render -- [--input motion.json] [--output exports/showcase.mp4] [--side left|right] [--preview] [--dance --variation classic|one-foot|sequence] [--duration seconds] [--fps 24] [--fixed-camera] [--camera camera.json] [--clean]",
+    "npm run render -- [--input motion.json] [--output exports/showcase.mp4] [--side left|right] [--preview] [--dance --variation classic|one-foot|sequence] [--interaction recorded-inputs/manifest.json] [--audio beat.wav] [--duration seconds] [--fps 24] [--fixed-camera] [--camera camera.json] [--clean]",
   );
   process.exit(0);
 }
@@ -32,6 +32,7 @@ if (!["left", "right"].includes(side))
 const root = fileURLToPath(new URL("..", import.meta.url));
 const output = resolve(value("--output", "exports/showcase.mp4"));
 const preview = args.includes("--preview");
+const audioFile = args.includes("--audio") ? resolve(value("--audio")) : undefined;
 const ffmpeg = process.env.FFMPEG || "ffmpeg";
 if (
   !preview &&
@@ -40,10 +41,32 @@ if (
   throw new Error("Install ffmpeg, or set FFMPEG to its executable path.");
 }
 let input;
+let recording;
 if (args.includes("--input")) {
   const data = JSON.parse(await readFile(resolve(value("--input")), "utf8"));
   input = data.program ? data : { program: data };
 }
+if (args.includes("--interaction")) {
+  if (!dance || variation !== "sequence" || input)
+    throw new Error("--interaction requires --dance --variation sequence and replaces --input with the captured public programs.");
+  const path = resolve(value("--interaction"));
+  recording = JSON.parse(await readFile(path, "utf8"));
+  input = { launchPrograms: recording.programs };
+  const recordedUrl = new URL(recording.sourceUrl);
+  if (!recording.complete || recordedUrl.origin !== "https://programasweights.com" || recordedUrl.pathname !== "/avatar")
+    throw new Error("Expected genuine input captured from the public avatar interface.");
+  if (["both", "left", "right"].some((support) => !recording.programs?.[support]?.root))
+    throw new Error("The interaction recording must include all three returned motion programs.");
+  recording.commands = await Promise.all(recording.commands.map(async (command) => ({
+    ...command,
+    frames: await Promise.all(command.frames.map(async (frame) => ({
+      ...frame,
+      image: `data:image/png;base64,${(await readFile(resolve(dirname(path), frame.file))).toString("base64")}`,
+    }))),
+  })));
+}
+if (dance && variation === "sequence" && !input?.program && !recording && !preview && !args.includes("--clean"))
+  throw new Error("The launch export needs --interaction from tools/record-gangnam-inputs.mjs; use --preview or --clean for choreography-only checks.");
 if (args.includes("--camera")) {
   if (!dance || !input) throw new Error("--camera requires --dance and --input.");
   input.camera = JSON.parse(await readFile(resolve(value("--camera")), "utf8"));
@@ -76,6 +99,7 @@ try {
     new URL(dance ? "tools/dance-renderer.html" : "tools/renderer.html", server.resolvedUrls.local[0]).href,
   );
   await page.waitForFunction(() => !!window.__sequence);
+  if (recording) await page.evaluate((recording) => window.__sequence.loadInteraction(recording), recording);
   const result = await page.evaluate(
     ({ input, side, variation, fixedCamera, clean }) => window.__sequence.initialize(input, side, variation, { fixedCamera, clean }),
     { input, side, variation, fixedCamera: args.includes("--fixed-camera"), clean: args.includes("--clean") },
@@ -84,6 +108,18 @@ try {
     output.replace(/\.[^.]+$/, "") + ".json",
     JSON.stringify(result.program, null, 2) + "\n",
   );
+  if (dance) await writeFile(output.replace(/\.[^.]+$/, "") + ".timeline.json", JSON.stringify({
+    ...result, program: undefined,
+    edited: !!recording,
+    sourceUrl: recording?.sourceUrl,
+    sourceCommands: recording?.commands.map(({ instruction, output, elapsedMs }) => ({ instruction, output, elapsedMs })),
+    editing: result.launch ? { applyToResultSeconds: .25, inferenceWaitSeconds: .17, typingSeconds: .35,
+      pressedAt: result.launch.edits.map((edit) => edit.start - .25),
+      submittedAt: result.launch.edits.map((edit) => edit.start - .17),
+      results: result.launch.edits.map((edit) => edit.start),
+      settled: result.launch.edits.map((edit) => edit.settled) } : undefined,
+    audio: audioFile,
+  }, null, 2) + "\n");
   const renderDuration = Math.min(result.duration, durationLimit ?? Infinity);
   if (preview) {
     const observations = [];
@@ -114,6 +150,7 @@ try {
     console.log(`Preview frames saved in ${dirname(output)}`);
   } else {
     const frames = Math.ceil(renderDuration * fps);
+    const encodedDuration = frames / fps;
     encoder = spawn(
       ffmpeg,
       [
@@ -126,7 +163,7 @@ try {
         String(fps),
         "-i",
         "pipe:0",
-        "-an",
+        ...(audioFile ? ["-i", audioFile, "-map", "0:v:0", "-map", "1:a:0", "-c:a", "aac", "-b:a", "160k", "-af", `apad,atrim=duration=${encodedDuration}`] : ["-an"]),
         "-c:v",
         "libx264",
         "-preset",

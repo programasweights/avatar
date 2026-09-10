@@ -16,12 +16,12 @@ joints, editable motion trees and video export. Small [PAW](https://programaswei
 functions turn language into validated commands; the motion engine animates the character.
 
 [Try Gangnam Style](https://programasweights.com/avatar?example=gangnam) with the
-blue-tux character. Apply “Dance Gangnam Style,” then “Now on one foot,” “Switch
-feet,” or “Both feet again.” The foot changes preserve the upper-body
+blue-tux character. Apply “Dance Gangnam Style.”, then “Now on one foot.” and
+“Switch to the opposite foot.” The foot changes preserve the upper-body
 choreography and joint edits. The dance is an authored 16-beat motion tree with
 separate footwork, balance, torso, arm and finger branches. It is a stylized
 recreation, with an original Blender costume and face on the same articulated rig.
-[Watch the dance and one-foot edit](https://programasweights.com/avatar/gangnam-director.mp4).
+[Watch both foot edits](https://programasweights.com/avatar/gangnam-director.mp4).
 
 ## Run
 
@@ -149,14 +149,30 @@ Render the full-body Gangnam study, including its camera orbit:
 
 ```sh
 npm run render -- --dance --output exports/gangnam.mp4
-npm run render -- --dance --variation sequence --output exports/gangnam-one-foot.mp4
 ```
 
-The second version shows the dance followed by the one-foot variation. These
-exports use the same character and curves as the studio and contain no music.
+These exports use the same character and curves as the studio.
 Use `--variation one-foot` to render just that variation, or `--input motion.json`
 with `--dance` for your own full-body motion on the blue-tux character.
-Add `--duration 10.5` to the sequence command for the shorter showcase cut.
+
+The nine-second director clip starts dancing, changes to one foot at 1.82 seconds,
+and switches support at 4.55 seconds. Its arm choreography and beat stay continuous.
+To reproduce it, record the three directions through the public form, then render
+the returned motion programs with their actual input and Apply frames:
+
+```sh
+node tools/record-gangnam-inputs.mjs --out exports/gangnam-inputs
+npm run render -- --dance --variation sequence \
+  --interaction exports/gangnam-inputs/manifest.json \
+  --output exports/gangnam-director.mp4
+```
+
+The recording calls the hosted language interface sequentially. The export
+condenses typing and retimes response waits.
+For the optional original percussion track, install NumPy and run
+`python3 tools/make-gangnam-beat.py --output exports/gangnam-beat.wav`, then add
+`--audio exports/gangnam-beat.wav` to the render command. No music samples are used;
+the interactions are also readable with sound off.
 
 For reference comparisons, `--fps 25 --fixed-camera --clean` renders the full-body
 motion at 25 fps with a stationary frontal camera and no captions. The optional
