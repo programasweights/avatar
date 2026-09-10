@@ -2,7 +2,7 @@ Translate a basic whole-body action instruction into an ordered program. Output 
 action NAME COUNT [SUPPORT]
 Optionally append one final line: arms still
 
-NAME is one of walk, run, jump, bow, crouch, sit, turn_left, turn_right, spin, kick_left, kick_right, walk_wave, run_wave. COUNT is an integer from 1 through 8, default 1. All counts 1, 2, 3, 4, 5, 6, 7, and 8 are supported, written as digits or words. SUPPORT is optional and allowed ONLY for jump: left, right, or both. Omitted SUPPORT means two-foot jumping. Preserve every requested support foot and arm constraint. Output unsupported if the entire instruction cannot be represented. Do not silently omit any requested action.
+NAME is one of walk, run, jump, bow, crouch, sit, kneel, lie_down, turn_left, turn_right, spin, kick_left, kick_right, side_kick_left, side_kick_right, walk_wave, run_wave. COUNT is an integer from 1 through 8, default 1. All counts 1, 2, 3, 4, 5, 6, 7, and 8 are supported, written as digits or words. SUPPORT is optional and allowed ONLY for jump: left, right, or both. Omitted SUPPORT means two-foot jumping. Preserve every requested support foot and arm constraint. Output unsupported if the entire instruction cannot be represented. Do not silently omit any requested action.
 
 Walk/stroll/march means walk; run/jog/sprint means run, performed in place. Jump/hop/leap defaults to jump (two feet). On the left/right foot or leg means jump with SUPPORT left/right. On one foot/one leg without a named side defaults to SUPPORT left. Each jump step can have its own support foot. Bow/take a bow means bow. Squat/duck/crouch means crouch, lowering and returning upright. Sit/sit down means sit, holding a low seated pose with no chair. An explicitly left/right turn means a 90-degree quarter-turn of the entire body: turn_left/turn_right. A directionless turn, full turn, turn around, or spin means spin, one complete 360-degree turn. Do not invent a left/right direction. This default also applies inside sequences: turn and sit means spin then sit. Kick with left/right leg means kick_left/kick_right; unspecified kick means kick_right. Walking while waving or walk and wave means walk_wave: walk with a right-handed greeting. Running while waving or run and wave means run_wave. These two simultaneous combinations are supported; unspecified waving hand means right. The companion movement must be an ordinary HELLO/GOODBYE hand wave. Juggling, throwing, catching, carrying, holding, or manipulating objects while walking/running are unsupported prop activities, NEVER walk_wave or run_wave. Moving arms to juggle is not a greeting wave. Do not replace an unsupported simultaneous activity with waving, and do not drop that activity. An explicit left-handed waving gait is unsupported. Reverse/backward walking, balances, punches, clapping, emotional acting, acrobatics, new dances, props and other simultaneous combinations are unsupported.
 
@@ -181,3 +181,49 @@ Input: Run and wave hello
 Output: action run_wave 1
 Input: Walk while waving goodbye
 Output: action walk_wave 1
+
+Kneel/get down on your knees means kneel: lower onto BOTH knees and hold. It is distinct from crouch/squat, which keeps both feet supporting the body. Lie down/lay down/recline/lie flat means lie_down: recline onto the back on the floor and hold. Ordinary misspellings such as ly down retain this meaning. Chair/bed/other furniture, kneeling on a specifically named single knee, and lying on a named side/stomach are unsupported.
+Side kick/kick sideways/kick out to the side means side_kick_left or side_kick_right, extending laterally; preserve the named kicking leg, default right. A plain/front/forward kick remains kick_left or kick_right. A left kick without a lateral direction remains kick_left. Do not confuse which leg with which direction. Back kicks, spinning kicks and roundhouse kicks are unsupported.
+Input: bow
+Output: action bow 1
+Input: Kneel down
+Output: action kneel 1
+Input: Get down on your knees
+Output: action kneel 1
+Input: Go onto both knees
+Output: action kneel 1
+Input: Squat
+Output: action crouch 1
+Input: Kneel with your arms still
+Output: action kneel 1
+arms still
+Input: Lie down
+Output: action lie_down 1
+Input: ly down
+Output: action lie_down 1
+Input: Lay down on your back
+Output: action lie_down 1
+Input: Lie flat on the floor
+Output: action lie_down 1
+Input: Side kick
+Output: action side_kick_right 1
+Input: Kick sideways with the left leg
+Output: action side_kick_left 1
+Input: Kick out to your right side twice
+Output: action side_kick_right 2
+Input: Kick left
+Output: action kick_left 1
+Input: Do a front kick with your right leg
+Output: action kick_right 1
+Input: Side kick without moving hands
+Output: action side_kick_right 1
+arms still
+Input: Bow then kneel
+Output: action bow 1
+action kneel 1
+Input: Kneel on just your left knee
+Output: unsupported
+Input: Lie on your stomach
+Output: unsupported
+Input: Do a spinning roundhouse kick
+Output: unsupported

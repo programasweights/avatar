@@ -22,12 +22,12 @@ JOINT_ALIASES.update({
     f"{side}_mid{suffix}": f"{side}_middle{suffix or '_1'}"
     for side in SIDES for suffix in ("", "_1", "_2", "_3")
 })
-EDIT_ALIASES = {"arms": "both_arms", "both_arm": "both_arms"}
+EDIT_ALIASES = {"arms": "both_arms", "both_arm": "both_arms", "legs": "both_legs", "both_leg": "both_legs"}
 EDIT_ALIASES.update({f"{prefix}foot": f"{prefix}ankle" for prefix in ("", "left_", "right_", "both_")})
 DEXTERITY_SKILLS = {"finger_ripple", "finger_touches", "arm_wave", "coin_roll"}
-BODY_ACTIONS = {"walk", "run", "jump", "bow", "crouch", "sit", "turn_left", "turn_right", "spin", "kick_left", "kick_right", "walk_wave", "run_wave"}
-EDIT_PARTS = {"arm"} | set(PARTS) | set(FINGERS) | {f"{finger}_{segment}" for finger in FINGERS for segment in (1, 2, 3)}
-EDIT_TARGETS = {"selected", "both_arms", "hips", "spine", "spine_mid", "chest", "neck", "head"} | EDIT_PARTS | {
+BODY_ACTIONS = {"walk", "run", "jump", "bow", "crouch", "sit", "kneel", "lie_down", "turn_left", "turn_right", "spin", "kick_left", "kick_right", "side_kick_left", "side_kick_right", "walk_wave", "run_wave"}
+EDIT_PARTS = {"arm", "leg"} | set(PARTS) | set(FINGERS) | {f"{finger}_{segment}" for finger in FINGERS for segment in (1, 2, 3)}
+EDIT_TARGETS = {"selected", "both_arms", "both_legs", "hips", "spine", "spine_mid", "chest", "neck", "head"} | EDIT_PARTS | {
     f"{side}_{part}" for side in ("left", "right", "both") for part in EDIT_PARTS
 }
 
@@ -70,6 +70,11 @@ def transform_command(joint: str, raw: str) -> str:
     if abs(angle) > 180:
         raise ValueError("Joint angle exceeds 180 degrees")
     side_sign = 1 if joint.startswith("left") else -1
+    if operation == "overhead":
+        if mode != "hold" or not joint.endswith("_shoulder") or angle != 180:
+            raise ValueError("An overhead reach requires a shoulder held at 180 degrees")
+        side = joint.split("_", 1)[0]
+        return f"arm {side} still\njoint {joint} z {180 * side_sign}"
     if operation in {"x", "y", "z"}:
         axis = operation
     elif operation in {"left", "right"}:
@@ -312,6 +317,29 @@ def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
             return finish("unsupported")
         return finish(output)
 
+    def cached_decision(name: str) -> str:
+        # A rejected priority candidate returns to the normal route. Reuse its
+        # actual classifier results rather than requesting a second opinion
+        # from the same stateless program on the same instruction.
+        if name not in trace:
+            trace[name] = ask(name)
+        return trace[name]
+
+    def classify_activity() -> str:
+        label = cached_decision("activity_scope")
+        if label not in {"basic", "dance", "other"}:
+            raise ValueError("Invalid activity scope")
+        return label
+
+    def confirm_activity() -> str:
+        label = cached_decision("activity_confirmation")
+        if label not in {"basic", "dance", "other"}:
+            raise ValueError("Invalid activity confirmation")
+        return label
+
+    def current_control() -> str:
+        return cached_decision("current_control")
+
     playback = ask("playback_control")
     trace["playback_control"] = playback
     if playback != "none":
@@ -319,10 +347,48 @@ def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
             raise ValueError("Invalid playback control")
         return finish(f"playback {playback}", "playback")
 
+    action_intent = ask("action_intent")
+    trace["action_intent"] = action_intent
+    if action_intent not in {"single", "combined", "none"}:
+        raise ValueError("Invalid new-action intent")
+    if action_intent != "none":
+        activity = classify_activity()
+        if activity == "other" and confirm_activity() == "basic":
+            control = current_control()
+            if control != "unsupported":
+                return finish(validate_follow_up(control), "control")
+            activity = "basic"
+        if activity == "basic":
+            raw = ask("action")
+            trace.update(action=raw, route="action")
+            if raw == "unsupported" and action_intent == "combined":
+                raw = ask("action_composition")
+                trace["action_composition"] = raw
+            return finish_actions(raw)
+
     arm = ask("arm_control")
     trace["arm_control"] = arm
     if arm != "none":
         return finish(validate_arm_control(arm), "control")
+
+    # Resolve confirmed body actions and arm edits before the narrower leg gate.
+    # Its output must not override an already recognized movement elsewhere.
+    deferred_leg_restore = None
+    leg = ask("leg_control")
+    trace["leg_control"] = leg
+    if leg != "none":
+        if not re.fullmatch(r"(?:freeze|restore) (?:left_leg|right_leg|both_legs|leg)", leg):
+            raise ValueError("Invalid leg motion control")
+        leg_command = validate_edit(leg)
+        leg_scope = ask("leg_scope")
+        trace["leg_scope"] = leg_scope
+        if leg_scope not in {"yes", "no"}:
+            raise ValueError("Invalid leg anatomy scope")
+        if leg_scope == "yes":
+            if leg.startswith("freeze "):
+                return finish(leg_command, "edit")
+            # Returning to both feet is a support edit when dance confirms it.
+            deferred_leg_restore = leg_command
 
     dance = ask("dance_extension")
     trace["dance_extension"] = dance
@@ -344,26 +410,17 @@ def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
                 return finish("unsupported")
             return finish(command, "body" if command.startswith("dance ") else "control")
 
-    activity = ask("activity_scope")
-    trace["activity_scope"] = activity
-    confirmed_activity = None
+    if deferred_leg_restore is not None:
+        return finish(deferred_leg_restore, "edit")
 
-    def confirm_activity() -> str:
-        nonlocal confirmed_activity
-        if confirmed_activity is None:
-            confirmed_activity = ask("activity_confirmation")
-            trace["activity_confirmation"] = confirmed_activity
-            if confirmed_activity not in {"basic", "dance", "other"}:
-                raise ValueError("Invalid activity confirmation")
-        return confirmed_activity
+    activity = classify_activity()
 
     # Preserve the proven dance/joint router. A second opinion can recognize a
     # constrained body action it missed, without overriding a joint edit as dance.
     if activity == "other" and confirm_activity() == "basic":
         # A relative edit can mention an action name or repetition word.
         # Confirm it is not an existing-motion control before starting an action.
-        control = ask("current_control")
-        trace["current_control"] = control
+        control = current_control()
         if control != "unsupported":
             return finish(validate_follow_up(control), "control")
         activity = "basic"
@@ -418,8 +475,7 @@ def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
     if domain == "edit":
         return finish("unsupported")
     if domain == "control":
-        raw = ask("current_control")
-        trace["current_control"] = raw
+        raw = current_control()
         return finish("unsupported" if raw == "unsupported" else validate_follow_up(raw))
     if domain == "motion":
         route = ask("motion_scope")
@@ -434,8 +490,7 @@ def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
     if route == "dexterity":
         # Naming a skill may identify the CURRENT motion during a speed edit.
         # Let the narrow control interpreter check before creating a new skill.
-        control = ask("current_control")
-        trace["current_control"] = control
+        control = current_control()
         if control != "unsupported":
             return finish(validate_follow_up(control), "control")
         raw = ask("dexterity")

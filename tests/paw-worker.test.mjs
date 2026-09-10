@@ -57,7 +57,9 @@ def event(kind, text=''):
 def function(program_id):
     if program_id == ${JSON.stringify(programs.sequence)}:
         return lambda *args, **kwargs: 'single'
-    if program_id in (${JSON.stringify(programs.playback_control)}, ${JSON.stringify(programs.arm_control)}, ${JSON.stringify(programs.dance_extension)}, ${JSON.stringify(programs.dance_fallback)}):
+    if program_id == ${JSON.stringify(programs.leg_scope)}:
+        return lambda *args, **kwargs: 'yes'
+    if program_id in (${JSON.stringify(programs.action_intent)}, ${JSON.stringify(programs.leg_control)}, ${JSON.stringify(programs.playback_control)}, ${JSON.stringify(programs.arm_control)}, ${JSON.stringify(programs.dance_extension)}, ${JSON.stringify(programs.dance_fallback)}):
         return lambda *args, **kwargs: 'none'
     if program_id == ${JSON.stringify(programs.dance_confirmation)}:
         return lambda *args, **kwargs: 'no'

@@ -29,6 +29,8 @@ export const VALID_TARGETS = new Set([
   "right_foot_ik",
   "left_knee_pole",
   "right_knee_pole",
+  "left_foot_ik_enabled",
+  "right_foot_ik_enabled",
   "left_hand_camera",
   "right_hand_camera",
 ]);
@@ -171,7 +173,9 @@ export class MotionRig {
     this.scene.updateMatrixWorld(true);
     for (const side of ["left", "right"]) {
       const offset = positions.get(`${side}_foot_ik`);
-      if (offset) {
+      // A paused FK leg must not acquire IK when another sequence phase starts.
+      const ikEnabled = positions.get(`${side}_foot_ik_enabled`)?.x ?? 1;
+      if (offset && ikEnabled >= 0.5) {
         const ankle = this.joints.get(`${side}_ankle`)!;
         // Targets stay planted in stage coordinates while hips transfer weight.
         const target = ankle.worldPosition.clone().add(offset);

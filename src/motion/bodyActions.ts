@@ -1,5 +1,5 @@
 import { compileMotion, sampleCurve, sampleTimeline } from "./engine";
-import { waveHand } from "./relative";
+import { reverseCurrentMotion, waveHand } from "./relative";
 import type {
   Axis,
   Curve,
@@ -18,12 +18,16 @@ export const BODY_ACTIONS = [
   "jump",
   "bow",
   "crouch",
+  "kneel",
+  "lie_down",
   "sit",
   "turn_left",
   "turn_right",
   "spin",
   "kick_left",
   "kick_right",
+  "side_kick_left",
+  "side_kick_right",
 ] as const;
 export type BodyAction = (typeof BODY_ACTIONS)[number];
 export type JumpSupport = "both" | "left" | "right";
@@ -35,12 +39,16 @@ const LABELS: Record<BodyAction, string> = {
   jump: "Jump",
   bow: "Bow",
   crouch: "Crouch",
+  kneel: "Kneel on both knees",
+  lie_down: "Lie down on the floor",
   sit: "Sit on the floor",
   turn_left: "Turn left",
   turn_right: "Turn right",
   spin: "Spin",
   kick_left: "Kick with the left leg",
   kick_right: "Kick with the right leg",
+  side_kick_left: "Side kick with the left leg",
+  side_kick_right: "Side kick with the right leg",
 };
 type Keys = [number, number][];
 const constant = (value: number): Curve => ({ kind: "constant", value });
@@ -106,12 +114,14 @@ export function createBodyAction(
   const turning =
     action === "turn_left" || action === "turn_right" || action === "spin";
   const kickSide =
-    action === "kick_left"
+    action === "kick_left" || action === "side_kick_left"
       ? "left"
-      : action === "kick_right"
+      : action === "kick_right" || action === "side_kick_right"
         ? "right"
         : undefined;
-  const continuousCount = turning || action === "sit";
+  const heldPosture =
+    action === "sit" || action === "kneel" || action === "lie_down";
+  const continuousCount = turning || heldPosture;
   const repetitions = continuousCount ? 1 : count;
   const duration =
     (((action === "jump" ? 2 : 4) * 60) / bpm) * (continuousCount ? count : 1);
@@ -144,7 +154,7 @@ export function createBodyAction(
   });
   const locomotion = action === "walk" || action === "run";
   const effort: Keys =
-    action === "sit"
+    heldPosture
       ? [
           ...new Map(
             Array.from({ length: count }, (_, index) => {
@@ -344,7 +354,81 @@ export function createBodyAction(
         ),
       );
     }
+  } else if (action === "kneel") {
+    torso.push(position("torso.height", "root", "y", scaled(effort, -0.48)));
+    torso.push(position("torso.balance", "root", "z", scaled(effort, 0.08)));
+    torso.push(rotation("torso.hinge", "hips", "x", scaled(effort, 5)));
+    for (const side of ["left", "right"] as const) {
+      feet.push(group(`feet.${side}`, `${side} leg · knee down, foot behind`, [
+        position(`feet.${side}.x`, `${side}_foot_ik`, "x", constant(0)),
+        position(`feet.${side}.y`, `${side}_foot_ik`, "y", constant(0)),
+        position(`feet.${side}.z`, `${side}_foot_ik`, "z", scaled(effort, -0.42)),
+        position(`feet.${side}.knee.y`, `${side}_knee_pole`, "y", scaled(effort, -1)),
+        position(`feet.${side}.knee.z`, `${side}_knee_pole`, "z", constant(1)),
+      ]));
+      arms.push(group(`arms.${side}`, `${side} arm · relaxed by the thighs`, [
+        rotation(`arms.${side}.shoulder`, `${side}_shoulder`, "x", scaled(effort, -12)),
+        rotation(`arms.${side}.elbow`, `${side}_elbow`, "x", scaled(effort, -12)),
+      ]));
+    }
+  } else if (action === "lie_down") {
+    // Descend into a seated tuck, then extend the legs while reclining. The
+    // root and leg curves remain editable; no baked animation or new solver.
+    const phase = (node: CurveNode): MotionNode => {
+      if (count === 1) return node;
+      if (node.curve.kind !== "keys") throw new Error("A posture phase needs keyframes.");
+      const phraseDuration = duration / count;
+      return {
+        id: node.id,
+        label: node.label,
+        kind: "sequence",
+        children: [
+          {
+            id: `${node.id}.cycles`, label: "Lie down and recover", kind: "repeat", count: count - 1,
+            children: [
+              { ...node, id: `${node.id}.descend`, duration: phraseDuration * .6 },
+              {
+                ...node, id: `${node.id}.recover`, duration: phraseDuration * .4,
+                curve: keys(node.curve.points.map(([time, value]): [number, number] => [1 - time, value]).reverse()),
+              },
+            ],
+          },
+          { ...node, id: `${node.id}.settle`, duration: phraseDuration },
+        ],
+      };
+    };
+    const recline: Keys = [[0, 0], [.35, 0], [.8, -90], [1, -90]];
+    const hip: Keys = [[0, 0], [.35, -65], [.6, -50], [.8, 0], [1, 0]];
+    const knee: Keys = [[0, 0], [.35, 130], [.6, 95], [.8, 0], [1, 0]];
+    // Match the root's height to the extending legs. These neutral leg lengths
+    // are shared by the bundled characters; holding the ankle plane prevents
+    // the reclining transition from sweeping the feet through the floor.
+    const floorHeight: Keys = Array.from({ length: 81 }, (_, index) => {
+      const time = index / 80, radians = Math.PI / 180;
+      const root = sampleCurve(keys(recline), time) * radians;
+      const upper = root + sampleCurve(keys(hip), time) * radians;
+      const lower = upper + sampleCurve(keys(knee), time) * radians;
+      const ankle = .9491 + .0221 * Math.cos(root) - .007 * Math.sin(root)
+        - .4288 * Math.cos(upper) + .0001 * Math.sin(upper)
+        - .4559 * Math.cos(lower) + .0514 * Math.sin(lower);
+      return [time, .0865 - ankle];
+    });
+    torso.push(phase(rotation("torso.recline", "hips", "x", keys(recline))));
+    torso.push(phase(position("torso.height", "root", "y", keys(floorHeight))));
+    torso.push(phase(position("torso.center", "root", "z", keys([[0, 0], [.35, -.1], [.8, -.2], [1, -.2]]))));
+    for (const side of ["left", "right"] as const) {
+      feet.push(group(`feet.${side}`, `${side} leg · sit, extend, rest`, [
+        phase(rotation(`feet.${side}.hip`, `${side}_hip`, "x", keys(hip))),
+        phase(rotation(`feet.${side}.knee`, `${side}_knee`, "x", keys(knee))),
+        phase(rotation(`feet.${side}.ankle`, `${side}_ankle`, "x", keys([[0, 0], [.35, -65], [.6, -45], [.8, 0], [1, 0]]))),
+      ]));
+      arms.push(group(`arms.${side}`, `${side} arm · balance then rest`, [
+        phase(rotation(`arms.${side}.shoulder.x`, `${side}_shoulder`, "x", keys([[0, 0], [.35, -30], [.65, -20], [.85, 0], [1, 0]]))),
+        phase(rotation(`arms.${side}.shoulder.z`, `${side}_shoulder`, "z", keys([[0, 0], [.35, (side === "left" ? 1 : -1) * 15], [.85, (side === "left" ? 1 : -1) * 8], [1, (side === "left" ? 1 : -1) * 8]]))),
+      ]));
+    }
   } else if (kickSide) {
+    const lateral = action.startsWith("side_kick_");
     torso.push(
       position(
         "torso.balance.x",
@@ -354,7 +438,7 @@ export function createBodyAction(
       ),
     );
     torso.push(position("torso.balance.y", "root", "y", scaled(effort, -0.04)));
-    torso.push(rotation("torso.counterlean", "hips", "x", scaled(effort, -8)));
+    torso.push(rotation("torso.counterlean", "hips", lateral ? "z" : "x", scaled(effort, lateral ? (kickSide === "left" ? 10 : -10) : -8)));
     for (const side of ["left", "right"] as const) {
       const kicking = side === kickSide;
       feet.push(
@@ -362,7 +446,9 @@ export function createBodyAction(
           `feet.${side}`,
           `${side} foot · ${kicking ? "chamber, kick, retract" : "support"}`,
           [
-            position(`feet.${side}.x`, `${side}_foot_ik`, "x", constant(0)),
+            position(`feet.${side}.x`, `${side}_foot_ik`, "x", kicking && lateral ? scaled([
+              [0, 0], [.12, 0], [.3, .08], [.47, .72], [.56, .72], [.72, .08], [.9, 0], [1, 0],
+            ], side === "left" ? 1 : -1) : constant(0)),
             position(
               `feet.${side}.y`,
               `${side}_foot_ik`,
@@ -384,7 +470,7 @@ export function createBodyAction(
               `feet.${side}.z`,
               `${side}_foot_ik`,
               "z",
-              kicking
+              kicking && !lateral
                 ? keys([
                     [0, 0],
                     [0.12, 0],
@@ -664,6 +750,46 @@ export interface BodyActionStep {
   support?: JumpSupport;
 }
 
+/** Recover a completed floor recline along its supported path before a new action. */
+export function createPostureRecovery(current: MotionProgram): MotionProgram | undefined {
+  const timeline = compileMotion(current);
+  const final = sampleTimeline(timeline, timeline.duration);
+  const value = (target: string, axis: Axis, channel = "rotation") =>
+    final.find(pose => pose.target === target && pose.axis === axis && pose.channel === channel)?.value ?? 0;
+  if (Math.abs(value("hips", "x") + 90) > 1e-6) return undefined;
+  const reference = withFacing(createBodyAction("lie_down", 1, current.bpm), value("root", "y"));
+  const referenceTimeline = compileMotion(reference);
+  const referencePose = sampleTimeline(referenceTimeline, referenceTimeline.duration);
+  // An intervening held joint gesture can replace every authored node ID.
+  // Recognize the actual reclined pelvis/floor position instead of its history.
+  const referenceHeight = referencePose.find(pose => pose.target === "root" && pose.channel === "position" && pose.axis === "y")!.value;
+  if (Math.abs(value("root", "y", "position") - referenceHeight) > 1e-6) return undefined;
+  const recovery = reverseCurrentMotion(reference);
+  const channelKey = (pose: PoseValue) => `${pose.target}.${pose.channel}.${pose.axis}`;
+  const requested = new Map(final.map(pose => [channelKey(pose), pose]));
+  const baseline = new Map(referencePose.map(pose => [channelKey(pose), pose]));
+  const corrections: CurveNode[] = [...new Set([...requested.keys(), ...baseline.keys()])].flatMap(key => {
+    const delta = (requested.get(key)?.value ?? 0) - (baseline.get(key)?.value ?? 0);
+    if (Math.abs(delta) < 1e-9) return [];
+    const pose = requested.get(key) ?? baseline.get(key)!;
+    return [{ id: `recovery_modifier.${key}`, label: "Release the preceding joint pose", kind: "curve",
+      target: pose.target, axis: pose.axis, channel: pose.channel, duration: referenceTimeline.duration,
+      curve: keys([[0, delta], [1, 0]]) }];
+  });
+  const root = recovery.root as GroupNode;
+  const armTarget = (target: string) => /^(left|right)_(clavicle|shoulder|elbow|wrist|thumb|index|middle|ring|pinky)(_|$)/.test(target);
+  recovery.root = { ...root, children: root.children.map(node => {
+    const added = corrections.filter(curve => node.id === (armTarget(curve.target) ? "arms" : "torso"));
+    return added.length && node.kind === "parallel" ? { ...node, children: [...node.children, ...added] } : node;
+  }) };
+  const visit = (node: MotionNode): MotionNode => {
+    const id = `posture_recovery.${node.id}`;
+    if (node.kind === "curve" || node.kind === "contact") return { ...node, id, duration: node.duration * .4 };
+    return { ...node, id, children: node.children.map(visit) };
+  };
+  return { ...recovery, title: "Rise from the floor", root: visit(recovery.root) };
+}
+
 function affineCurve(curve: Curve, scale = 1, offset = 0): Curve {
   if (curve.kind === "constant")
     return { ...curve, value: curve.value * scale + offset };
@@ -798,7 +924,18 @@ export function createBodySequence(
     armPhases: MotionNode[] = [];
   for (const [index, program] of programs.entries()) {
     if (index) {
-      const previous = compileMotion(programs[index - 1]),
+      const recovery = createPostureRecovery(programs[index - 1]);
+      if (recovery) {
+        const prefixRecovery = (node: MotionNode): MotionNode => {
+          const id = `body_recovery.${index}.${node.id}`;
+          return node.kind === "curve" || node.kind === "contact" ? { ...node, id } : { ...node, id, children: node.children.map(prefixRecovery) };
+        };
+        const recover = prefixRecovery(recovery.root) as GroupNode;
+        const recoverArms = recover.children.filter(node => node.id.endsWith(".posture_recovery.arms"));
+        children.push({ ...recover, children: recover.children.filter(node => !recoverArms.includes(node)) });
+        armPhases.push(group(`arms.recovery.${index}`, recovery.title, recoverArms));
+      }
+      const previous = compileMotion(recovery ?? programs[index - 1]),
         next = compileMotion(program);
       const transition = transitionPose(
         `body_transition.${index}`,

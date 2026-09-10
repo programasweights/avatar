@@ -1,0 +1,198 @@
+Interpret ONLY a request to stop or restore the motion of existing legs/footwork while preserving the rest of the avatar's current motion. Return exactly one of:
+freeze left_leg
+freeze right_leg
+freeze both_legs
+restore left_leg
+restore right_leg
+restore both_legs
+none
+
+FIRST require the input to explicitly NAME the whole leg(s), lower-body motion, both feet, or footwork as the thing being paused/restored. A pronoun or UI selection is NOT a named leg: it, that, this, them, those, this part, the selected part/joint, the current selection. Return none for such requests, even if they say let it move again, restore, resume, freeze or keep it still. The separate joint editor resolves selections. Do not guess a target from this classifier's purpose or from an unprovided previous conversation.
+
+Then bind the pause/restore operation to THAT named body part, not another clause. Keep/preserve/leave the footwork alone/unchanged means let its existing animation CONTINUE; it does not stop or freeze the legs. If the requested change is to the arms, hands or another body part, output none even when the instruction mentions keeping the legs/footwork/dance as it is. "Hold both arms still" affects ARMS, not legs. "Keep dancing" does not name any legs to pause. Only explicitly keeping the LEGS STILL/FROZEN or stopping their movement is a leg freeze. Compare: pause legs while arms continue -> freeze; preserve moving legs while changing arms -> none. If an instruction contains another new limb edit, return none rather than silently discarding that edit.
+
+freeze means hold the selected whole leg at its current pose: stop its movement, pause it, freeze it, keep it still, stop the footwork. restore means let a previously paused leg move again, resume that leg or restore the original footwork. A left/right qualifier selects that leg. Legs, leg movements, lower-body motion, feet or footwork without a side means both_legs. Preserve the side and operation. Keeping the current dance or upper body going does not cancel a selective leg pause.
+
+Require BOTH a leg/footwork target AND an explicit pause-or-restore operation. Naming a leg never implies freezing it. A new kick, hop, leg lift, step, swing, bend or movement is none, even when short, imperative, or appearing after an earlier sequence step. "Kick left leg" tells it to KICK, not freeze. Bare "move the leg" requests new movement; only "let the paused leg move again", "resume the leg", or equivalent explicitly restores paused motion. Do not infer a pause or an earlier freeze that the input never mentions.
+
+Support/contact changes are none, even with "keep", "hold", "again" or "back". One foot touching the floor, the other leg raised, both feet again, using both legs again, and returning to two-footed dancing describe support, not paused motion. "Again" alone does NOT mean restore; the instruction must restore/resume leg MOVEMENT or explicitly unfreeze a leg. "Keep the dance going on one foot" keeps an ongoing dance; it never asks to keep that leg still. Hold feet where they currently are means freeze, but place/hold a foot at a NEW height or contact position means none.
+
+Decide the ANATOMICAL TARGET before the operation. A named finger, hand, wrist, elbow, arm, shoulder, head, neck, torso, hip, knee, ankle or toe joint is NONE, even if the request says freeze, stop, resume or restore. An individual FOOT means the ankle joint, not the entire leg: resuming "the foot" or freezing "the left foot" is none here. Both feet, leg motion or general footwork can select the whole lower body. A right ring finger is a FINGER, never a right leg. Left/right is only a side qualifier, not evidence of a leg. Only an explicitly requested whole leg, lower body, both feet or footwork belongs here.
+
+Only controls of EXISTING leg motion belong here. Most requests are none. Starting a new jump/kick/run/walk/dance with a fixed-limb constraint is none; it must be handled as a whole new action. Balance or dance on one foot, switch supporting feet, lift a leg, bend a knee, a new stated joint angle, standing, sitting, kneeling, lying down, and new static poses are none. Whole-animation stop/pause/resume and freezing hands/fingers/arms/head are none. Never turn a whole-body stop into a leg pause or a leg pause into a whole-body stop. Questions, descriptions, negated requests and unrelated meanings of foot/leg are none. If other NEW actions or joint edits are requested in the same atomic instruction, output none instead of dropping them.
+
+Input: stop leg movements
+Output: freeze both_legs
+Input: Keep dancing but stop moving your legs
+Output: freeze both_legs
+Input: Freeze both legs while your arms keep dancing
+Output: freeze both_legs
+Input: Pause just the left leg
+Output: freeze left_leg
+Input: Keep your right leg still
+Output: freeze right_leg
+Input: Stop the footwork, keep the upper body going
+Output: freeze both_legs
+Input: Hold both feet where they are
+Output: freeze both_legs
+Input: Let the legs move again
+Output: restore both_legs
+Input: Let your left leg move again
+Output: restore left_leg
+Input: Let your right leg move again
+Output: restore right_leg
+Input: Resume the footwork
+Output: restore both_legs
+Input: Unfreeze your left leg
+Output: restore left_leg
+Input: Restore the right leg's movement
+Output: restore right_leg
+Input: Stop
+Output: none
+Input: Stop dancing
+Output: none
+Input: Resume dancing
+Output: none
+Input: Freeze your left arm
+Output: none
+Input: Keep the footwork and make the left arm wave
+Output: none
+Input: Preserve the lower-body motion while the arms become robotic
+Output: none
+Input: Leave the steps unchanged, only change the arms
+Output: none
+Input: Keep dancing and hold your right arm still
+Output: none
+Input: Hold both arms still while the legs keep moving
+Output: none
+Input: Keep the existing leg movement exactly as it is
+Output: none
+Input: Leave that footwork alone
+Output: none
+Input: Freeze both legs and let the arms keep moving
+Output: freeze both_legs
+Input: Pause your right leg while keeping the left arm's motion
+Output: freeze right_leg
+Input: Pause both knees
+Output: none
+Input: Lift your left leg
+Output: none
+Input: Kick with your right leg
+Output: none
+Input: Kick left leg
+Output: none
+Input: Left leg, side kick
+Output: none
+Input: Hop on the left leg
+Output: none
+Input: Move your right leg forward
+Output: none
+Input: Swing the left leg outward
+Output: none
+Input: Raise the right leg and hold it up
+Output: none
+Input: Hold your knee at 45 degrees
+Output: none
+Input: Dance Gangnam on one foot
+Output: none
+Input: Balance on your right leg
+Output: none
+Input: Switch to the opposite foot
+Output: none
+Input: Now on one foot.
+Output: none
+Input: Both feet again
+Output: none
+Input: Go back to using both legs
+Output: none
+Input: Keep dancing with only the right foot on the floor
+Output: none
+Input: Hold the left foot above the floor
+Output: none
+Input: Put both feet back on the ground
+Output: none
+Input: Keep the left foot touching the floor while the right leg is raised
+Output: none
+Input: Jump without moving your legs
+Output: none
+Input: Kick without moving your hands
+Output: none
+Input: Stand still
+Output: none
+Input: Kneel down
+Output: none
+Input: Do not stop your legs
+Output: none
+Input: Why did the footwork stop?
+Output: none
+Input: Freeze the left leg and raise the right arm
+Output: none
+
+Input: Resume the right ring finger.
+Output: none
+Input: Restore your left index finger
+Output: none
+Input: Let the right thumb move again
+Output: none
+Input: Unfreeze both arms
+Output: none
+Input: Stop just the ring finger
+Output: none
+Input: Pause the right little finger
+Output: none
+Input: Keep the left wrist still
+Output: none
+Input: Freeze both hands
+Output: none
+Input: Restore your right elbow
+Output: none
+Input: Let your left arm move again
+Output: none
+Input: Resume the selected joint
+Output: none
+Input: Let it move again
+Output: none
+Input: Let them move again
+Output: none
+Input: Resume that part
+Output: none
+Input: Unfreeze this
+Output: none
+Input: Keep it still
+Output: none
+Input: Pause the current selection
+Output: none
+Input: Restore the selected limb
+Output: none
+Input: Pause your head
+Output: none
+Input: Stop moving the neck
+Output: none
+Input: Restore both shoulders
+Output: none
+Input: Unfreeze the left knee
+Output: none
+Input: Pause the right ankle
+Output: none
+Input: Freeze just the hips
+Output: none
+Input: Stop moving your left toes
+Output: none
+Input: Resume the movement of the right foot
+Output: none
+Input: Let the foot move again
+Output: none
+Input: Freeze the left foot
+Output: none
+Input: Freeze
+Output: none
+Input: Restore
+Output: none
+Input: Stop moving your entire left leg
+Output: freeze left_leg
+Input: Resume your right leg
+Output: restore right_leg
+Input: Restore the lower-body motion
+Output: restore both_legs
+Input: Freeze all the footwork
+Output: freeze both_legs

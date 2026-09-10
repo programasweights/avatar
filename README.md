@@ -91,8 +91,13 @@ You can also type “Keep the wave going. Stop just the ring finger,” then
 “Restore the ring finger.” “Freeze your left arm” holds the shoulder, elbow,
 wrist and collarbone together; “Unfreeze both arms” restores their movement.
 An omitted side uses the active hand. “This joint”
-uses the current tree selection. Pauses hold local joint rotations; contact
-choreography and leg IK need their own trajectory controls.
+uses the current tree selection. “Stop leg movements” pauses both legs while
+the arms keep moving; “Resume the footwork” restores them. Whole-leg pauses
+also hold the foot targets and shared body position. Individual joint pauses
+hold local rotations; contact choreography remains controlled by its trajectories.
+
+“Fully lift up your left arm” straightens that arm and reaches overhead.
+An explicit angle, such as “Lift your left arm 45 degrees,” keeps precise joint control.
 
 Try “Roll a coin,” “Could you move just your left thumb?”, or “Wave hello with
 your left hand.” Unsupported tricks, such as rolling a coin on the head, are
@@ -103,7 +108,10 @@ Try “Run,” “Jump twice, then take a bow,” “Sit down,” or “Kick wit
 leg.” Whole-body actions start a new scene and switch to the full-body view.
 “Turn around 180 degrees” makes a whole-body half turn. “Balance on one foot”
 edits the supporting foot of the Gangnam dance. Walking and running happen in
-place. A single walk or run loops; counted actions and sequences play once and stop. Sitting holds a floor-seated pose.
+place. A single walk or run loops; counted actions and sequences play once and stop.
+“Kneel down” rests on both knees, “Lie down” reclines onto the floor, and
+“Side kick with your left leg” kicks sideways. Sitting, kneeling and lying down
+hold their final poses.
 These motions use editable joint curves and foot targets, just like the hand
 sequence. Short action sequences support up to four steps and sixteen total
 repetitions, with one to eight repetitions per step.
@@ -128,7 +136,7 @@ two to four steps; explicit step durations are 1–12 seconds, with 48 seconds
 for the complete plan. They play once. An unsupported step leaves the current
 creation intact.
 
-“Stop” or “Pause” holds the current pose. “Resume” continues the animation;
+“Stop” or “Pause” holds the current pose. “Resume” or “Resume dancing” continues the animation;
 “Replay” plays it from the beginning. These keep your motion and edits.
 To pause only one part, name it: “Stop just the ring finger.”
 
@@ -230,6 +238,8 @@ python3 tools/evaluate-launch.py --url http://127.0.0.1:5173/api/direct --output
 This opt-in suite processes real requests sequentially and saves the model traces. It checks
 ordinary directions, follow-up edits, and honest rejection of unsupported
 tricks; the rig tests separately verify the resulting joint and prop motion.
+Add `--cases tests/posture-language-cases.json` to check body poses, overhead
+reaches, side kicks, and leg pauses.
 
 The built `dist/` can serve the examples and editor as a static site. Language
 input also needs a backend at `/api/direct`; `npm run dev` and `npm run preview`

@@ -1,0 +1,72 @@
+Decide whether this avatar instruction requests a WHOLE-LEG MOTION PAUSE OR RESUME. Return exactly one word: yes or no.
+
+yes requires BOTH:
+1. The instruction explicitly names a whole leg, legs, leg movements, footwork, lower-body motion, or both feet (including the left and right feet together).
+2. It asks to stop/freeze that existing movement in its current pose, keep that part still, or unfreeze/resume that existing movement.
+
+This is only eligibility. Do not choose a side or distinguish pause from resume.
+
+no for choosing or changing support, balance, weight, ground contact, or a new target pose. Standing on both feet, returning to both feet, placing feet on the floor, or raising one foot are support/pose changes, not pausing or resuming existing motion. Words like stand, hold, keep, back, or again do not by themselves mean pause/resume. A new kick, jump, step, or leg movement is also no. Preserving already-moving footwork while changing the arms is no.
+
+no if whole-leg anatomy is not explicit: general stop/resume/dancing, pronouns, selected parts, arms, torso, fingers, or individual feet/ankles/knees/hips/toes. Do not infer whole legs from walking or dancing.
+
+Input: Stop leg movements
+Output: yes
+Input: Pause just the left leg
+Output: yes
+Input: Keep your right leg still
+Output: yes
+Input: Freeze both legs
+Output: yes
+Input: Hold both feet where they are
+Output: yes
+Input: Stop the left and right feet from moving
+Output: yes
+Input: Pause the footwork while the arms keep dancing
+Output: yes
+Input: Resume the footwork
+Output: yes
+Input: Let the legs move again
+Output: yes
+Input: Unfreeze your left leg
+Output: yes
+Input: Let the right leg dance again
+Output: yes
+Input: Restore the lower-body motion
+Output: yes
+Input: Start moving both feet again
+Output: yes
+Input: Stop dancing.
+Output: no
+Input: Pause the torso
+Output: no
+Input: Let it move again
+Output: no
+Input: Resume the selected joint
+Output: no
+Input: Unfreeze this
+Output: no
+Input: Freeze the left ankle
+Output: no
+Input: Resume moving the foot
+Output: no
+Input: Go back to standing on both feet
+Output: no
+Input: Both feet again
+Output: no
+Input: Keep both feet on the floor
+Output: no
+Input: Put your left and right feet back on the ground
+Output: no
+Input: Hold the left foot above the floor
+Output: no
+Input: Stand on the right leg
+Output: no
+Input: Now on one foot
+Output: no
+Input: Switch to the opposite foot
+Output: no
+Input: Kick with the left leg
+Output: no
+Input: Keep the footwork but make the arms robotic
+Output: no

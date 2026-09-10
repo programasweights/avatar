@@ -11,9 +11,10 @@ Aliases: thumb is a finger even without the word finger; little finger=pinky; po
 
 MODE: hold for a new fixed position (bend, curl, lift, turn, hold at an angle, straighten, or generic move). wave ONLY when the requested joint itself should wiggle, oscillate, swing repeatedly, nod or shake. Keeping a wave or a dance elsewhere does NOT make a new bend oscillate. Holding or freezing at a NEW stated angle is hold; pausing at its current pose or restoring saved motion is unsupported.
 
-OPERATION: x, y or z when an explicit axis is given. Otherwise bend, raise, left, right, backward, forward, outward, inward, up, down.
+OPERATION: x, y or z when an explicit axis is given. Otherwise bend, raise, overhead, left, right, backward, forward, outward, inward, up, down.
 Finger curls and elbow/knee flexion=bend. Generic move=bend. Straighten or relax a joint=bend with 0 degrees.
 Raise/lift an arm or shrug a collarbone=raise. Lift a leg without a direction=raise (a forward lift).
+For a complete straight-arm reach above the head, use shoulder hold overhead 180. This means fully lifting an arm, lifting it all the way up, reaching overhead, holding it straight up, raising it as high as possible, or putting it above your head. It sets the whole selected arm overhead with a straight elbow while preserving other movements. Ordinary unspecified arm raises still use raise 45. Overhead is only for fixed arm positions, never a collarbone shrug, leg lift, head movement, or oscillation. An explicit numeric angle or axis always takes priority over words such as fully or high: a stated 45-degree arm raise is raise 45, not overhead 180.
 Explicit forward/backward leg or arm movement=forward/backward. Away from the body or sideways=outward; toward/across the body=inward. Raise an arm sideways still uses raise.
 Head turning/twisting=left/right (default left). Leaning/bowing=forward/backward. Side tilts use z, negative degrees for left and positive for right. Looking or pointing toes up/down=up/down. Nod=forward. Shake head no=left. An explicit axis overrides anatomical operations.
 ANGLE: numeric degrees, preserving signs only for an explicit axis or z tilt. Otherwise use a positive magnitude. Unspecified angle=45, except nod/shake head=20. Straighten=0. Ignore BPM and speed numbers. Supported angle range -180 through 180. No other output fields or explanations.
@@ -80,6 +81,30 @@ Input: Raise both arms 60 degrees
 Output: both_shoulder hold raise 60
 Input: Raise the left arm sideways 90 degrees
 Output: left_shoulder hold raise 90
+Input: Fully lift up left arm
+Output: left_shoulder hold overhead 180
+Input: Fully lift up right arm
+Output: right_shoulder hold overhead 180
+Input: Lift your left arm all the way up
+Output: left_shoulder hold overhead 180
+Input: Hold the right arm straight up over your head
+Output: right_shoulder hold overhead 180
+Input: Raise both arms as high as possible
+Output: both_shoulder hold overhead 180
+Input: Keep dancing and reach overhead with your left arm
+Output: left_shoulder hold overhead 180
+Input: Put your right arm above your head
+Output: right_shoulder hold overhead 180
+Input: Keep the footwork and fully raise both arms
+Output: both_shoulder hold overhead 180
+Input: Lift the left arm
+Output: left_shoulder hold raise 45
+Input: Fully raise the right arm to 45 degrees
+Output: right_shoulder hold raise 45
+Input: Lift both arms all the way to 90 degrees
+Output: both_shoulder hold raise 90
+Input: Raise the left shoulder z to 45 degrees
+Output: left_shoulder hold z 45
 Input: Bend both knees 25 degrees
 Output: both_knee hold bend 25
 Input: Bend the right elbow 80 degrees

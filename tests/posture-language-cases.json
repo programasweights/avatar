@@ -1,0 +1,488 @@
+{
+  "cases": [
+    {
+      "id": "visitor_posture_01",
+      "category": "new_visitor",
+      "instruction": "slap yourself",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "visitor_posture_02",
+      "category": "new_visitor",
+      "instruction": "jump up and do a barrel roll",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "visitor_posture_03",
+      "category": "new_visitor",
+      "instruction": "lift up left arm",
+      "expected": [
+        "joint left_shoulder z 45"
+      ]
+    },
+    {
+      "id": "visitor_posture_04",
+      "category": "new_visitor",
+      "instruction": "fully lift up left arm",
+      "expected": [
+        "arm left still\njoint left_shoulder z 180"
+      ]
+    },
+    {
+      "id": "visitor_posture_05",
+      "category": "new_visitor",
+      "instruction": "fully lift up right arm",
+      "expected": [
+        "arm right still\njoint right_shoulder z -180"
+      ]
+    },
+    {
+      "id": "visitor_posture_06",
+      "category": "new_visitor",
+      "instruction": "put down both arms",
+      "expected": [
+        "arms still"
+      ]
+    },
+    {
+      "id": "visitor_posture_07",
+      "category": "new_visitor",
+      "instruction": "stop leg movements",
+      "expected": [
+        "freeze both_legs"
+      ]
+    },
+    {
+      "id": "visitor_posture_08",
+      "category": "new_visitor",
+      "instruction": "resume dancing",
+      "expected": [
+        "playback resume"
+      ]
+    },
+    {
+      "id": "visitor_posture_09",
+      "category": "new_visitor",
+      "instruction": "kick",
+      "expected": [
+        "action kick_right 1"
+      ]
+    },
+    {
+      "id": "visitor_posture_10",
+      "category": "new_visitor",
+      "instruction": "kick without moving hands",
+      "expected": [
+        "action kick_right 1\narms still"
+      ]
+    },
+    {
+      "id": "visitor_posture_11",
+      "category": "new_visitor",
+      "instruction": "bow",
+      "expected": [
+        "action bow 1"
+      ]
+    },
+    {
+      "id": "visitor_posture_12",
+      "category": "new_visitor",
+      "instruction": "ly down",
+      "expected": [
+        "action lie_down 1"
+      ]
+    },
+    {
+      "id": "visitor_posture_13",
+      "category": "new_visitor",
+      "instruction": "run",
+      "expected": [
+        "action run 1"
+      ]
+    },
+    {
+      "id": "visitor_posture_14",
+      "category": "new_visitor",
+      "instruction": "stop",
+      "expected": [
+        "playback pause"
+      ]
+    },
+    {
+      "id": "visitor_posture_15",
+      "category": "new_visitor",
+      "instruction": "kneel down",
+      "expected": [
+        "action kneel 1"
+      ]
+    },
+    {
+      "id": "visitor_posture_16",
+      "category": "new_visitor",
+      "instruction": "squat",
+      "expected": [
+        "action crouch 1"
+      ]
+    },
+    {
+      "id": "visitor_posture_17",
+      "category": "new_visitor",
+      "instruction": "workout",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "visitor_posture_18",
+      "category": "new_visitor",
+      "instruction": "side kick",
+      "expected": [
+        "action side_kick_right 1"
+      ]
+    },
+    {
+      "id": "bow_short",
+      "category": "posture_controls",
+      "instruction": "Bow.",
+      "expected": [
+        "action bow 1"
+      ]
+    },
+    {
+      "id": "bow_polite",
+      "category": "posture_controls",
+      "instruction": "Please bow",
+      "expected": [
+        "action bow 1"
+      ]
+    },
+    {
+      "id": "bow_two",
+      "category": "posture_controls",
+      "instruction": "Bow twice",
+      "expected": [
+        "action bow 2"
+      ]
+    },
+    {
+      "id": "resume_dance",
+      "category": "posture_controls",
+      "instruction": "Resume the dance",
+      "expected": [
+        "playback resume"
+      ]
+    },
+    {
+      "id": "continue_dance",
+      "category": "posture_controls",
+      "instruction": "Continue dancing",
+      "expected": [
+        "playback resume"
+      ]
+    },
+    {
+      "id": "unpause_dance",
+      "category": "posture_controls",
+      "instruction": "Unpause the dance",
+      "expected": [
+        "playback resume"
+      ]
+    },
+    {
+      "id": "overhead_left",
+      "category": "posture_controls",
+      "instruction": "Raise your left arm all the way up",
+      "expected": [
+        "arm left still\njoint left_shoulder z 180"
+      ]
+    },
+    {
+      "id": "overhead_right",
+      "category": "posture_controls",
+      "instruction": "Reach overhead with your right arm",
+      "expected": [
+        "arm right still\njoint right_shoulder z -180"
+      ]
+    },
+    {
+      "id": "overhead_both",
+      "category": "posture_controls",
+      "instruction": "Lift both arms above your head",
+      "expected": [
+        "arm left still\njoint left_shoulder z 180\narm right still\njoint right_shoulder z -180"
+      ]
+    },
+    {
+      "id": "overhead_preserve",
+      "category": "posture_controls",
+      "instruction": "Keep dancing and fully lift your right arm",
+      "expected": [
+        "arm right still\njoint right_shoulder z -180"
+      ]
+    },
+    {
+      "id": "raise_numeric",
+      "category": "posture_controls",
+      "instruction": "Fully raise your left arm 45 degrees",
+      "expected": [
+        "joint left_shoulder z 45"
+      ]
+    },
+    {
+      "id": "raise_sideways",
+      "category": "posture_controls",
+      "instruction": "Raise the left arm sideways 90 degrees",
+      "expected": [
+        "joint left_shoulder z 90"
+      ]
+    },
+    {
+      "id": "pause_footwork",
+      "category": "posture_controls",
+      "instruction": "Stop the footwork, keep the upper body going",
+      "expected": [
+        "freeze both_legs"
+      ]
+    },
+    {
+      "id": "pause_left_leg",
+      "category": "posture_controls",
+      "instruction": "Pause just the left leg",
+      "expected": [
+        "freeze left_leg"
+      ]
+    },
+    {
+      "id": "pause_right_leg",
+      "category": "posture_controls",
+      "instruction": "Keep your right leg still",
+      "expected": [
+        "freeze right_leg"
+      ]
+    },
+    {
+      "id": "pause_both_legs",
+      "category": "posture_controls",
+      "instruction": "Freeze both legs while your arms keep dancing",
+      "expected": [
+        "freeze both_legs"
+      ]
+    },
+    {
+      "id": "restore_footwork",
+      "category": "posture_controls",
+      "instruction": "Resume the footwork",
+      "expected": [
+        "restore both_legs"
+      ]
+    },
+    {
+      "id": "restore_left_leg",
+      "category": "posture_controls",
+      "instruction": "Unfreeze your left leg",
+      "expected": [
+        "restore left_leg"
+      ]
+    },
+    {
+      "id": "restore_right_leg",
+      "category": "posture_controls",
+      "instruction": "Let your right leg move again",
+      "expected": [
+        "restore right_leg"
+      ]
+    },
+    {
+      "id": "kneel_knees",
+      "category": "posture_controls",
+      "instruction": "Get down on your knees",
+      "expected": [
+        "action kneel 1"
+      ]
+    },
+    {
+      "id": "kneel_still_arms",
+      "category": "posture_controls",
+      "instruction": "Kneel with your arms still",
+      "expected": [
+        "action kneel 1\narms still"
+      ]
+    },
+    {
+      "id": "kneel_both",
+      "category": "posture_controls",
+      "instruction": "Go onto both knees",
+      "expected": [
+        "action kneel 1"
+      ]
+    },
+    {
+      "id": "crouch_distinct",
+      "category": "posture_controls",
+      "instruction": "Crouch down",
+      "expected": [
+        "action crouch 1"
+      ]
+    },
+    {
+      "id": "lie_flat",
+      "category": "posture_controls",
+      "instruction": "Lie flat on the floor",
+      "expected": [
+        "action lie_down 1"
+      ]
+    },
+    {
+      "id": "lie_back",
+      "category": "posture_controls",
+      "instruction": "Lay down on your back",
+      "expected": [
+        "action lie_down 1"
+      ]
+    },
+    {
+      "id": "side_left",
+      "category": "posture_controls",
+      "instruction": "Kick sideways with the left leg",
+      "expected": [
+        "action side_kick_left 1"
+      ]
+    },
+    {
+      "id": "side_right_twice",
+      "category": "posture_controls",
+      "instruction": "Kick out to your right side twice",
+      "expected": [
+        "action side_kick_right 2"
+      ]
+    },
+    {
+      "id": "side_still_arms",
+      "category": "posture_controls",
+      "instruction": "Side kick without moving hands",
+      "expected": [
+        "action side_kick_right 1\narms still"
+      ]
+    },
+    {
+      "id": "front_left",
+      "category": "posture_controls",
+      "instruction": "Kick left",
+      "expected": [
+        "action kick_left 1"
+      ]
+    },
+    {
+      "id": "front_right",
+      "category": "posture_controls",
+      "instruction": "Do a front kick with your right leg",
+      "expected": [
+        "action kick_right 1"
+      ]
+    },
+    {
+      "id": "unsupported_one_knee",
+      "category": "posture_controls",
+      "instruction": "Kneel on just your left knee",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "unsupported_prone",
+      "category": "posture_controls",
+      "instruction": "Lie on your stomach",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "unsupported_kick_spin",
+      "category": "posture_controls",
+      "instruction": "Do a spinning roundhouse kick",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "unsupported_kick_back",
+      "category": "posture_controls",
+      "instruction": "Do a back kick",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "unsupported_kneel_explain",
+      "category": "posture_controls",
+      "instruction": "Explain how to kneel",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "retain_finger_restore",
+      "category": "posture_controls",
+      "instruction": "Resume the right ring finger.",
+      "expected": [
+        "restore right_ring"
+      ]
+    },
+    {
+      "id": "retain_arm_freeze",
+      "category": "posture_controls",
+      "instruction": "Freeze your left arm.",
+      "expected": [
+        "freeze left_arm"
+      ]
+    },
+    {
+      "id": "retain_full_stop",
+      "category": "posture_controls",
+      "instruction": "Stop all movement",
+      "expected": [
+        "playback pause"
+      ]
+    },
+    {
+      "id": "retain_support",
+      "category": "posture_controls",
+      "instruction": "Now on one foot.",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "retain_joint_knee",
+      "category": "posture_controls",
+      "instruction": "Bend the right knee 35 degrees",
+      "expected": [
+        "joint right_knee x 35"
+      ]
+    },
+    {
+      "id": "bow_then_kneel",
+      "category": "posture_sequence",
+      "instruction": "First take a bow, then kneel down.",
+      "expected_steps": [
+        {
+          "mode": "perform",
+          "commands": [
+            "action bow 1"
+          ]
+        },
+        {
+          "mode": "perform",
+          "commands": [
+            "action kneel 1"
+          ]
+        }
+      ]
+    }
+  ],
+  "description": "New visitor directions and semantic regressions for posture, selective leg controls, full arm raises and playback. Remote language tests must be paired with actual-rig motion checks."
+}

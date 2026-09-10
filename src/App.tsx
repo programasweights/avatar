@@ -26,6 +26,8 @@ import {
   branchTargets,
   editingBlockReason,
   freezeTargets,
+  freezeTargetGroups,
+  legTargets,
   restoreFrozen,
   resolveEditTarget,
   rotationMagnitude,
@@ -439,8 +441,8 @@ export default function App() {
       } else {
         let next = programRef.current;
         const tokens: FrozenRotation[] = [];
-        for (const target of selectedTargets) {
-          const result = freezeTargets(next, [target], transport.current.time);
+        for (const targets of freezeTargetGroups(selectedTargets)) {
+          const result = freezeTargets(next, targets, transport.current.time);
           next = result.program;
           tokens.push(result.token);
         }
@@ -481,8 +483,10 @@ export default function App() {
       const remaining = targets.filter((joint) => !already.has(joint));
       if (!remaining.length) return;
       const tokens: FrozenRotation[] = [];
-      for (const joint of remaining) {
-        const result = freezeTargets(next, [joint], transport.current.time);
+      for (const group of freezeTargetGroups(targets).filter((group) =>
+        group.some((joint) => remaining.includes(joint)),
+      )) {
+        const result = freezeTargets(next, group, transport.current.time);
         next = result.program;
         tokens.push(result.token);
       }
@@ -625,7 +629,7 @@ export default function App() {
   }
   function motionForTargetEdit(targets: string[], all = false) {
     const released = frozen.filter((token) =>
-      all || token.targets.some((target) => targets.includes(target)),
+      all || [...token.targets, ...(token.dependencies ?? [])].some((target) => targets.includes(target)),
     );
     return {
       released,
@@ -725,6 +729,7 @@ export default function App() {
       if (op === "arms") return armEditTargets();
       if (op === "arm") return armEditTargets(target);
       if (op === "wave") return armEditTargets(target).filter((joint) => !joint.endsWith("_clavicle"));
+      if (op === "support") return legTargets();
       return [];
     });
     const { released, restored } = motionForTargetEdit(editedTargets, newScene);
@@ -759,7 +764,7 @@ export default function App() {
             const at = (token.time * previous.bpm) / next.bpm;
             return {
               ...token,
-              targets: overlay ? branchTargets(overlay) : token.targets,
+              targets: overlay ? branchTargets(overlay).filter((target) => !token.dependencies?.includes(target)) : token.targets,
               time: reversing ? transport.current.duration - at : at,
             };
           }),

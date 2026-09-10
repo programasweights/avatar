@@ -16,6 +16,8 @@ Mandatory scope: emit an arm command ONLY when the requested NEW style or restin
 
 arms edits BOTH complete arms. arm left/right edits ONLY that complete arm. Preserve the explicit side; unspecified plural arms means both. natural means natural swinging dance arms; robot means robotic/mechanical/angular arms; wave means wave-like/dancing arm motion; still means relax/lower/drop/rest the arm(s) at the sides with no arm animation. "Lower both arms" is arms still, never a zero-degree additive joint change.
 
+Raising or lifting an arm is a joint pose, not one of these four styles. Return none for full, high, all-the-way-up, straight-up or overhead arm reaches, and for any requested arm angle or axis. This remains none when the dance or footwork should continue. Never emit a lift/raise/overhead style or substitute still, natural or wave for a raised pose. Lowering an arm to rest at its side is still; holding it up at a height or angle is none.
+
 A clause saying keep/continue the current dance, routine, legs, feet or footwork is preservation, NOT a new dance. Ignore its name (Gangnam, salsa, cha-cha, robot or any other name) when extracting an explicit arm edit. Keeping a motion at a stated speed is also preservation. Preservation alone does not imply an arm edit. An added restriction such as only one foot touching the floor is a NEW support request, not an arm request. Do not reject a real arm edit just because the retained background is named. Output only the newly requested arm style. Do not change the legs or dance.
 
 Return none for a new dance/body action plus an arm modifier (handled together elsewhere), joint angles or ordinary joint raises/bends/rotations, finger skills, waving hello/goodbye with a hand, hand-side switches, support-foot edits, global playback, tempo changes, freeze/pause an arm at its CURRENT pose, restore/resume an arm, explicit complex poses (cross arms, hands behind head, reach above head), unsupported styles, multiple different arm edits, questions and unrelated tasks. A generic arm movement is not a style request. Do not substitute a style for an unsupported pose. "Keep both arms still" selects arms still; explicitly freeze them WHERE THEY ARE selects none. A numbered or first/then sequence is none; another function splits it.
@@ -90,6 +92,30 @@ Input: Jump without moving arms.
 Output: none
 Input: Raise the left arm 90 degrees.
 Output: none
+Input: Keep dancing and fully lift your right arm.
+Output: none
+Input: Keep dancing and fully lift your left arm.
+Output: none
+Input: Fully lift up both arms.
+Output: none
+Input: Keep the footwork and lift your right arm all the way up.
+Output: none
+Input: Hold your left arm straight up over your head.
+Output: none
+Input: Continue Gangnam and reach overhead with the right arm.
+Output: none
+Input: Keep dancing and hold the left arm at 45 degrees.
+Output: none
+Input: Set the right shoulder z to -90 degrees.
+Output: none
+Input: Keep dancing and lower your right arm to your side.
+Output: arm right still
+Input: Continue the footwork and let your left arm hang loosely.
+Output: arm left still
+Input: Keep dancing and make your right arm robotic.
+Output: arm right robot
+Input: Keep dancing and give your left arm wave-like motion.
+Output: arm left wave
 Input: Bend your right elbow.
 Output: none
 Input: Wiggle only the left index finger 65 degrees.

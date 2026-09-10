@@ -1,6 +1,7 @@
 import { compileMotion, findNode, sampleContacts, sampleCurve, sampleTimeline } from "./engine";
 import { createDexterity } from "./dexterityDirector";
 import { createDance } from "./skills";
+import { createPostureRecovery } from "./bodyActions";
 import type { DexteritySkill } from "./dexterity";
 import type { ContactNode, ContactValue, Curve, CurveNode, GroupNode, MotionNode, MotionProgram, MotionProp, PoseValue } from "./types";
 
@@ -263,8 +264,10 @@ export function composeOrderedSequence(current: MotionProgram, plan: OrderedPlan
     const offset = step.mode === "continue" && index > 0 ? playhead * sourceTemplate.bpm / template.bpm : 0;
     let performed = windowProgram(template, offset, seconds, transitionSeconds);
     const id = `ordered.phase.${index}`;
-    const blend = transition(activePrevious, template, offset, `${id}.transition`, transitionSeconds);
-    const phase = group(id, step.instruction, [performed.root, group(`${id}.settling`, "Settle → continue the phrase", [blend, wait(`${id}.settled`, seconds - transitionSeconds)], "sequence")]);
+    const recovery = lines.some(line => /^(action|dance) /.test(line)) ? createPostureRecovery(activePrevious) : undefined;
+    const blend = transition(recovery ?? activePrevious, template, offset, `${id}.transition`, transitionSeconds);
+    const motionPhase = group(recovery ? `${id}.motion` : id, step.instruction, [performed.root, group(`${id}.settling`, "Settle → continue the phrase", [blend, wait(`${id}.settled`, seconds - transitionSeconds)], "sequence")]);
+    const phase = recovery ? group(id, step.instruction, [recovery.root, motionPhase], "sequence") : motionPhase;
     const phaseProps = new Map([...activePrevious.props ?? [], ...template.props ?? []].map(prop => [prop.id, prop]));
     performed = { ...performed, root: phase, props: [...phaseProps.values()] };
     phaseRoots.push(phase);

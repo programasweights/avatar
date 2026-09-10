@@ -1,14 +1,14 @@
 Classify an instruction to an avatar's animation player. Return ONE lowercase word: pause, resume, restart, or none. Do not produce a movement, explanation, or command sentence.
 
 pause = stop the entire current animation at its present frame. Includes stop, pause, halt, stop moving, stop everything, stop all movement, pause playback, stop the whole character, and polite forms. Animation, playback, player, and video player all refer to the same player. A bare stop or pause means the whole animation.
-resume = continue playing the existing animation from its present frame. Includes play, resume, continue, keep going, go on, unpause, start moving again, and play again. Play again without a beginning/start/rewind instruction is resume.
+resume = continue playing the existing animation from its present frame. Includes play, resume, continue, keep going, go on, unpause, start moving again, and play again. Resume dancing, continue dancing, resume the dance, and keep the dance going also resume the existing animation without replacing it. Play again without a beginning/start/rewind instruction is resume.
 restart = play the existing animation FROM THE BEGINNING. Includes restart, replay, rewind and play, start it again from the beginning, or take the animation back to its start and play. Any explicit request to play from the beginning is restart, never resume.
 none = all other instructions. Most avatar instructions are none.
 
 Apply these scope rules BEFORE choosing a playback operation:
 - Only global playback belongs here. Requests naming a specific finger, joint, head, limb, or selected body part are none. A finger freeze/restore is a joint edit, not global playback.
-- Bare freeze, unfreeze, restore, restore motion, and let it move again are selected-part operations: none.
-- Requests to perform, start, stop, continue, resume, or restart a NAMED action (running, walking, jumping, dancing, salsa, a ripple, a coin trick) are none. Bare run is running with the legs: none. Stop dancing and stand still are none. Preserving an action while editing another body part is none.
+- Bare freeze, unfreeze, restore, restore motion, and let it move again are selected-part operations: none. In a restore/unfreeze/let-move-again request, it/this/that/the selected part identifies the selected joint even without a body-part name. "Let it move again" therefore returns none, not resume. This selected-part rule takes priority over the word again or a clause preserving the dance. In contrast, "start moving again" with no selected part, "resume dancing", or explicitly continuing the entire animation returns resume. A bare "resume" still means global playback.
+- Requests to perform, start, stop, continue, resume, or restart a SPECIFIC new action or dance style (running, walking, jumping, salsa, a ripple, a coin trick) are none. Exception: a plain request to resume or continue generic dancing, with no new style or movement, resumes the existing player. Bare run is running with the legs: none. Stop dancing and stand still are none. Preserving an action while editing another body part is none.
 - New scenes, reset/start over, speed changes, reverse motion, switch hands, loop changes, cameras, recording, files, explanations, negated commands, and compound requests that also change a motion are none.
 
 Examples:
@@ -66,6 +66,24 @@ Input: Restore motion
 Output: none
 Input: Let it move again
 Output: none
+Input: Let it move again.
+Output: none
+Input: Please let it move again.
+Output: none
+Input: Let that move again while the dance continues.
+Output: none
+Input: Unfreeze the selected part.
+Output: none
+Input: Restore its motion.
+Output: none
+Input: Start moving again.
+Output: resume
+Input: Please start moving again.
+Output: resume
+Input: Let the whole avatar move again.
+Output: resume
+Input: Resume dancing.
+Output: resume
 Input: Stop dancing
 Output: none
 Input: Stand still
@@ -105,4 +123,25 @@ Output: none
 Input: Pause and lift the left leg
 Output: none
 Input: Start over
+Output: none
+
+Input: resume dancing
+Output: resume
+Input: Continue dancing
+Output: resume
+Input: Resume the dance
+Output: resume
+Input: Keep the dance going
+Output: resume
+Input: Unpause the dance
+Output: resume
+Input: Start dancing
+Output: none
+Input: Keep dancing but stop leg movements
+Output: none
+Input: Resume the left leg
+Output: none
+Input: Stop the footwork
+Output: none
+Input: Bow
 Output: none

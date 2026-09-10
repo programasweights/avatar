@@ -1,7 +1,7 @@
 Classify an avatar instruction into exactly one word: basic, dance, other.
 This is only a router, not an action or body-part extractor. Neutral standing and stopping/pausing an existing motion are other, never basic. Polite questions asking the avatar to perform an action (Can you hop? Could you crouch?) are action requests, not explanations.
 
-basic: a request to START whole-body walking, running, jogging, marching, jumping, hopping, bowing, crouching, squatting, sitting, turning the ENTIRE BODY or spinning the ENTIRE BODY, or kicking. Includes repeats and sequences containing any such action. Invalid counts, supported or unsupported variants (backwards walk, one-foot hops), and combinations containing other actions are still basic; the next interpreter decides whether the entire request is supported. Do not turn a HEAD turn, JOINT rotation, knee/leg lift, raised arm, finger curl, or other body-part angle into a basic action. A kick is basic but a leg lift is other. A whole-body turn has no named local body part; turn left/right or spin around are basic. Instructions to keep an existing walk/run while changing a joint are other.
+basic: a request to START whole-body walking, running, jogging, marching, jumping, hopping, bowing, crouching, squatting, sitting, kneeling, lying down, turning the ENTIRE BODY or spinning the ENTIRE BODY, or kicking. Includes repeats and sequences containing any such action. Invalid counts, supported or unsupported variants (backwards walk, one-foot hops), and combinations containing other actions are still basic; the next interpreter decides whether the entire request is supported. Do not turn a HEAD turn, JOINT rotation, knee/leg lift, raised arm, finger curl, or other body-part angle into a basic action. A kick is basic but a leg lift is other. A whole-body turn has no named local body part; turn left/right or spin around are basic. Instructions to keep an existing walk/run while changing a joint are other.
 dance: a request to START salsa/Latin/generic dancing, cha-cha/chacha, or robot dancing, with optional arm style or absolute BPM. No specific joint edit or additional action. Unsupported dance styles (ballet, moonwalk, etc), stopping a dance, and instructions to KEEP the current dance/feet while editing anything else are other. A new dance plus a new basic action is basic.
 other: everything else, including all individual joint/finger/arm/leg/head moves, all hand skills/coin tricks/gestures, wave hello, arm style edits, freeze/restore operations, relative speed, global tempo-only changes, hand switches, reverse current motion, camera/files, unsupported unrelated tasks, explanations and descriptions of past actions. Faster/slower/speed up/double speed/run it faster mean editing current playback and are other, never running. Bare freeze/resume/stop are other. Walking a COIN across knuckles is a hand skill, not whole-body walking. Running THIS/THAT/THE CURRENT MOTION backward is playback reversal, not running locomotion. Distinguish the object of the verb: avatar walks/runs=basic, a coin walks=other, an existing motion runs=other.
 
@@ -219,4 +219,30 @@ Output: other
 Input: Turn your whole body 180 degrees.
 Output: basic
 Input: Rotate your wrist by 45 degrees.
+Output: other
+
+Basic posture/action requests include single-word commands and ordinary misspellings: bow means take a bow (not a noun about an object); kneel means get down onto the knees (not squat); lie/lay/ly down means recline on the floor; a side kick is still a kick. Classify these as basic even without extra wording. Questions about the meaning of these words remain other.
+Input: bow
+Output: basic
+Input: Bow.
+Output: basic
+Input: Please bow
+Output: basic
+Input: Kneel down
+Output: basic
+Input: Get down on your knees
+Output: basic
+Input: Lie down
+Output: basic
+Input: ly down
+Output: basic
+Input: Lay down on your back
+Output: basic
+Input: Side kick
+Output: basic
+Input: Kick out to your left side
+Output: basic
+Input: Bend the left knee
+Output: other
+Input: Explain what a bow is
 Output: other

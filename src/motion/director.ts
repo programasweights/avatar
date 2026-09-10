@@ -57,6 +57,8 @@ export function validateRigProgram(program: MotionProgram) {
       throw new Error("Foot IK targets use position channels.");
     if (track.target.endsWith("_knee_pole") && track.channel !== "position")
       throw new Error("Knee directions use position channels.");
+    if (track.target.endsWith("_foot_ik_enabled") && (track.channel !== "position" || track.axis !== "x"))
+      throw new Error("Foot IK enable controls use position.x: 0 for FK, 1 for IK.");
   }
   return timeline;
 }

@@ -17,15 +17,15 @@ class PlannedInference:
         name = next(name for name, value in PROGRAMS.items() if value == program_id)
         self.calls.append((name, text))
         outputs = {**self.outputs, **self.clauses.get(text, {})}
-        defaults = {"sequence": self.sequence, "playback_control": "none", "arm_control": "none",
-                    "dance_extension": "none", "dance_confirmation": "yes" if outputs.get("dance_extension", "none") != "none" else "no", "dance_fallback": "none", "activity_scope": "other", "activity_confirmation": "other",
+        defaults = {"sequence": self.sequence, "playback_control": "none", "leg_control": "none", "leg_scope": "yes", "action_intent": "none", "arm_control": "none",
+                    "dance_extension": "none", "dance_confirmation": "yes" if outputs.get("dance_extension", "none") != "none" else "no", "dance_fallback": "none", "activity_scope": "other", "activity_confirmation": "basic" if outputs.get("activity_scope") == "basic" else "other",
                     "dispatch": "motion", "edit_intent": "none", "motion_scope": "joint", "current_control": "unsupported"}
         return {**defaults, **outputs}[name]
 
 
 class SequenceDirectorTest(unittest.TestCase):
     def setUp(self):
-        programs = patch.dict(PROGRAMS, {name: PROGRAMS.get(name, f"test-{name}") for name in ("sequence", "arm_control")})
+        programs = patch.dict(PROGRAMS, {name: PROGRAMS.get(name, f"test-{name}") for name in ("sequence", "leg_control", "action_intent", "arm_control")})
         programs.start()
         self.addCleanup(programs.stop)
 
@@ -33,7 +33,7 @@ class SequenceDirectorTest(unittest.TestCase):
         infer = PlannedInference(joint_motion="left_elbow hold x 30")
         result = direct("Bend your left elbow.", infer)
         self.assertEqual(result["output"], "joint left_elbow x 30")
-        self.assertEqual([name for name, _ in infer.calls], ["sequence", "playback_control", "arm_control", "dance_extension", "dance_confirmation", "activity_scope", "activity_confirmation", "dispatch", "edit_intent", "motion_scope", "joint_motion"])
+        self.assertEqual([name for name, _ in infer.calls], ["sequence", "playback_control", "action_intent", "arm_control", "leg_control", "dance_extension", "dance_confirmation", "activity_scope", "activity_confirmation", "dispatch", "edit_intent", "motion_scope", "joint_motion"])
         self.assertEqual(result["trace"]["sequence"], "single")
         self.assertEqual(result["trace"]["arm_control"], "none")
         infer = PlannedInference(playback_control="pause")
@@ -61,7 +61,7 @@ class SequenceDirectorTest(unittest.TestCase):
         self.assertEqual(infer.calls[0], ("sequence", "Do three ordered motions."))
         seen = [text for _, text in infer.calls[1:]]
         self.assertEqual(seen, sorted(seen, key=list(clauses).index))
-        self.assertEqual(infer.calls[-2:], [(name, "Make the right arm robotic.") for name in ["playback_control", "arm_control"]])
+        self.assertEqual(infer.calls[-3:], [(name, "Make the right arm robotic.") for name in ["playback_control", "action_intent", "arm_control"]])
 
     def test_named_speed_followup_remains_a_continuation_in_an_ordered_plan(self):
         infer = PlannedInference(
@@ -115,6 +115,7 @@ class SequenceDirectorTest(unittest.TestCase):
 
     def test_playback_freeze_and_restore_cannot_enter_a_sequence(self):
         for outputs in [{"playback_control": "pause"}, {"playback_control": "restart"},
+                        {"leg_control": "freeze both_legs"}, {"leg_control": "restore left_leg"},
                         {"dispatch": "edit", "edit_intent": "freeze", "edit_target": "freeze ring"},
                         {"dispatch": "edit", "edit_intent": "restore", "edit_target": "restore ring"}]:
             with self.subTest(outputs=outputs):
@@ -123,6 +124,25 @@ class SequenceDirectorTest(unittest.TestCase):
                 self.assertEqual(result["output"], "unsupported")
                 self.assertIn("cannot be placed", result["trace"]["validation_error"])
                 self.assertNotIn("Second", [text for _, text in infer.calls])
+
+    def test_overhead_reach_and_new_body_actions_retain_order_and_continuation(self):
+        infer = PlannedInference(
+            "sequence\nperform|2|Raise both arms overhead.\ncontinue|3|Do a side kick.\nperform|4|Lie down.",
+            {
+                "Raise both arms overhead.": {"joint_motion": "both_shoulder hold overhead 180"},
+                "Do a side kick.": {"action_intent": "single", "activity_scope": "basic", "action": "action side_kick_right 1"},
+                "Lie down.": {"action_intent": "single", "activity_scope": "basic", "action": "action lie_down 1"},
+            },
+        )
+        result = direct("Raise both arms, then kick, then lie down.", infer)
+        plan = json.loads(result["output"])
+        self.assertEqual([step["mode"] for step in plan["steps"]], ["perform", "continue", "perform"])
+        self.assertEqual([step["seconds"] for step in plan["steps"]], [2, 3, 4])
+        self.assertEqual([step["commands"] for step in plan["steps"]], [
+            "arm left still\njoint left_shoulder z 180\narm right still\njoint right_shoulder z -180",
+            "action side_kick_right 1", "action lie_down 1",
+        ])
+        self.assertEqual([name for name, _ in infer.calls].count("leg_control"), 1)
 
     def test_arm_style_expert_accepts_only_bounded_bilateral_or_sided_commands(self):
         for prefix in ["arms", "arm left", "arm right"]:
@@ -133,7 +153,7 @@ class SequenceDirectorTest(unittest.TestCase):
                 self.assertEqual(result["output"], command)
                 self.assertEqual(result["trace"]["arm_control"], command)
                 self.assertEqual(result["trace"]["route"], "control")
-                self.assertEqual([name for name, _ in infer.calls], ["sequence", "playback_control", "arm_control"])
+                self.assertEqual([name for name, _ in infer.calls], ["sequence", "playback_control", "action_intent", "arm_control"])
         for invalid in ["", "arm both robot", "arms left robot", "arm left hold", "arms still\ndance gangnam", "arm left robot extra", "arm\tleft robot", "none"]:
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
                 validate_arm_control(invalid)

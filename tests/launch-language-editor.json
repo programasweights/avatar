@@ -301,7 +301,7 @@
       "id": "editor-cases-37",
       "instruction": "Freeze the left leg.",
       "expected": [
-        "freeze left_hip"
+        "freeze left_leg"
       ],
       "category": "editor_targets"
     },

@@ -1,0 +1,162 @@
+Detect a request to START locomotion, a kick, a whole-body turn, or a whole-body posture exercise. Do not treat every new movement as a whole-body action. Return ONE word: single, combined, or none.
+
+First identify WHAT is moving. Moving, swinging, raising, lowering, waving, or changing the style of an ARM/HAND alone is none. Natural, relaxed, robotic, stiff, smooth, and swinging describe limb choreography; they never imply a bow, walk, run, or another body action. A greeting wave, including waving hello or goodbye with either hand, is none. A traveling wave or ripple from fingertips through the arms, or from one hand to the other, is also none; the person's body is not walking just because a wave travels. Rolling a COIN across fingers/knuckles is a hand skill, never rolling or turning the person's body. A roll's direction, starting finger, ending finger, or speed does not change that. Rolling shoulders or moving another individual body part is also none. Only an explicit new locomotion, whole-body turn, kick, or whole-body posture can enter single/combined. Do not invent an unmentioned body action to explain a limb movement. In a sequence, classify only the current input step.
+
+Turning or rotating the hips, waist, pelvis, spine, chest, torso, head, or a limb around an axis is a local joint edit: none. An explicit angle such as 90 or 180 degrees does not make that a whole-body turn. A new full-body turn means the entire character turns around or changes its facing, not rotating a named anatomical part. An explicit bow/kick/jump remains a body action even when it describes the joints involved.
+
+Changes to the current motion's speed/tempo are none: faster, slower, half speed, double speed, twice as fast. Words such as "make", "it", "twice", "speed" and "pace" do not request a new run or jump. No named new body action means none. "Jump twice" names a new action; "make it twice as fast" only changes existing motion.
+
+single: start ONE whole-body action, possibly counted/repeated or constrained. Actions include walk, run/jog/march, jump/hop/leap, bow, crouch/squat, sit, kneel, lie/lay/recline down, turn/spin the entire body, or kick. Constraints such as which leg, one supporting foot, direction, arms held still, depth, height, or an angle do not create a second action. Unsupported variants are still single: kneel on just the left knee, lie on the stomach, back kick, spinning roundhouse kick. The action interpreter decides whether those can be performed. One named complex kick is single, not spin followed by kick. Bow alone requests a bow. Ordinary typos such as ly down still request a new action. Five jumps or three bows is single because it repeats one action.
+
+combined: start two or more different whole-body actions, or perform an action together with another activity. Walk and wave, run while juggling, jump then bow, spin then kick, or walk and catch a ball are combined even if unsupported. A count, a fixed arm constraint, a support foot, a dance that is merely being kept, or a direction is not a second activity.
+
+none: everything else. In particular, an existing dance's supporting-foot edit is NONE: now on one foot, go on one foot, balance on one foot, stand on one leg, switch feet, other leg, raise the other foot, put that foot down. These do NOT ask for a new jump. A new jump/hop requires an explicit jumping/hopping action. A standalone leg lift, arm raise, finger curl, head turn, body-part angle, freeze/restore, relative speed, reversal, and hand switch are none. All new dances/styles and hand/coin skills are none. Generic resume/continue dancing and stop/pause are none. Keeping an EXISTING dance/walk/run while editing a limb is none; starting a new kick with still arms is single. Questions about meaning, explanations, old events, negated requests, props/cameras/files, and unrelated instructions are none.
+
+Input: bow
+Output: single
+Input: Kneel with your arms still
+Output: single
+Input: Lay down on your back
+Output: single
+Input: ly down
+Output: single
+Input: Lie on your stomach
+Output: single
+Input: Kneel on just your left knee
+Output: single
+Input: Do a front kick with your right leg
+Output: single
+Input: Do a spinning roundhouse kick
+Output: single
+Input: Side kick without moving hands
+Output: single
+Input: Jump on your left foot
+Output: single
+Input: Hop three times on the right leg
+Output: single
+Input: Bow deeply
+Output: single
+Input: Run without moving your arms
+Output: single
+Input: Walk with natural arm swings
+Output: single
+Input: Go down onto both knees
+Output: single
+Input: Turn around 180 degrees
+Output: single
+Input: Rotate the entire character a quarter turn to the right
+Output: single
+Input: Spin then kick
+Output: combined
+Input: Walk and wave
+Output: combined
+Input: Run while juggling
+Output: combined
+Input: Jump then bow
+Output: combined
+Input: Walk and catch a ball
+Output: combined
+Input: Now on one foot.
+Output: none
+Input: Go on one foot
+Output: none
+Input: Balance on one foot
+Output: none
+Input: Stand on your right leg
+Output: none
+Input: Switch to the opposite foot
+Output: none
+Input: Raise the other foot
+Output: none
+Input: Lift your left leg 45 degrees
+Output: none
+Input: Bend the right knee
+Output: none
+Input: Fully lift up your left arm
+Output: none
+Input: Turn your head 90 degrees
+Output: none
+Input: Rotate the pelvis about the vertical axis by 90 degrees
+Output: none
+Input: Rotate just the hips 45 degrees on the y axis
+Output: none
+Input: Twist your waist to the left
+Output: none
+Input: Turn the chest slightly to the right
+Output: none
+Input: Dance Gangnam Style
+Output: none
+Input: Dance salsa
+Output: none
+Input: Keep dancing but stop leg movements
+Output: none
+Input: Keep running and bend the left elbow
+Output: none
+Input: Keep walking, but make the arm swings smoother
+Output: none
+Input: Use relaxed swinging movements for the left arm
+Output: none
+Input: Make the right arm move naturally
+Output: none
+Input: Swing both arms back and forth
+Output: none
+Input: Make only the left arm robotic
+Output: none
+Input: Move your hand in a smooth arc
+Output: none
+Input: Lower the right arm and straighten its elbow
+Output: none
+Input: Wave hello using the right hand
+Output: none
+Input: Wave goodbye with your left hand
+Output: none
+Input: Send a wave from the right fingertips through the arms to the left fingertips
+Output: none
+Input: Let the wave travel across both arms
+Output: none
+Input: Now wave hello
+Output: none
+Input: Raise both arms overhead
+Output: none
+Input: Keep the arms still while crouching
+Output: single
+Input: Resume dancing
+Output: none
+Input: Restore the right ring finger
+Output: none
+Input: Stop
+Output: none
+Input: Stand still
+Output: none
+Input: Roll a coin across your knuckles
+Output: none
+Input: Roll the coin from your ring finger toward your thumb
+Output: none
+Input: Roll a coin over the right knuckles in reverse
+Output: none
+Input: Roll the coin in the other direction
+Output: none
+Input: Make a ripple from your pinky to your index finger
+Output: none
+Input: Roll your shoulders backward
+Output: none
+Input: Walk a coin across the knuckles
+Output: none
+Input: Make the arm wave twice as fast
+Output: none
+Input: Make the coin roll faster
+Output: none
+Input: Make it faster
+Output: none
+Input: Double the playback speed
+Output: none
+Input: Do that at half speed
+Output: none
+Input: Make the current movement twice as quick
+Output: none
+Input: Keep running, but slow the pace down
+Output: none
+Input: Run the current motion backward
+Output: none
+Input: Explain what bow means
+Output: none

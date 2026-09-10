@@ -16,6 +16,8 @@ export interface FrozenRotation {
   wrapperId: string;
   wrapped: boolean;
   targets: string[];
+  /** Shared transforms and IK controls held along with a complete leg. */
+  dependencies?: string[];
   time: number;
 }
 
@@ -34,6 +36,27 @@ export function armTargets(side?: Side): string[] {
   );
 }
 
+export function legTargets(side?: Side): string[] {
+  const sides: Side[] = side ? [side] : ["left", "right"];
+  return sides.flatMap((leg) =>
+    ["hip", "knee", "ankle", "toes"].map((joint) => `${leg}_${joint}`),
+  );
+}
+
+/** Keep each leg's IK and FK together, while other joints remain independent. */
+export function freezeTargetGroups(targets: string[]): string[][] {
+  const remaining = new Set(targets);
+  const groups: string[][] = [];
+  for (const side of ["left", "right"] as const) {
+    const leg = legTargets(side);
+    if (leg.every((target) => remaining.has(target))) {
+      groups.push(leg);
+      leg.forEach((target) => remaining.delete(target));
+    }
+  }
+  return [...groups, ...[...remaining].map((target) => [target])];
+}
+
 /** A leaf selects one joint; a finger branch selects all its articulated segments. */
 export function branchTargets(node: MotionNode): string[] {
   if (node.kind === "contact") return [];
@@ -45,7 +68,7 @@ export function branchTargets(node: MotionNode): string[] {
   return [...new Set(node.children.flatMap(branchTargets))];
 }
 
-/** Pause means local rotation. Ancestors and the rest of the timeline keep moving. */
+/** Individual joints pause locally; complete legs also hold their IK frame. */
 export function editingBlockReason(
   program: MotionProgram,
   targets: string[],
@@ -54,9 +77,10 @@ export function editingBlockReason(
   if (targets.some((target) => !Object.hasOwn(JOINTS, target)))
     return "Only articulated joint rotations can be edited here.";
   const timeline = compileMotion(program);
-  for (const side of ["left", "right"]) {
+  for (const side of ["left", "right"] as const) {
     if (
       timeline.tracks.some((track) => track.target === `${side}_foot_ik`) &&
+      !legTargets(side).every((target) => targets.includes(target)) &&
       targets.some(
         (target) =>
           target === "hips" ||
@@ -141,25 +165,61 @@ export function freezeTargets(
     program.root.kind !== "parallel" ||
     /^editing\.freeze\.\d+\.root$/.test(program.root.id);
   const wrapperId = wrapped ? `${id}.root` : program.root.id;
-  const curves: MotionNode[] = selected.flatMap((target) =>
-    (["x", "y", "z"] as Axis[]).map((axis) => {
+  const heldChannels: { target: string; channel: CurveNode["channel"]; value?: number }[] =
+    selected.map((target) => ({ target, channel: "rotation" }));
+  const legs = (["left", "right"] as const).filter((side) =>
+    legTargets(side).every((target) => selected.includes(target)),
+  );
+  const dependencies: string[] = [];
+  if (legs.length) {
+    // A foot target alone does not stop the knee bending beneath a bobbing hip.
+    // Hold the shared base too; torso and arm curves keep their original phase.
+    for (const target of ["root", "hips"]) {
+      dependencies.push(target);
+      for (const channel of ["rotation", "position"] as const)
+        if (!heldChannels.some((held) => held.target === target && held.channel === channel))
+          heldChannels.push({ target, channel });
+    }
+    for (const side of legs) {
+      for (const target of legTargets(side))
+        if (timeline.tracks.some((track) => track.target === target && track.channel === "position"))
+          heldChannels.push({ target, channel: "position" });
+      for (const target of [`${side}_foot_ik`, `${side}_knee_pole`]) {
+        // Adding a missing IK trajectory would change a pure FK pose.
+        if (timeline.tracks.some((track) => track.target === target)) {
+          dependencies.push(target);
+          heldChannels.push({ target, channel: "position" });
+        }
+      }
+      if (timeline.tracks.some((track) => track.target === `${side}_foot_ik`)) {
+        const enabled = `${side}_foot_ik_enabled`;
+        const active = pose.some((value) => value.target === `${side}_foot_ik`)
+          ? pose.find((value) => value.target === enabled && value.axis === "x")?.value ?? 1
+          : 0;
+        dependencies.push(enabled);
+        heldChannels.push({ target: enabled, channel: "position", value: active });
+      }
+    }
+  }
+  const curves: MotionNode[] = heldChannels.flatMap(({ target, channel, value: fixed }) =>
+    (fixed === undefined ? ["x", "y", "z"] as Axis[] : ["x"] as Axis[]).map((axis) => {
       const value =
-        pose.find(
+        fixed ?? pose.find(
           (value) =>
             value.target === target &&
-            value.channel === "rotation" &&
+            value.channel === channel &&
             value.axis === axis,
         )?.value ?? 0;
       // A valid timeline can exceed the per-curve limit of 120 seconds.
       const children: CurveNode[] = [];
       for (let start = 0; start < timeline.duration; start += 120) {
         children.push({
-          id: `${id}.${target}.${axis}.${children.length}`,
+          id: `${id}.${target}.${channel}.${axis}.${children.length}`,
           kind: "curve",
           label: `${target} · paused ${axis}`,
           target,
           axis,
-          channel: "rotation",
+          channel,
           duration: Math.min(120, timeline.duration - start),
           blend: "replace",
           curve: { kind: "constant", value },
@@ -168,7 +228,7 @@ export function freezeTargets(
       return children.length === 1
         ? children[0]
         : {
-            id: `${id}.${target}.${axis}`,
+            id: `${id}.${target}.${channel}.${axis}`,
             kind: "sequence",
             label: `${target} · hold ${axis}`,
             children,
@@ -178,7 +238,7 @@ export function freezeTargets(
   const overlay: GroupNode = {
     id,
     kind: "parallel",
-    label: "Paused rotations",
+    label: legs.length ? "Paused leg motion" : "Paused rotations",
     children: curves,
   };
   const root: GroupNode =
@@ -194,7 +254,8 @@ export function freezeTargets(
   compileMotion(next);
   return {
     program: next,
-    token: { id, wrapperId, wrapped, targets: selected, time: sampledTime },
+    token: { id, wrapperId, wrapped, targets: selected,
+      ...(dependencies.length ? { dependencies } : {}), time: sampledTime },
   };
 }
 
@@ -347,6 +408,12 @@ export function resolveEditTarget(
     if (arm[1] === "both" || (!arm[1] && arm[2] === "arms"))
       return armTargets();
     return armTargets((arm[1] as Side) || side);
+  }
+  const leg = /^(?:(left|right|both)_)?(leg|legs)$/.exec(target);
+  if (leg) {
+    if (leg[1] === "both" || (!leg[1] && leg[2] === "legs"))
+      return legTargets();
+    return legTargets((leg[1] as Side) || side);
   }
   const match =
     /^(?:(left|right|both)_)?(clavicle|shoulder|elbow|wrist|hip|knee|ankle|toes|(?:thumb|index|middle|ring|pinky)(?:_[123])?)$/.exec(
