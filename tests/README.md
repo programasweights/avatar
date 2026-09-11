@@ -129,3 +129,16 @@ continuous dance timing, phase captions, and rejection without partial changes:
 AVATAR_LIVE_PUBLIC=1 BASE_URL=https://programasweights.com \
   npx playwright test tests/public-arm-sequences.spec.ts --workers=1
 ```
+
+Generic-avatar support checks start on `/avatar`, including its hand showcase, a
+fresh neutral scene, and salsa. They verify leg lifts, switching feet, restoring
+footwork, and independent finger edits while retaining the character and props:
+
+```sh
+AVATAR_LIVE_PUBLIC=1 BASE_URL=https://programasweights.com \
+  npx playwright test tests/public-generic-support.spec.ts --workers=1
+```
+
+`genericSupport.spec.ts` checks the support constraints against both bundled
+rigs. `genericSupportUI.spec.ts` uses fixed command responses to cover the same
+scene transitions without inference.

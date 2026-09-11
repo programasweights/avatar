@@ -11,7 +11,7 @@ import {
 } from "../src/motion/skills";
 import { compileMotion, findNode, sampleTimeline } from "../src/motion/engine";
 import { MotionRig } from "../src/motion/rig";
-import { validateRigProgram } from "../src/motion/director";
+import { applyCommands, validateRigProgram } from "../src/motion/director";
 import type { MotionProgram, Timeline } from "../src/motion/types";
 
 let rig: MotionRig;
@@ -223,9 +223,12 @@ test("support edits preserve upper-body edits, tempo and input immutability", ()
     changeGangnamSupport(changeGangnamSupport(changed, "both"), "other").dance
       ?.support,
   ).toBe("left");
-  expect(() => changeGangnamSupport(createDance("salsa"), "left")).toThrow(
-    "Gangnam",
-  );
+  const salsa = createDance("salsa");
+  expect(() => changeGangnamSupport(salsa, "left")).toThrow("Gangnam");
+  const balancedSalsa = applyCommands(salsa, "support left");
+  expect(balancedSalsa.dance?.style).not.toBe("gangnam");
+  expect(findNode(balancedSalsa.root, "arms")).toEqual(findNode(salsa.root, "arms"));
+  expect(() => validateRigProgram(balancedSalsa)).not.toThrow();
   expect(() => createGangnam({ bpm: NaN })).toThrow("tempo");
   expect(() => createGangnam({ support: "neither" as never })).toThrow(
     "support",

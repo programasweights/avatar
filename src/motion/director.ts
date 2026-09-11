@@ -11,7 +11,8 @@ import {
 import type { ArmStyle, DanceStyle } from "./skills";
 import { JOINTS, VALID_TARGETS } from "./rig";
 import { composeDexterity } from "./composeDexterity";
-import { changeGangnamSupport, createGangnam } from "./gangnam";
+import { createGangnam } from "./gangnam";
+import { changeSupport } from "./support";
 import type { DexteritySkill } from "./dexterity";
 import {
   BODY_ACTIONS,
@@ -162,7 +163,7 @@ export function applyCommands(
       parts.length === 2 &&
       ["both", "left", "right", "other"].includes(a)
     )
-      next = changeGangnamSupport(next, a as "both" | "left" | "right" | "other");
+      next = changeSupport(next, a as "both" | "left" | "right" | "other");
     else if (op === "dance" && parts.length === 2 && a === "gangnam")
       next = createGangnam();
     else if (

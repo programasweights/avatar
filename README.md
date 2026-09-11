@@ -106,9 +106,11 @@ interpretation can still make mistakes; **Start over** begins a fresh scene.
 
 Try “Run,” “Jump twice, then take a bow,” “Sit down,” or “Kick with your left
 leg.” Whole-body actions start a new scene and switch to the full-body view.
-“Turn around 180 degrees” makes a whole-body half turn. “Balance on one foot”
-edits the supporting foot of the Gangnam dance. Walking and running happen in
-place. A single walk or run loops; counted actions and sequences play once and stop.
+“Turn around 180 degrees” makes a whole-body half turn. “Lift left leg” or
+“Balance on one foot” adds a balanced pose to the current avatar scene. “Switch
+to the opposite foot” changes sides; “Both feet again” restores its footwork.
+During Gangnam, these same commands keep the dance going while changing its
+supporting foot. Walking and running happen in place. A single walk or run loops; counted actions and sequences play once and stop.
 “Kneel down” rests on both knees, “Lie down” reclines onto the floor, and
 “Side kick with your left leg” kicks sideways. Sitting, kneeling and lying down
 hold their final poses.

@@ -1,6 +1,7 @@
 import { compileMotion, findNode } from "./engine";
 import { removeWaveOverlay, waveOverlay } from "./waveOverlay";
 import { createGangnam, GANGNAM_BPM } from "./gangnam";
+import { releaseSupportRotation } from "./support";
 import type {
   Axis,
   Curve,
@@ -594,6 +595,7 @@ export function jointOffset(
   angle: number,
   oscillate = false,
 ): MotionProgram {
+  program = releaseSupportRotation(program, target, axis);
   const details = findNode(program.root, "details");
   const previousNode = jointDetailNode(program, target, axis);
   const previous = findJointDetail(program, target, axis);
