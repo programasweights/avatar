@@ -15,6 +15,10 @@ export const BODY_ACTIONS = [
   "run",
   "walk_wave",
   "run_wave",
+  "sway",
+  "clap",
+  "punch_left",
+  "punch_right",
   "jump",
   "bow",
   "crouch",
@@ -36,6 +40,10 @@ const LABELS: Record<BodyAction, string> = {
   run: "Run in place",
   walk_wave: "Walk and wave",
   run_wave: "Run and wave",
+  sway: "Sway from side to side",
+  clap: "Clap your hands",
+  punch_left: "Punch with the left hand",
+  punch_right: "Punch with the right hand",
   jump: "Jump",
   bow: "Bow",
   crouch: "Crouch",
@@ -119,12 +127,13 @@ export function createBodyAction(
       : action === "kick_right" || action === "side_kick_right"
         ? "right"
         : undefined;
+  const punchSide = action === "punch_left" ? "left" : action === "punch_right" ? "right" : undefined;
   const heldPosture =
     action === "sit" || action === "kneel" || action === "lie_down";
   const continuousCount = turning || heldPosture;
   const repetitions = continuousCount ? 1 : count;
   const duration =
-    (((action === "jump" ? 2 : 4) * 60) / bpm) * (continuousCount ? count : 1);
+    (((action === "jump" || action === "clap" || punchSide ? 2 : 4) * 60) / bpm) * (continuousCount ? count : 1);
   const feet: MotionNode[] = [],
     torso: MotionNode[] = [],
     arms: MotionNode[] = [];
@@ -320,6 +329,71 @@ export function createBodyAction(
           ),
         ]),
       );
+    }
+  } else if (action === "clap" || punchSide) {
+    torso.push(position("torso.height", "root", "y", constant(-0.02)));
+    // Fitted to both shipped skeletons: upright palms meet at chest height,
+    // then separate. The motion remains shoulder/elbow/wrist curves, not a clip.
+    const clapContact: Keys = [[0, 0], [.17, 0], [.42, 1], [.52, 1], [.8, 0], [1, 0]];
+    const punchReach: Keys = [[0, 0], [.18, 0], [.4, 1], [.47, 1], [.76, 0], [1, 0]];
+    const clapPose = { shoulder: [-42.3, -19.4, -9.1], elbow: [-64.2, -7.3, -25.9], wrist: [-60, -42.4, 28.7] };
+    const punchGuard = { shoulder: [-5, 0, 8], elbow: [-120, 0, 0], wrist: [25, 0, 0] };
+    const punchExtension = { shoulder: [-87, 0, 3], elbow: [-3, 0, 0], wrist: [0, 0, 0] };
+    for (const side of ["left", "right"] as const) {
+      const sign = side === "left" ? 1 : -1;
+      feet.push(group(`feet.${side}`, `${side} foot · planted`,
+        (["x", "y", "z"] as const).map(axis =>
+          position(`feet.${side}.${axis}`, `${side}_foot_ik`, axis, constant(0)),
+        ),
+      ));
+      const arm: MotionNode[] = [];
+      for (const joint of ["shoulder", "elbow", "wrist"] as const)
+        for (const [index, axis] of (["x", "y", "z"] as const).entries()) {
+          const mirror = axis === "x" ? 1 : sign;
+          const pose = action === "clap" ? clapPose[joint][index] : punchGuard[joint][index];
+          const curve = action === "clap"
+            ? joint === "shoulder" && axis === "z"
+              ? keys(clapContact.map(([time, close]) => [time, (pose + 30 * (1 - close)) * mirror]))
+              : constant(pose * mirror)
+            : side === punchSide
+              ? keys(punchReach.map(([time, amount]) => [time, (pose + (punchExtension[joint][index] - pose) * amount) * mirror]))
+              : constant(pose * mirror);
+          arm.push(rotation(`arms.${side}.${joint}.${axis}`, `${side}_${joint}`, axis, curve));
+        }
+      if (punchSide) {
+        // Close both hands into a guard; thumb opposition avoids a thumbs-up.
+        for (const finger of ["thumb", "index", "middle", "ring", "pinky"] as const)
+          for (const segment of [1, 2, 3])
+            arm.push(rotation(`arms.${side}.fist.${finger}.${segment}`, `${side}_${finger}_${segment}`, "z",
+              constant(sign * (finger === "thumb" ? [-48.7, 27.7, 30.7][segment - 1] : [60, 85, 70][segment - 1])),
+            ));
+        arm.push(rotation(`arms.${side}.fist.thumb.opposition`, `${side}_thumb_1`, "x", constant(45)));
+        arm.push(rotation(`arms.${side}.fist.thumb.sweep`, `${side}_thumb_1`, "y", constant(sign * 25.7)));
+      }
+      arms.push(group(`arms.${side}`, action === "clap" ? `${side} palm · open, meet, release`
+        : side === punchSide ? `${side} fist · guard, punch, retract` : `${side} fist · keep the guard`, arm));
+    }
+  } else if (action === "sway") {
+    // One complete left/right weight transfer, with both feet anchored to the
+    // floor. Separate curves keep the lean and pelvis travel independently editable.
+    const sway = (amplitude: number): Curve => ({ kind: "sine", amplitude, cycles: 1 });
+    torso.push(position("torso.sway", "root", "x", sway(0.085)));
+    torso.push(position("torso.soft_knees", "root", "y", {
+      kind: "sine", amplitude: 0.0175, cycles: 2, phase: 0.25, offset: -0.0175,
+    }));
+    torso.push(rotation("torso.hip_lean", "hips", "z", sway(-5)));
+    torso.push(rotation("torso.spine_lean", "spine", "z", sway(-6)));
+    torso.push(rotation("torso.chest_lean", "chest", "z", sway(-3)));
+    for (const side of ["left", "right"] as const) {
+      feet.push(group(`feet.${side}`, `${side} foot · planted throughout the sway`,
+        (["x", "y", "z"] as const).map(axis =>
+          position(`feet.${side}.${axis}`, `${side}_foot_ik`, axis, constant(0)),
+        ),
+      ));
+      arms.push(group(`arms.${side}`, `${side} arm · relaxed by the body`, [
+        rotation(`arms.${side}.shoulder`, `${side}_shoulder`, "z", constant((side === "left" ? 1 : -1) * 4)),
+        rotation(`arms.${side}.elbow`, `${side}_elbow`, "x", constant(-8)),
+      ]));
     }
   } else if (turning) {
     const angle = action === "spin" ? 360 : action === "turn_left" ? 90 : -90;

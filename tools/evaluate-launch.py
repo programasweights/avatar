@@ -59,7 +59,7 @@ def main() -> int:
                 headers["X-API-Key"] = key
             request = urllib.request.Request(args.infer_url, data=json.dumps({
                 "program_id": program_id, "input": instruction, "temperature": 0,
-                "max_tokens": 256 if program_id == PROGRAMS.get("sequence") else 80,
+                "max_tokens": 256 if program_id in {PROGRAMS.get("sequence"), PROGRAMS.get("motion_language"), PROGRAMS.get("motion_translation")} else 80,
             }).encode(), headers=headers, method="POST")
             with urllib.request.urlopen(request, timeout=args.timeout) as result:
                 output = json.load(result)["output"]

@@ -55,8 +55,18 @@ def event(kind, text=''):
         output.write(json.dumps({'kind': kind, 'text': text, 'pid': os.getpid()}) + '\\n')
 
 def function(program_id):
+    if program_id == ${JSON.stringify(programs.meaning_scope)}:
+        return lambda text, **kwargs: 'keep'
+    if program_id == ${JSON.stringify(programs.language_scope)}:
+        return lambda text, **kwargs: 'english'
+    if program_id == ${JSON.stringify(programs.motion_language)}:
+        return lambda text, **kwargs: 'unchanged'
     if program_id == ${JSON.stringify(programs.sequence)}:
         return lambda *args, **kwargs: 'single'
+    if program_id == ${JSON.stringify(programs.request_intent)}:
+        return lambda *args, **kwargs: 'command'
+    if program_id in (${JSON.stringify(programs.body_sway)}, ${JSON.stringify(programs.extension_scope)}):
+        return lambda *args, **kwargs: 'none'
     if program_id == ${JSON.stringify(programs.leg_scope)}:
         return lambda *args, **kwargs: 'yes'
     if program_id in (${JSON.stringify(programs.action_intent)}, ${JSON.stringify(programs.leg_control)}, ${JSON.stringify(programs.playback_control)}, ${JSON.stringify(programs.arm_control)}, ${JSON.stringify(programs.dance_extension)}, ${JSON.stringify(programs.dance_fallback)}):
@@ -73,6 +83,9 @@ def function(program_id):
     def infer(text, **kwargs):
         event('start', text)
         if text == 'crash': os._exit(7)
+        if text == 'slow-one':
+            release = os.path.join(os.path.dirname(os.environ['AVATAR_TEST_EVENTS']), 'release-queue')
+            while not os.path.exists(release): time.sleep(0.01)
         if text.startswith('slow'): time.sleep(0.25)
         if text.startswith('cancel'): time.sleep(10)
         print('model log')
@@ -129,7 +142,7 @@ test("validation rejects bad requests without loading a model", async () => {
   assert.deepEqual(await events(), []);
 });
 
-test("four requests execute serially and a fifth is rejected", async () => {
+test("four requests execute serially and a fifth is rejected", { timeout: 20_000 }, async () => {
   const first = post("slow-one");
   await until((items) =>
     items.some((item) => item.text === "slow-one" && item.kind === "start"),
@@ -140,6 +153,13 @@ test("four requests execute serially and a fifth is rejected", async () => {
     post("slow-four"),
     post("slow-five"),
   ];
+  // Hold the active fake inference until overflow is observed. A fixed sleep
+  // lets slow HTTP startup drain the queue before all requests have arrived.
+  try {
+    assert.equal((await Promise.race(requests)).status, 429);
+  } finally {
+    await writeFile(resolve(directory, "release-queue"), "release");
+  }
   const responses = await Promise.all([first, ...requests]);
   assert.deepEqual(
     responses.map((response) => response.status).sort(),
@@ -226,10 +246,14 @@ test("a crashed worker reports failure and restarts only on the next request", a
   );
 });
 
-test("invalid neural output remains an error and does not poison later requests", async () => {
+test("invalid neural grammar returns unsupported and does not poison later requests", async () => {
   const invalid = await post("bad-output");
-  assert.equal(invalid.status, 422);
-  assert.match((await invalid.json()).detail, /Invalid dexterity/);
+  assert.equal(invalid.status, 200);
+  const rejected = await invalid.json();
+  assert.equal(rejected.output, "unsupported");
+  assert.equal(rejected.trace.route, "unsupported");
+  assert.match(rejected.trace.validation_error, /Invalid dexterity/);
+  assert.ok(rejected.trace.dexterity);
   assert.equal((await post("after-bad-output")).status, 200);
 });
 

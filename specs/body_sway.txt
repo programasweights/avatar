@@ -1,0 +1,90 @@
+Recognize a standing whole-body side-to-side sway. This is a narrow specialist; other motion functions handle every other action. Return ONLY one of:
+none
+unsupported
+action sway COUNT
+action sway COUNT followed by a newline and arms still
+
+Output none for requests that do NOT ask for a new whole-body side-to-side sway/rock. This includes every ordinary walk, run, jump, kick, bow, crouch, squat, sit, kneel, lie-down, turn, dance, hand gesture, coin interaction, finger/wrist/ankle/head joint movement and acrobatic trick. Do not interpret those; return none so their own function can handle them. A barrel ROLL is not a body ROCK: barrel rolls, somersaults and rolls return none. A hand wave is not a body sway. A named single joint wiggle is not a whole-body sway. Requests merely asking what sway means or explaining it also return none. Never substitute sway for another action.
+
+Sway/rock your body, torso or upper body from side to side, or simply sway, requests this motion: stand on both feet and shift the torso left and right. COUNT is the number of complete left/right cycles, integer 1 through 8, default 1. Preserve counts written as digits or words. A still-arms/no-arm-movement constraint adds the final arms still line. Both feet planted is supported. A request specifically for a sway that also requires a single supporting foot, acrobatics, props, a new dance, continuous/forever motion, explicit duration, or an unsupported count returns unsupported. Two different actions in this one input are unsupported here; a separate sequence planner handles ordered steps. Relative controls such as make it faster, reverse it, keep the current sway but edit a finger return none.
+
+Input: Rock your body from side to side.
+Output: action sway 1
+Input: Sway your torso from side to side
+Output: action sway 1
+Input: Sway
+Output: action sway 1
+Input: Rock from side to side
+Output: action sway 1
+Input: Sway your upper body left and right
+Output: action sway 1
+Input: Rock your body from side to side twice.
+Output: action sway 2
+Input: Sway three times
+Output: action sway 3
+Input: Sway 4 times
+Output: action sway 4
+Input: Sway five times
+Output: action sway 5
+Input: Rock your body from side to side six times
+Output: action sway 6
+Input: Sway seven times
+Output: action sway 7
+Input: Sway eight times
+Output: action sway 8
+Input: Rock your body from side to side with your arms still.
+Output: action sway 1
+arms still
+Input: Sway twice without moving your arms
+Output: action sway 2
+arms still
+Input: Sway with both feet planted
+Output: action sway 1
+Input: Sway on one foot
+Output: unsupported
+Input: Sway nine times
+Output: unsupported
+Input: Sway forever
+Output: unsupported
+Input: Sway and do a backflip
+Output: unsupported
+Input: Make the sway faster
+Output: none
+Input: Keep swaying but bend the left index finger
+Output: none
+Input: What does swaying mean?
+Output: none
+Input: Do a barrel roll
+Output: none
+Input: Jump up and do a barrel roll
+Output: none
+Input: Roll a coin across both hands
+Output: none
+Input: Jump seven times
+Output: none
+Input: Jump on one leg
+Output: none
+Input: Kick
+Output: none
+Input: Side kick with your left leg
+Output: none
+Input: Squat
+Output: none
+Input: Get down on your knees
+Output: none
+Input: Lie flat on the floor
+Output: none
+Input: Bow
+Output: none
+Input: Run
+Output: none
+Input: Wave your left hand
+Output: none
+Input: Wiggle your left wrist
+Output: none
+Input: Wiggle your hips 15 degrees around the x axis
+Output: none
+Input: Dance salsa
+Output: none
+Input: Lift your left foot
+Output: none

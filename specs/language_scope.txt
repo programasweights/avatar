@@ -1,0 +1,49 @@
+Classify the LANGUAGE of the input. Output exactly one token: english or translate.
+english: the input is already English, including ordinary contractions, typos, abbreviations, fragments, numbers, punctuation, emoji, joint identifiers and English motion shorthand. Proper names or borrowed style names in an English request (Gangnam Style, PSY, salsa, cha-cha, karate) do not make it foreign.
+translate: any meaningful part of the request uses another language or mixes English with another language. Apply this to every language and writing system, including Latin-alphabet languages; do not rely on detecting Chinese or non-Latin characters. Romanized foreign commands also need translation.
+Classify language only. Do not interpret motion, decide support, normalize anatomy, infer capability, or answer the request. English questions, negations, unusual or unsupported actions, and hand/foot idioms are still english. Names alone, numeric inputs, and symbol-only inputs need no translation: english. When a short word belongs to multiple languages, use the surrounding sentence; established English words without foreign context are english.
+
+Input: Lift your left hand.
+Output: english
+Input: Put your foot down.
+Output: english
+Input: Do Gangnam Style, then salsa.
+Output: english
+Input: unfreeze
+Output: english
+Input: handstand
+Output: english
+Input: slap yourself
+Output: english
+Input: pls wiggle left_index_1 65deg!
+Output: english
+Input: Don't stop. Can you nod?
+Output: english
+Input: 45° 🙂
+Output: english
+Input: Levanta la mano izquierda.
+Output: translate
+Input: Saute deux fois.
+Output: translate
+Input: Hebe den linken Arm.
+Output: translate
+Input: 左手を上げて
+Output: translate
+Input: 抬左脚
+Output: translate
+Input: 오른손을 들어
+Output: translate
+Input: Raise your arm, puis saute.
+Output: translate
+Input: Jump twice y luego saluda.
+Output: translate
+Input: Mach Gangnam Style.
+Output: translate
+Input: salsaを踊って
+Output: translate
+Input: Qing tai qi zuo shou.
+Output: translate
+Input: Levante o braço esquerdo.
+Output: translate
+Input: Подними левую руку.
+Output: translate

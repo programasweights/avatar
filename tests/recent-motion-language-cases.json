@@ -1,0 +1,1009 @@
+{
+  "description": "Paired original Chinese and natural English cases from three additional visitor batches: 40 requests, 30 distinct directions. Expectations express intended behavior rather than copying observed mistakes. Clapping, applause, and punching have authored motions. Remaining capability gaps explicitly require unsupported and are labeled decline_only; they must not be counted as supported motions.",
+  "source_request_count": 40,
+  "distinct_source_instructions": 30,
+  "cases": [
+    {
+      "id": "recent_dance_zh",
+      "pair_id": "recent_dance",
+      "source_instruction": "跳舞",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "跳舞",
+      "source_request_count": 2,
+      "category": "recent_supported_intent",
+      "intended_action": "dance with the default salsa motion",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "dance salsa"
+      ],
+      "notes": "No style was requested; use the existing default salsa motion."
+    },
+    {
+      "id": "recent_dance_en",
+      "pair_id": "recent_dance",
+      "source_instruction": "跳舞",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Dance.",
+      "source_request_count": 2,
+      "category": "recent_supported_intent",
+      "intended_action": "dance with the default salsa motion",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "dance salsa"
+      ],
+      "notes": "No style was requested; use the existing default salsa motion."
+    },
+    {
+      "id": "recent_raise_left_hand_zh",
+      "pair_id": "recent_raise_left_hand",
+      "source_instruction": "举左手",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "举左手",
+      "source_request_count": 2,
+      "category": "recent_supported_intent",
+      "intended_action": "raise the left arm",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "joint left_shoulder z 45"
+      ]
+    },
+    {
+      "id": "recent_raise_left_hand_en",
+      "pair_id": "recent_raise_left_hand",
+      "source_instruction": "举左手",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Raise your left hand.",
+      "source_request_count": 2,
+      "category": "recent_supported_intent",
+      "intended_action": "raise the left arm",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "joint left_shoulder z 45"
+      ]
+    },
+    {
+      "id": "recent_handshake_zh",
+      "pair_id": "recent_handshake",
+      "source_instruction": "握手",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "握手",
+      "source_request_count": 1,
+      "category": "capability_gap",
+      "intended_action": "extend a hand and perform a handshake with another person",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks an honest decline only. It does not count as implementing or successfully performing the intended action."
+    },
+    {
+      "id": "recent_handshake_en",
+      "pair_id": "recent_handshake",
+      "source_instruction": "握手",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Shake hands.",
+      "source_request_count": 1,
+      "category": "capability_gap",
+      "intended_action": "extend a hand and perform a handshake with another person",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks an honest decline only. It does not count as implementing or successfully performing the intended action."
+    },
+    {
+      "id": "recent_jump_twice_zh",
+      "pair_id": "recent_jump_twice",
+      "source_instruction": "跳两次",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "跳两次",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "jump twice",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action jump 2"
+      ]
+    },
+    {
+      "id": "recent_jump_twice_en",
+      "pair_id": "recent_jump_twice",
+      "source_instruction": "跳两次",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Jump twice.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "jump twice",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action jump 2"
+      ]
+    },
+    {
+      "id": "recent_lift_left_foot_zh",
+      "pair_id": "recent_lift_left_foot",
+      "source_instruction": "抬左脚",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "抬左脚",
+      "source_request_count": 4,
+      "category": "recent_supported_intent",
+      "intended_action": "raise the left foot while the right foot supports the body",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "recent_lift_left_foot_en",
+      "pair_id": "recent_lift_left_foot",
+      "source_instruction": "抬左脚",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Lift your left foot.",
+      "source_request_count": 4,
+      "category": "recent_supported_intent",
+      "intended_action": "raise the left foot while the right foot supports the body",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "recent_lift_right_foot_zh",
+      "pair_id": "recent_lift_right_foot",
+      "source_instruction": "抬右脚",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "抬右脚",
+      "source_request_count": 2,
+      "category": "recent_supported_intent",
+      "intended_action": "raise the right foot while the left foot supports the body",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "recent_lift_right_foot_en",
+      "pair_id": "recent_lift_right_foot",
+      "source_instruction": "抬右脚",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Lift your right foot.",
+      "source_request_count": 2,
+      "category": "recent_supported_intent",
+      "intended_action": "raise the right foot while the left foot supports the body",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "recent_lift_foot_zh",
+      "pair_id": "recent_lift_foot",
+      "source_instruction": "抬脚",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "抬脚",
+      "source_request_count": 2,
+      "category": "recent_supported_intent",
+      "intended_action": "raise one foot; default to left-foot support when no side is named",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "recent_lift_foot_en",
+      "pair_id": "recent_lift_foot",
+      "source_instruction": "抬脚",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Lift a foot.",
+      "source_request_count": 2,
+      "category": "recent_supported_intent",
+      "intended_action": "raise one foot; default to left-foot support when no side is named",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "recent_foot_down_zh",
+      "pair_id": "recent_foot_down",
+      "source_instruction": "脚放下",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "脚放下",
+      "source_request_count": 3,
+      "category": "recent_supported_intent",
+      "intended_action": "lower the raised foot and return to the original two-foot stance",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "support both"
+      ]
+    },
+    {
+      "id": "recent_foot_down_en",
+      "pair_id": "recent_foot_down",
+      "source_instruction": "脚放下",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Put your foot down.",
+      "source_request_count": 3,
+      "category": "recent_supported_intent",
+      "intended_action": "lower the raised foot and return to the original two-foot stance",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "support both"
+      ]
+    },
+    {
+      "id": "recent_hop_zh",
+      "pair_id": "recent_hop",
+      "source_instruction": "蹦",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "蹦",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "jump once",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action jump 1"
+      ]
+    },
+    {
+      "id": "recent_hop_en",
+      "pair_id": "recent_hop",
+      "source_instruction": "蹦",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Hop.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "jump once",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action jump 1"
+      ]
+    },
+    {
+      "id": "recent_jump_zh",
+      "pair_id": "recent_jump",
+      "source_instruction": "跳",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "跳",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "jump once",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action jump 1"
+      ]
+    },
+    {
+      "id": "recent_jump_en",
+      "pair_id": "recent_jump",
+      "source_instruction": "跳",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Jump.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "jump once",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action jump 1"
+      ]
+    },
+    {
+      "id": "recent_raise_right_hand_zh",
+      "pair_id": "recent_raise_right_hand",
+      "source_instruction": "举右手",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "举右手",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "raise the right arm",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "joint right_shoulder z -45"
+      ]
+    },
+    {
+      "id": "recent_raise_right_hand_en",
+      "pair_id": "recent_raise_right_hand",
+      "source_instruction": "举右手",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Raise your right hand.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "raise the right arm",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "joint right_shoulder z -45"
+      ]
+    },
+    {
+      "id": "recent_raise_both_hands_zh",
+      "pair_id": "recent_raise_both_hands",
+      "source_instruction": "举双手",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "举双手",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "raise both arms to the ordinary default angle",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "joint left_shoulder z 45\njoint right_shoulder z -45"
+      ]
+    },
+    {
+      "id": "recent_raise_both_hands_en",
+      "pair_id": "recent_raise_both_hands",
+      "source_instruction": "举双手",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Raise both hands.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "raise both arms to the ordinary default angle",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "joint left_shoulder z 45\njoint right_shoulder z -45"
+      ]
+    },
+    {
+      "id": "recent_punch_zh",
+      "pair_id": "recent_punch",
+      "source_instruction": "打挙",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "打挙",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "make a fist and throw a punch",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action punch_right 1"
+      ]
+    },
+    {
+      "id": "recent_punch_en",
+      "pair_id": "recent_punch",
+      "source_instruction": "打挙",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Throw a punch.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "make a fist and throw a punch",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action punch_right 1"
+      ]
+    },
+    {
+      "id": "recent_clap_hands_zh",
+      "pair_id": "recent_clap_hands",
+      "source_instruction": "拍手",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "拍手",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "bring both palms together and clap",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action clap 1"
+      ]
+    },
+    {
+      "id": "recent_clap_hands_en",
+      "pair_id": "recent_clap_hands",
+      "source_instruction": "拍手",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Clap your hands.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "bring both palms together and clap",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action clap 1"
+      ]
+    },
+    {
+      "id": "recent_applaud_zh",
+      "pair_id": "recent_applaud",
+      "source_instruction": "鼓掌",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "鼓掌",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "clap the hands repeatedly in applause",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action clap 1"
+      ]
+    },
+    {
+      "id": "recent_applaud_en",
+      "pair_id": "recent_applaud",
+      "source_instruction": "鼓掌",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Applaud.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "clap the hands repeatedly in applause",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action clap 1"
+      ]
+    },
+    {
+      "id": "recent_touch_head_zh",
+      "pair_id": "recent_touch_head",
+      "source_instruction": "摸头",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "摸头",
+      "source_request_count": 1,
+      "category": "capability_gap",
+      "intended_action": "bring a hand into contact with the head",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks an honest decline only. It does not count as implementing or successfully performing the intended action."
+    },
+    {
+      "id": "recent_touch_head_en",
+      "pair_id": "recent_touch_head",
+      "source_instruction": "摸头",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Touch your head.",
+      "source_request_count": 1,
+      "category": "capability_gap",
+      "intended_action": "bring a hand into contact with the head",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks an honest decline only. It does not count as implementing or successfully performing the intended action."
+    },
+    {
+      "id": "recent_squat_zh",
+      "pair_id": "recent_squat",
+      "source_instruction": "蹲下",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "蹲下",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "bend both knees into a squat while keeping the feet on the ground",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action crouch 1"
+      ]
+    },
+    {
+      "id": "recent_squat_en",
+      "pair_id": "recent_squat",
+      "source_instruction": "蹲下",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Squat down.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "bend both knees into a squat while keeping the feet on the ground",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action crouch 1"
+      ]
+    },
+    {
+      "id": "recent_kick_zh",
+      "pair_id": "recent_kick",
+      "source_instruction": "踢腿",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "踢腿",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "kick once with the default right leg",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action kick_right 1"
+      ]
+    },
+    {
+      "id": "recent_kick_en",
+      "pair_id": "recent_kick",
+      "source_instruction": "踢腿",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Kick a leg.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "kick once with the default right leg",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action kick_right 1"
+      ]
+    },
+    {
+      "id": "recent_stand_zh",
+      "pair_id": "recent_stand",
+      "source_instruction": "站立",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "站立",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "return to an upright standing pose",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "dance idle"
+      ]
+    },
+    {
+      "id": "recent_stand_en",
+      "pair_id": "recent_stand",
+      "source_instruction": "站立",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Stand up.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "return to an upright standing pose",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "dance idle"
+      ]
+    },
+    {
+      "id": "recent_jump_high_zh",
+      "pair_id": "recent_jump_high",
+      "source_instruction": "跳高",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "跳高",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "jump upward using the current jump motion",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action jump 1"
+      ],
+      "notes": "Requires the existing upward jump. Adjustable jump height is not claimed."
+    },
+    {
+      "id": "recent_jump_high_en",
+      "pair_id": "recent_jump_high",
+      "source_instruction": "跳高",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Jump high.",
+      "source_request_count": 1,
+      "category": "recent_supported_intent",
+      "intended_action": "jump upward using the current jump motion",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action jump 1"
+      ],
+      "notes": "Requires the existing upward jump. Adjustable jump height is not claimed."
+    },
+    {
+      "id": "recent_splits_zh",
+      "pair_id": "recent_splits",
+      "source_instruction": "一字马",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "一字马",
+      "source_request_count": 1,
+      "category": "capability_gap",
+      "intended_action": "spread both legs into a full split",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks an honest decline only. It does not count as implementing or successfully performing the intended action."
+    },
+    {
+      "id": "recent_splits_en",
+      "pair_id": "recent_splits",
+      "source_instruction": "一字马",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Do the splits.",
+      "source_request_count": 1,
+      "category": "capability_gap",
+      "intended_action": "spread both legs into a full split",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks an honest decline only. It does not count as implementing or successfully performing the intended action."
+    },
+    {
+      "id": "recent_backbend_zh",
+      "pair_id": "recent_backbend",
+      "source_instruction": "下腰",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "下腰",
+      "source_request_count": 1,
+      "category": "capability_gap",
+      "intended_action": "arch backward into a backbend",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks an honest decline only. It does not count as implementing or successfully performing the intended action."
+    },
+    {
+      "id": "recent_backbend_en",
+      "pair_id": "recent_backbend",
+      "source_instruction": "下腰",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Do a backbend.",
+      "source_request_count": 1,
+      "category": "capability_gap",
+      "intended_action": "arch backward into a backbend",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks an honest decline only. It does not count as implementing or successfully performing the intended action."
+    },
+    {
+      "id": "recent_backflip_zh",
+      "pair_id": "recent_backflip",
+      "source_instruction": "后翻",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "后翻",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "capability_gap",
+      "intended_action": "perform a backward aerial somersault",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks a decline only; it does not count as performing the intended action."
+    },
+    {
+      "id": "recent_backflip_en",
+      "pair_id": "recent_backflip",
+      "source_instruction": "后翻",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Do a backflip.",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "capability_gap",
+      "intended_action": "perform a backward aerial somersault",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks a decline only; it does not count as performing the intended action."
+    },
+    {
+      "id": "recent_frontflip_zh",
+      "pair_id": "recent_frontflip",
+      "source_instruction": "前翻",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "前翻",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "capability_gap",
+      "intended_action": "perform a forward aerial somersault",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks a decline only; it does not count as performing the intended action."
+    },
+    {
+      "id": "recent_frontflip_en",
+      "pair_id": "recent_frontflip",
+      "source_instruction": "前翻",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Do a frontflip.",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "capability_gap",
+      "intended_action": "perform a forward aerial somersault",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks a decline only; it does not count as performing the intended action."
+    },
+    {
+      "id": "recent_cover_face_zh",
+      "pair_id": "recent_cover_face",
+      "source_instruction": "捂脸",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "捂脸",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "capability_gap",
+      "intended_action": "place the hands over the face",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks a decline only; it does not count as performing the intended action."
+    },
+    {
+      "id": "recent_cover_face_en",
+      "pair_id": "recent_cover_face",
+      "source_instruction": "捂脸",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Cover your face.",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "capability_gap",
+      "intended_action": "place the hands over the face",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks a decline only; it does not count as performing the intended action."
+    },
+    {
+      "id": "recent_punch_fist_zh",
+      "pair_id": "recent_punch_fist",
+      "source_instruction": "出拳",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "出拳",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "recent_supported_intent",
+      "intended_action": "make a fist and throw a punch",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action punch_right 1"
+      ]
+    },
+    {
+      "id": "recent_punch_fist_en",
+      "pair_id": "recent_punch_fist",
+      "source_instruction": "出拳",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Throw a punch.",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "recent_supported_intent",
+      "intended_action": "make a fist and throw a punch",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action punch_right 1"
+      ]
+    },
+    {
+      "id": "recent_raise_hand_zh",
+      "pair_id": "recent_raise_hand",
+      "source_instruction": "举手",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "举手",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "recent_supported_intent",
+      "intended_action": "raise one unspecified arm to the ordinary default angle",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "joint left_shoulder z 45",
+        "joint right_shoulder z -45"
+      ],
+      "notes": "The request names a singular hand but no side. An ordinary 45-degree shoulder raise on either side is accepted; raising both arms, wrist motion, and an invented overhead reach are not."
+    },
+    {
+      "id": "recent_raise_hand_en",
+      "pair_id": "recent_raise_hand",
+      "source_instruction": "举手",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Raise a hand.",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "recent_supported_intent",
+      "intended_action": "raise one unspecified arm to the ordinary default angle",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "joint left_shoulder z 45",
+        "joint right_shoulder z -45"
+      ],
+      "notes": "The request names a singular hand but no side. An ordinary 45-degree shoulder raise on either side is accepted; raising both arms, wrist motion, and an invented overhead reach are not."
+    },
+    {
+      "id": "recent_nod_zh",
+      "pair_id": "recent_nod",
+      "source_instruction": "点头",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "点头",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "recent_supported_intent",
+      "intended_action": "nod the head up and down",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "wiggle head x 20"
+      ]
+    },
+    {
+      "id": "recent_nod_en",
+      "pair_id": "recent_nod",
+      "source_instruction": "点头",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Nod your head.",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "recent_supported_intent",
+      "intended_action": "nod the head up and down",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "wiggle head x 20"
+      ]
+    },
+    {
+      "id": "recent_bow_zh",
+      "pair_id": "recent_bow",
+      "source_instruction": "鞠躬",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "鞠躬",
+      "source_request_count": 2,
+      "source_batch": "latest-snapshot",
+      "category": "recent_supported_intent",
+      "intended_action": "bow once",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action bow 1"
+      ],
+      "notes": "The source batch contains two separate bow requests; each request asks for one bow."
+    },
+    {
+      "id": "recent_bow_en",
+      "pair_id": "recent_bow",
+      "source_instruction": "鞠躬",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Bow.",
+      "source_request_count": 2,
+      "source_batch": "latest-snapshot",
+      "category": "recent_supported_intent",
+      "intended_action": "bow once",
+      "capability_gap": false,
+      "coverage": "requested_motion",
+      "expected": [
+        "action bow 1"
+      ],
+      "notes": "The source batch contains two separate bow requests; each request asks for one bow."
+    },
+    {
+      "id": "recent_salute_zh",
+      "pair_id": "recent_salute",
+      "source_instruction": "敬礼",
+      "source_language": "zh",
+      "language": "zh",
+      "instruction": "敬礼",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "capability_gap",
+      "intended_action": "raise a hand to perform a salute",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks a decline only; it does not count as performing the intended action."
+    },
+    {
+      "id": "recent_salute_en",
+      "pair_id": "recent_salute",
+      "source_instruction": "敬礼",
+      "source_language": "zh",
+      "language": "en",
+      "instruction": "Salute.",
+      "source_request_count": 1,
+      "source_batch": "latest-snapshot",
+      "category": "capability_gap",
+      "intended_action": "raise a hand to perform a salute",
+      "capability_gap": true,
+      "coverage": "decline_only",
+      "expected": [
+        "unsupported"
+      ],
+      "notes": "A passing unsupported response checks a decline only; it does not count as performing the intended action."
+    }
+  ]
+}

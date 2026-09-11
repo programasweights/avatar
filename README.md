@@ -99,6 +99,13 @@ hold local rotations; contact choreography remains controlled by its trajectorie
 “Fully lift up your left arm” straightens that arm and reaches overhead.
 An explicit angle, such as “Lift your left arm 45 degrees,” keeps precise joint control.
 
+English and translated directions share the same motion interpretation.
+Ordinary instructions pass through unchanged; a separate PAW function clarifies
+anatomical wording when needed. “Raise
+your right hand” and “举右手” both raise the right arm; “Lift your left foot”
+and “抬左脚” lift the foot off the floor. Explicit wrist or ankle rotations
+stay local joint edits. Sides, angles, counts and ordered steps are preserved.
+
 Try “Roll a coin,” “Could you move just your left thumb?”, or “Wave hello with
 your left hand.” Unsupported tricks, such as rolling a coin on the head, are
 declined rather than approximated with unrelated joint movements. Language
@@ -114,6 +121,10 @@ supporting foot. Walking and running happen in place. A single walk or run loops
 “Kneel down” rests on both knees, “Lie down” reclines onto the floor, and
 “Side kick with your left leg” kicks sideways. Sitting, kneeling and lying down
 hold their final poses.
+“Rock your body from side to side” or “左右摆动” sways with both feet planted.
+Each repetition is a complete left/right cycle.
+“Clap twice” brings the palms together twice. “Punch with your left hand”
+extends that arm forward and returns it to its guard.
 These motions use editable joint curves and foot targets, just like the hand
 sequence. Short action sequences support up to four steps and sixteen total
 repetitions, with one to eight repetitions per step.
@@ -242,6 +253,11 @@ ordinary directions, follow-up edits, and honest rejection of unsupported
 tricks; the rig tests separately verify the resulting joint and prop motion.
 Add `--cases tests/posture-language-cases.json` to check body poses, overhead
 reaches, side kicks, and leg pauses.
+Use `--cases tests/chinese-motion-language-cases.json` for Chinese directions,
+including foot versus ankle movement, arm raises, counts and ordered steps.
+`tests/translated-motion-language-cases.json` checks their natural English
+counterparts. `tests/recent-motion-language-cases.json` pairs recent visitor
+requests with English equivalents and marks unimplemented choreography separately.
 
 The built `dist/` can serve the examples and editor as a static site. Language
 input also needs a backend at `/api/direct`; `npm run dev` and `npm run preview`

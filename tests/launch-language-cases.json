@@ -384,11 +384,11 @@
       "id": "clap",
       "instruction": "Clap your hands",
       "expected": [
-        "unsupported"
+        "action clap 1"
       ],
-      "category": "boundary",
-      "priority": "boundary",
-      "notes": "Clapping needs bilateral contact choreography."
+      "category": "gesture",
+      "priority": "core",
+      "notes": "The authored clap brings both palms together once and returns to the open pose."
     },
     {
       "id": "moonwalk",

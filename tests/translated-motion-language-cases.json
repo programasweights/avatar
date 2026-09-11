@@ -1,0 +1,817 @@
+{
+  "description": "Natural English counterparts of every Chinese motion case. Each pair preserves its original expected motion, counts, constraints, and ordered steps. Hand and foot wording is translated as a user would write it, not rewritten into internal arm, joint, or support commands. pair_id names the source case in chinese-motion-language-cases.json.",
+  "source_cases": "chinese-motion-language-cases.json",
+  "cases": [
+    {
+      "id": "en_lift_left_foot",
+      "pair_id": "zh_lift_left_foot",
+      "source_instruction": "抬左脚",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Lift your left foot.",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "en_lift_right_foot",
+      "pair_id": "zh_lift_right_foot",
+      "source_instruction": "抬右脚",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Lift your right foot.",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "en_lift_left_hand",
+      "pair_id": "zh_lift_left_hand",
+      "source_instruction": "抬左手",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Lift your left hand.",
+      "expected": [
+        "joint left_shoulder z 45"
+      ]
+    },
+    {
+      "id": "en_lift_right_hand",
+      "pair_id": "zh_lift_right_hand",
+      "source_instruction": "抬右手",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Lift your right hand.",
+      "expected": [
+        "joint right_shoulder z -45"
+      ]
+    },
+    {
+      "id": "en_raise_left_hand",
+      "pair_id": "zh_raise_left_hand",
+      "source_instruction": "举左手",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Raise your left hand.",
+      "expected": [
+        "joint left_shoulder z 45"
+      ]
+    },
+    {
+      "id": "en_raise_right_hand",
+      "pair_id": "zh_raise_right_hand",
+      "source_instruction": "举右手",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Raise your right hand.",
+      "expected": [
+        "joint right_shoulder z -45"
+      ]
+    },
+    {
+      "id": "en_bounce",
+      "pair_id": "zh_bounce",
+      "source_instruction": "蹦",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Hop.",
+      "expected": [
+        "action jump 1"
+      ]
+    },
+    {
+      "id": "en_jump",
+      "pair_id": "zh_jump",
+      "source_instruction": "跳",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Jump.",
+      "expected": [
+        "action jump 1"
+      ]
+    },
+    {
+      "id": "en_wave_left_hand",
+      "pair_id": "zh_wave_left_hand",
+      "source_instruction": "摆左手",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Wave your left hand.",
+      "expected": [
+        "wave left"
+      ]
+    },
+    {
+      "id": "en_sway",
+      "pair_id": "zh_sway",
+      "source_instruction": "左右摆动",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Sway from side to side.",
+      "expected": [
+        "action sway 1"
+      ]
+    },
+    {
+      "id": "en_bow",
+      "pair_id": "zh_bow",
+      "source_instruction": "鞠躬",
+      "source_language": "zh",
+      "language": "en",
+      "category": "observed",
+      "instruction": "Bow.",
+      "expected": [
+        "action bow 1"
+      ]
+    },
+    {
+      "id": "en_lift_left_foot_polite",
+      "pair_id": "zh_lift_left_foot_polite",
+      "source_instruction": "请把左脚抬起来",
+      "source_language": "zh",
+      "language": "en",
+      "category": "support",
+      "instruction": "Please lift your left foot up.",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "en_balance_left",
+      "pair_id": "zh_balance_left",
+      "source_instruction": "只用左脚站立",
+      "source_language": "zh",
+      "language": "en",
+      "category": "support",
+      "instruction": "Stand only on your left foot.",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "en_balance_right",
+      "pair_id": "zh_balance_right",
+      "source_instruction": "右脚支撑身体",
+      "source_language": "zh",
+      "language": "en",
+      "category": "support",
+      "instruction": "Support your body with your right foot.",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "en_opposite_foot",
+      "pair_id": "zh_opposite_foot",
+      "source_instruction": "换另一只脚支撑",
+      "source_language": "zh",
+      "language": "en",
+      "category": "support",
+      "instruction": "Switch to the other supporting foot.",
+      "expected": [
+        "support other"
+      ]
+    },
+    {
+      "id": "en_both_feet",
+      "pair_id": "zh_both_feet",
+      "source_instruction": "双脚着地，恢复原来的脚步",
+      "source_language": "zh",
+      "language": "en",
+      "category": "support",
+      "instruction": "Put both feet on the ground and restore the original footwork.",
+      "expected": [
+        "support both"
+      ]
+    },
+    {
+      "id": "en_left_arm_overhead",
+      "pair_id": "zh_left_arm_overhead",
+      "source_instruction": "左手举过头顶",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Raise your left hand above your head.",
+      "expected": [
+        "arm left still\njoint left_shoulder z 180"
+      ]
+    },
+    {
+      "id": "en_right_arm_overhead",
+      "pair_id": "zh_right_arm_overhead",
+      "source_instruction": "右手举过头顶",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Raise your right hand above your head.",
+      "expected": [
+        "arm right still\njoint right_shoulder z -180"
+      ]
+    },
+    {
+      "id": "en_left_leg_angle",
+      "pair_id": "zh_left_leg_angle",
+      "source_instruction": "抬左腿45度",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Lift your left leg 45 degrees.",
+      "expected": [
+        "joint left_hip x -45"
+      ]
+    },
+    {
+      "id": "en_right_leg_angle",
+      "pair_id": "zh_right_leg_angle",
+      "source_instruction": "右腿抬高30度",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Raise your right leg 30 degrees.",
+      "expected": [
+        "joint right_hip x -30"
+      ]
+    },
+    {
+      "id": "en_left_wrist_axis",
+      "pair_id": "zh_left_wrist_axis",
+      "source_instruction": "左手腕绕x轴转20度",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Rotate your left wrist 20 degrees around the x axis.",
+      "expected": [
+        "joint left_wrist x 20"
+      ]
+    },
+    {
+      "id": "en_right_wrist_axis",
+      "pair_id": "zh_right_wrist_axis",
+      "source_instruction": "右手腕绕y轴转负13度",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Rotate your right wrist minus 13 degrees around the y axis.",
+      "expected": [
+        "joint right_wrist y -13"
+      ]
+    },
+    {
+      "id": "en_left_ankle_axis",
+      "pair_id": "zh_left_ankle_axis",
+      "source_instruction": "左脚踝绕x轴转15度",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Rotate your left ankle 15 degrees around the x axis.",
+      "expected": [
+        "joint left_ankle x 15"
+      ]
+    },
+    {
+      "id": "en_right_ankle_up",
+      "pair_id": "zh_right_ankle_up",
+      "source_instruction": "右脚尖向上抬16度",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Point your right toes up 16 degrees.",
+      "expected": [
+        "joint right_ankle x -16"
+      ]
+    },
+    {
+      "id": "en_left_index_wiggle",
+      "pair_id": "zh_left_index_wiggle",
+      "source_instruction": "只摆动左手食指65度",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Wiggle only your left index finger 65 degrees.",
+      "expected": [
+        "wiggle left_index_1 z 65"
+      ]
+    },
+    {
+      "id": "en_right_middle_tip",
+      "pair_id": "zh_right_middle_tip",
+      "source_instruction": "弯曲右手中指末节18度",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Bend the last joint of your right middle finger 18 degrees.",
+      "expected": [
+        "joint right_middle_3 z -18"
+      ]
+    },
+    {
+      "id": "en_left_wave_synonym",
+      "pair_id": "zh_left_wave_synonym",
+      "source_instruction": "用左手挥手",
+      "source_language": "zh",
+      "language": "en",
+      "category": "wave",
+      "instruction": "Wave with your left hand.",
+      "expected": [
+        "wave left"
+      ]
+    },
+    {
+      "id": "en_right_wave",
+      "pair_id": "zh_right_wave",
+      "source_instruction": "用右手挥手",
+      "source_language": "zh",
+      "language": "en",
+      "category": "wave",
+      "instruction": "Wave with your right hand.",
+      "expected": [
+        "wave right"
+      ]
+    },
+    {
+      "id": "en_jump_2",
+      "pair_id": "zh_jump_2",
+      "source_instruction": "跳两次",
+      "source_language": "zh",
+      "language": "en",
+      "category": "count",
+      "instruction": "Jump twice.",
+      "expected": [
+        "action jump 2"
+      ]
+    },
+    {
+      "id": "en_jump_3",
+      "pair_id": "zh_jump_3",
+      "source_instruction": "蹦三下",
+      "source_language": "zh",
+      "language": "en",
+      "category": "count",
+      "instruction": "Hop three times.",
+      "expected": [
+        "action jump 3"
+      ]
+    },
+    {
+      "id": "en_jump_4",
+      "pair_id": "zh_jump_4",
+      "source_instruction": "跳4次",
+      "source_language": "zh",
+      "language": "en",
+      "category": "count",
+      "instruction": "Jump 4 times.",
+      "expected": [
+        "action jump 4"
+      ]
+    },
+    {
+      "id": "en_jump_5",
+      "pair_id": "zh_jump_5",
+      "source_instruction": "跳五次",
+      "source_language": "zh",
+      "language": "en",
+      "category": "count",
+      "instruction": "Jump five times.",
+      "expected": [
+        "action jump 5"
+      ]
+    },
+    {
+      "id": "en_jump_6",
+      "pair_id": "zh_jump_6",
+      "source_instruction": "连续跳六下",
+      "source_language": "zh",
+      "language": "en",
+      "category": "count",
+      "instruction": "Jump six times in a row.",
+      "expected": [
+        "action jump 6"
+      ]
+    },
+    {
+      "id": "en_jump_7",
+      "pair_id": "zh_jump_7",
+      "source_instruction": "跳7次",
+      "source_language": "zh",
+      "language": "en",
+      "category": "count",
+      "instruction": "Jump 7 times.",
+      "expected": [
+        "action jump 7"
+      ]
+    },
+    {
+      "id": "en_jump_8",
+      "pair_id": "zh_jump_8",
+      "source_instruction": "跳八次",
+      "source_language": "zh",
+      "language": "en",
+      "category": "count",
+      "instruction": "Jump eight times.",
+      "expected": [
+        "action jump 8"
+      ]
+    },
+    {
+      "id": "en_left_hop_2",
+      "pair_id": "zh_left_hop_2",
+      "source_instruction": "用左脚跳两次",
+      "source_language": "zh",
+      "language": "en",
+      "category": "action_parameters",
+      "instruction": "Jump twice on your left foot.",
+      "expected": [
+        "action jump 2 left"
+      ]
+    },
+    {
+      "id": "en_right_hop_8",
+      "pair_id": "zh_right_hop_8",
+      "source_instruction": "用右脚跳八下",
+      "source_language": "zh",
+      "language": "en",
+      "category": "action_parameters",
+      "instruction": "Jump eight times on your right foot.",
+      "expected": [
+        "action jump 8 right"
+      ]
+    },
+    {
+      "id": "en_bow_3",
+      "pair_id": "zh_bow_3",
+      "source_instruction": "鞠躬三次",
+      "source_language": "zh",
+      "language": "en",
+      "category": "count",
+      "instruction": "Bow three times.",
+      "expected": [
+        "action bow 3"
+      ]
+    },
+    {
+      "id": "en_sway_2",
+      "pair_id": "zh_sway_2",
+      "source_instruction": "左右摇摆两次",
+      "source_language": "zh",
+      "language": "en",
+      "category": "count",
+      "instruction": "Sway from side to side twice.",
+      "expected": [
+        "action sway 2"
+      ]
+    },
+    {
+      "id": "en_jump_still_arms",
+      "pair_id": "zh_jump_still_arms",
+      "source_instruction": "跳两次，双臂保持不动",
+      "source_language": "zh",
+      "language": "en",
+      "category": "action_parameters",
+      "instruction": "Jump twice and keep both arms still.",
+      "expected": [
+        "action jump 2\narms still"
+      ]
+    },
+    {
+      "id": "en_kick_still_arms",
+      "pair_id": "zh_kick_still_arms",
+      "source_instruction": "不要动双臂，踢一下",
+      "source_language": "zh",
+      "language": "en",
+      "category": "action_parameters",
+      "instruction": "Do not move either arm, and kick once.",
+      "expected": [
+        "action kick_right 1\narms still"
+      ]
+    },
+    {
+      "id": "en_stop",
+      "pair_id": "zh_stop",
+      "source_instruction": "停下来",
+      "source_language": "zh",
+      "language": "en",
+      "category": "playback",
+      "instruction": "Stop.",
+      "expected": [
+        "playback pause"
+      ]
+    },
+    {
+      "id": "en_resume",
+      "pair_id": "zh_resume",
+      "source_instruction": "继续播放",
+      "source_language": "zh",
+      "language": "en",
+      "category": "playback",
+      "instruction": "Continue playback.",
+      "expected": [
+        "playback resume"
+      ]
+    },
+    {
+      "id": "en_run",
+      "pair_id": "zh_run",
+      "source_instruction": "跑起来",
+      "source_language": "zh",
+      "language": "en",
+      "category": "basic_action",
+      "instruction": "Start running.",
+      "expected": [
+        "action run 1"
+      ]
+    },
+    {
+      "id": "en_kneel",
+      "pair_id": "zh_kneel",
+      "source_instruction": "跪下",
+      "source_language": "zh",
+      "language": "en",
+      "category": "basic_action",
+      "instruction": "Kneel down.",
+      "expected": [
+        "action kneel 1"
+      ]
+    },
+    {
+      "id": "en_lie_down",
+      "pair_id": "zh_lie_down",
+      "source_instruction": "躺下",
+      "source_language": "zh",
+      "language": "en",
+      "category": "basic_action",
+      "instruction": "Lie down.",
+      "expected": [
+        "action lie_down 1"
+      ]
+    },
+    {
+      "id": "en_salsa",
+      "pair_id": "zh_salsa",
+      "source_instruction": "跳萨尔萨舞",
+      "source_language": "zh",
+      "language": "en",
+      "category": "dance_boundary",
+      "instruction": "Dance salsa.",
+      "expected": [
+        "dance salsa"
+      ]
+    },
+    {
+      "id": "en_coin_knuckles",
+      "pair_id": "zh_coin_knuckles",
+      "source_instruction": "让硬币在左手指关节上滚动",
+      "source_language": "zh",
+      "language": "en",
+      "category": "dexterity_boundary",
+      "instruction": "Roll a coin across the knuckles of your left hand.",
+      "expected": [
+        "skill coin_roll left forward"
+      ]
+    },
+    {
+      "id": "en_coin_head",
+      "pair_id": "zh_coin_head",
+      "source_instruction": "把硬币放在头顶保持平衡",
+      "source_language": "zh",
+      "language": "en",
+      "category": "unsupported",
+      "instruction": "Place a coin on top of your head and balance it.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "en_juggle_three",
+      "pair_id": "zh_juggle_three",
+      "source_instruction": "用手抛接三个球",
+      "source_language": "zh",
+      "language": "en",
+      "category": "unsupported",
+      "instruction": "Juggle three balls with your hands.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "en_ordered_jump_bow",
+      "pair_id": "zh_ordered_jump_bow",
+      "source_instruction": "先跳两次，然后鞠躬。",
+      "source_language": "zh",
+      "language": "en",
+      "category": "ordered",
+      "instruction": "First jump twice, then bow.",
+      "expected_steps": [
+        {
+          "commands": [
+            "action jump 2"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action bow 1"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "en_ordered_wave_sit",
+      "pair_id": "zh_ordered_wave_sit",
+      "source_instruction": "先挥左手，然后坐下。",
+      "source_language": "zh",
+      "language": "en",
+      "category": "ordered",
+      "instruction": "First wave your left hand, then sit down.",
+      "expected_steps": [
+        {
+          "commands": [
+            "wave left"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action sit 1"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "en_ordered_salsa_support",
+      "pair_id": "zh_ordered_salsa_support",
+      "source_instruction": "先跳萨尔萨舞，然后继续跳但只用左脚支撑。",
+      "source_language": "zh",
+      "language": "en",
+      "category": "ordered",
+      "instruction": "First dance salsa, then keep dancing but support yourself only on your left foot.",
+      "expected_steps": [
+        {
+          "commands": [
+            "dance salsa"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "support left"
+          ],
+          "mode": "continue"
+        }
+      ]
+    },
+    {
+      "id": "en_ordered_left_right_arm",
+      "pair_id": "zh_ordered_left_right_arm",
+      "source_instruction": "先抬左手，然后抬右手。",
+      "source_language": "zh",
+      "language": "en",
+      "category": "ordered",
+      "instruction": "First lift your left hand, then lift your right hand.",
+      "expected_steps": [
+        {
+          "commands": [
+            "joint left_shoulder z 45"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "joint right_shoulder z -45"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "en_negated_foot_lift",
+      "pair_id": "zh_negated_foot_lift",
+      "source_instruction": "不要抬左脚",
+      "source_language": "zh",
+      "language": "en",
+      "category": "semantic_boundary",
+      "instruction": "Do not lift your left foot.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "en_arm_lift_meaning",
+      "pair_id": "zh_arm_lift_meaning",
+      "source_instruction": "抬左手是什么意思",
+      "source_language": "zh",
+      "language": "en",
+      "category": "semantic_boundary",
+      "instruction": "What does raising your left hand mean?",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "en_jump_9_boundary",
+      "pair_id": "zh_jump_9_boundary",
+      "source_instruction": "跳九次",
+      "source_language": "zh",
+      "language": "en",
+      "category": "semantic_boundary",
+      "instruction": "Jump nine times.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "en_head_left_angle",
+      "pair_id": "zh_head_left_angle",
+      "source_instruction": "头向左转30度",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Turn your head 30 degrees to the left.",
+      "expected": [
+        "joint head y 30"
+      ]
+    },
+    {
+      "id": "en_left_ankle_up_20",
+      "pair_id": "zh_left_ankle_up_20",
+      "source_instruction": "左脚尖向上抬20度",
+      "source_language": "zh",
+      "language": "en",
+      "category": "joint_boundary",
+      "instruction": "Point your left toes up 20 degrees.",
+      "expected": [
+        "joint left_ankle x -20"
+      ]
+    },
+    {
+      "id": "en_mixed_ordered_jump_bow",
+      "pair_id": "zh_mixed_ordered_jump_bow",
+      "source_instruction": "先 jump twice，然后鞠躬。",
+      "source_language": "zh",
+      "language": "en",
+      "category": "ordered",
+      "instruction": "First jump twice, then bow.",
+      "expected_steps": [
+        {
+          "commands": [
+            "action jump 2"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action bow 1"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "en_sway_still_arms",
+      "pair_id": "zh_sway_still_arms",
+      "source_instruction": "左右摆动，双臂保持不动",
+      "source_language": "zh",
+      "language": "en",
+      "category": "action_parameters",
+      "instruction": "Sway from side to side and keep both arms still.",
+      "expected": [
+        "action sway 1\narms still"
+      ]
+    },
+    {
+      "id": "en_prone",
+      "pair_id": "zh_prone",
+      "source_instruction": "俯卧",
+      "source_language": "zh",
+      "language": "en",
+      "category": "unsupported",
+      "instruction": "Lie face down.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "en_handstand",
+      "pair_id": "zh_handstand",
+      "source_instruction": "倒立",
+      "source_language": "zh",
+      "language": "en",
+      "category": "unsupported",
+      "instruction": "Do a handstand.",
+      "expected": [
+        "unsupported"
+      ]
+    }
+  ]
+}

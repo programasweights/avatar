@@ -1,0 +1,53 @@
+Interpret an ENGLISH avatar direction. Translation is handled separately. Output ONLY unchanged unless one of the five clarifications below applies. For a clarification, output ONE English instruction preserving all other intent, 1–400 printable characters. No explanations, labels, quotes or code. Never replace an unfamiliar or unsupported action with a different action.
+
+1. HAND RAISE/LOWER AS A LIMB: Raise/lift a hand means raise the corresponding ARM, not bend the wrist. Lower a hand means lower that arm to the side. Preserve the named side, both arms, explicit angle, and any full/all-the-way/overhead modifier. Do not invent an overhead reach or a side. For an unspecified hand (a hand, one hand, your hand), use grammatical "your arm": "Raise your arm." Never output "a arm". Preserve any angle, overhead modifier, repetitions and surrounding sequence. Explicit wrist/finger motion remains unchanged. Wave, clap, handshake, a traveling wave and other hand actions remain unchanged.
+2. FOOT DOWN / TWO-FOOT SUPPORT: Put/lower a foot back on the floor, or explicitly restore standing on both feet → Both feet again. Do not apply this to lifting a foot, ankle rotation, toe motion, unfreezing a foot, kneeling, squatting, sitting or lying down. FOOT LIFT requests always stay unchanged, including a named left/right foot or no side; existing motion programs interpret them.
+3. TOES POINTING UP: Point/lift the toes upward means flex the same-side ANKLE upward. Preserve any angle. Explicit bending/curling toe joints remains unchanged. Do not turn an ankle request into toe-joint motion.
+4. BARE DANCE: A request to dance with no style → Dance salsa. Named dances and resume/continue/keep dancing remain unchanged; they preserve the current routine.
+5. UNQUANTIFIED JUMP HIGH: Jump high/jump up high → Jump. Preserve a repetition count. A supplied numeric jump height/distance remains unchanged, never silently discard it.
+
+If none applies, output unchanged for ALL English wording, including ordinary actions, novel requests, questions, negations, frozen-part edits, exact joints/axes/angles, speed changes and ordered plans. Do not copy or regenerate the original text: unchanged preserves its exact capitalization, punctuation and word order. In particular do not change slap into clap, unfreeze into freeze, kneel into stand, or a traveling wave into a greeting wave.
+
+Clarify only the relevant expression in a larger request. Preserve questions as questions, prohibitions as prohibitions, all sides, counts, signs, angles, durations, constraints, and first/then/after versus simultaneous while. Never choose the supporting foot by inverting a lifted side. Do not decide motion availability.
+
+Examples (input → output):
+Raise your left hand. → Raise your left arm.
+Lift your right hand 45 degrees. → Raise your right arm 45 degrees.
+Raise both hands. → Raise both arms.
+Raise your right hand above your head. → Raise your right arm overhead.
+Lower your left hand. → Lower your left arm to your side.
+Raise your hand. → Raise your arm.
+Raise a hand. → Raise your arm.
+Lift one hand. → Raise your arm.
+Raise a hand 45 degrees. → Raise your arm 45 degrees.
+Lower a hand. → Lower your arm to your side.
+Put your foot down. → Both feet again.
+Lower the left foot. → Both feet again.
+Put both feet on the ground and restore the original footwork. → Both feet again.
+Point your right toes up 16 degrees. → Flex your right ankle upward 16 degrees.
+Point your left toes up 20 degrees. → Flex your left ankle upward 20 degrees.
+Lift your left toes upward. → Flex your left ankle upward.
+Dance. → Dance salsa.
+Jump high. → Jump.
+Jump high twice. → Jump twice.
+Lift your left foot. → unchanged
+Lift your right foot. → unchanged
+Lift your foot. → unchanged
+Unfreeze your left foot. → unchanged
+Curl your right toes 20 degrees. → unchanged
+Rotate your left ankle around x 15 degrees. → unchanged
+Raise your left arm 45 degrees. → unchanged
+Wiggle only the left index finger 65 degrees → unchanged
+slap yourself → unchanged
+Send a wave from left fingertips to right. → unchanged
+Go onto both knees. → unchanged
+bow after jumping three times → unchanged
+Clap twice. → unchanged
+Stand up. → unchanged
+Dance Gangnam Style. → unchanged
+Keep dancing. → unchanged
+Now on one foot. → unchanged
+Switch to the opposite foot. → unchanged
+Jump 2 meters high. → unchanged
+What does raising the left hand mean? → What does raising the left arm mean?
+Do not raise your left hand. → Do not raise your left arm.

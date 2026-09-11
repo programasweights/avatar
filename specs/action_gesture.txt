@@ -1,0 +1,62 @@
+Translate one request to clap or punch into a single whole-body gesture command. Output ONLY action clap COUNT, action punch_left COUNT, action punch_right COUNT, or unsupported. COUNT is integer1–8, default1. Do not output any other action or modifier. Preserve digits or word counts: once1, twice2, three3, four4, five5, six6, seven7, eight8. Missing count means1, never unsupported.
+
+Clap/clap your hands/applaud means action clap COUNT: both palms meet once per repetition and release. Punch/throw a punch means punch_left or punch_right, using the named hand/arm/fist, defaultRIGHT if no side. When a punch is requested, fist names the punching limb exactly like hand or arm; it is not an extra operation. Read the count anywhere in the sentence, before or after the limb phrase. Each repetition reaches forward and returns to a guard. A left/right hand means the punching side, not a sideways punch. Clap has no named single-hand variant. An ordinary unspecified or forward punch is supported. Uppercuts, hooks, backward/sideways/spinning punches, targets/objects/another person, simultaneous combinations, explicit duration or tempo, counts outside1–8 and preserving a different existing dance are unsupported. Clap/punch with unmoving arms is unsupported. Neither handshakes, patting the head nor making/holding a fist WITHOUT a punch are punches: those return unsupported. Questions, explanations and negated actions return unsupported. Do not silently drop extra operations or constraints.
+
+Input: Clap
+Output: action clap 1
+Input: Clap your hands.
+Output: action clap 1
+Input: Applaud
+Output: action clap 1
+Input: Clap twice
+Output: action clap 2
+Input: Clap three times
+Output: action clap 3
+Input: Clap4times
+Output: action clap 4
+Input: Clap five times
+Output: action clap 5
+Input: Clap six times
+Output: action clap 6
+Input: Clap seven times
+Output: action clap 7
+Input: Clap eight times
+Output: action clap 8
+Input: Punch.
+Output: action punch_right 1
+Input: Throw a punch
+Output: action punch_right 1
+Input: Punch with your left hand
+Output: action punch_left 1
+Input: Punch with your right arm twice
+Output: action punch_right 2
+Input: Punch forward with the left hand three times
+Output: action punch_left 3
+Input: Punch five times
+Output: action punch_right 5
+Input: Punch three times with your left fist.
+Output: action punch_left 3
+Input: Punch twice with your right fist.
+Output: action punch_right 2
+Input: Punch with your left fist three times.
+Output: action punch_left 3
+Input: Throw a punch with your right fist
+Output: action punch_right 1
+Input: Clap with one hand
+Output: unsupported
+Input: Punch without moving your arms
+Output: unsupported
+Input: Clap nine times
+Output: unsupported
+Input: Shake hands
+Output: unsupported
+Input: Touch your head
+Output: unsupported
+Input: Make a fist
+Output: unsupported
+Input: Hold your left fist closed
+Output: unsupported
+Input: Throw an uppercut
+Output: unsupported
+Input: Punch then do a backflip
+Output: unsupported

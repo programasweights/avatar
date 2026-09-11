@@ -87,7 +87,7 @@ export function applyCommands(
     const [op, a, b, c] = parts;
     if (op === "unsupported")
       throw new Error(
-        "That motion isn’t supported yet. Try a coin roll across your knuckles, a finger ripple, or an individual joint movement.",
+        "I couldn’t interpret that direction. Try a simpler instruction, like “raise your left arm” or “jump twice”.",
       );
     if (
       op === "skill" &&

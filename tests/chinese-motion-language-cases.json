@@ -1,0 +1,564 @@
+{
+  "description": "Exact Chinese-to-motion regressions for visitor-request families, left/right mirrors, literal joint angles, counts 1–8, ordering, preserved constraints, and supported/unsupported neighboring domains. English wording is normalized remotely before the existing director; expected outputs still require the complete intended command or sequence.",
+  "cases": [
+    {
+      "id": "zh_lift_left_foot",
+      "category": "observed",
+      "instruction": "抬左脚",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "zh_lift_right_foot",
+      "category": "observed",
+      "instruction": "抬右脚",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "zh_lift_left_hand",
+      "category": "observed",
+      "instruction": "抬左手",
+      "expected": [
+        "joint left_shoulder z 45"
+      ]
+    },
+    {
+      "id": "zh_lift_right_hand",
+      "category": "observed",
+      "instruction": "抬右手",
+      "expected": [
+        "joint right_shoulder z -45"
+      ]
+    },
+    {
+      "id": "zh_raise_left_hand",
+      "category": "observed",
+      "instruction": "举左手",
+      "expected": [
+        "joint left_shoulder z 45"
+      ]
+    },
+    {
+      "id": "zh_raise_right_hand",
+      "category": "observed",
+      "instruction": "举右手",
+      "expected": [
+        "joint right_shoulder z -45"
+      ]
+    },
+    {
+      "id": "zh_bounce",
+      "category": "observed",
+      "instruction": "蹦",
+      "expected": [
+        "action jump 1"
+      ]
+    },
+    {
+      "id": "zh_jump",
+      "category": "observed",
+      "instruction": "跳",
+      "expected": [
+        "action jump 1"
+      ]
+    },
+    {
+      "id": "zh_wave_left_hand",
+      "category": "observed",
+      "instruction": "摆左手",
+      "expected": [
+        "wave left"
+      ]
+    },
+    {
+      "id": "zh_sway",
+      "category": "observed",
+      "instruction": "左右摆动",
+      "expected": [
+        "action sway 1"
+      ]
+    },
+    {
+      "id": "zh_bow",
+      "category": "observed",
+      "instruction": "鞠躬",
+      "expected": [
+        "action bow 1"
+      ]
+    },
+    {
+      "id": "zh_lift_left_foot_polite",
+      "category": "support",
+      "instruction": "请把左脚抬起来",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "zh_balance_left",
+      "category": "support",
+      "instruction": "只用左脚站立",
+      "expected": [
+        "support left"
+      ]
+    },
+    {
+      "id": "zh_balance_right",
+      "category": "support",
+      "instruction": "右脚支撑身体",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "zh_opposite_foot",
+      "category": "support",
+      "instruction": "换另一只脚支撑",
+      "expected": [
+        "support other"
+      ]
+    },
+    {
+      "id": "zh_both_feet",
+      "category": "support",
+      "instruction": "双脚着地，恢复原来的脚步",
+      "expected": [
+        "support both"
+      ]
+    },
+    {
+      "id": "zh_left_arm_overhead",
+      "category": "joint_boundary",
+      "instruction": "左手举过头顶",
+      "expected": [
+        "arm left still\njoint left_shoulder z 180"
+      ]
+    },
+    {
+      "id": "zh_right_arm_overhead",
+      "category": "joint_boundary",
+      "instruction": "右手举过头顶",
+      "expected": [
+        "arm right still\njoint right_shoulder z -180"
+      ]
+    },
+    {
+      "id": "zh_left_leg_angle",
+      "category": "joint_boundary",
+      "instruction": "抬左腿45度",
+      "expected": [
+        "joint left_hip x -45"
+      ]
+    },
+    {
+      "id": "zh_right_leg_angle",
+      "category": "joint_boundary",
+      "instruction": "右腿抬高30度",
+      "expected": [
+        "joint right_hip x -30"
+      ]
+    },
+    {
+      "id": "zh_left_wrist_axis",
+      "category": "joint_boundary",
+      "instruction": "左手腕绕x轴转20度",
+      "expected": [
+        "joint left_wrist x 20"
+      ]
+    },
+    {
+      "id": "zh_right_wrist_axis",
+      "category": "joint_boundary",
+      "instruction": "右手腕绕y轴转负13度",
+      "expected": [
+        "joint right_wrist y -13"
+      ]
+    },
+    {
+      "id": "zh_left_ankle_axis",
+      "category": "joint_boundary",
+      "instruction": "左脚踝绕x轴转15度",
+      "expected": [
+        "joint left_ankle x 15"
+      ]
+    },
+    {
+      "id": "zh_right_ankle_up",
+      "category": "joint_boundary",
+      "instruction": "右脚尖向上抬16度",
+      "expected": [
+        "joint right_ankle x -16"
+      ]
+    },
+    {
+      "id": "zh_left_index_wiggle",
+      "category": "joint_boundary",
+      "instruction": "只摆动左手食指65度",
+      "expected": [
+        "wiggle left_index_1 z 65"
+      ]
+    },
+    {
+      "id": "zh_right_middle_tip",
+      "category": "joint_boundary",
+      "instruction": "弯曲右手中指末节18度",
+      "expected": [
+        "joint right_middle_3 z -18"
+      ]
+    },
+    {
+      "id": "zh_left_wave_synonym",
+      "category": "wave",
+      "instruction": "用左手挥手",
+      "expected": [
+        "wave left"
+      ]
+    },
+    {
+      "id": "zh_right_wave",
+      "category": "wave",
+      "instruction": "用右手挥手",
+      "expected": [
+        "wave right"
+      ]
+    },
+    {
+      "id": "zh_jump_2",
+      "category": "count",
+      "instruction": "跳两次",
+      "expected": [
+        "action jump 2"
+      ]
+    },
+    {
+      "id": "zh_jump_3",
+      "category": "count",
+      "instruction": "蹦三下",
+      "expected": [
+        "action jump 3"
+      ]
+    },
+    {
+      "id": "zh_jump_4",
+      "category": "count",
+      "instruction": "跳4次",
+      "expected": [
+        "action jump 4"
+      ]
+    },
+    {
+      "id": "zh_jump_5",
+      "category": "count",
+      "instruction": "跳五次",
+      "expected": [
+        "action jump 5"
+      ]
+    },
+    {
+      "id": "zh_jump_6",
+      "category": "count",
+      "instruction": "连续跳六下",
+      "expected": [
+        "action jump 6"
+      ]
+    },
+    {
+      "id": "zh_jump_7",
+      "category": "count",
+      "instruction": "跳7次",
+      "expected": [
+        "action jump 7"
+      ]
+    },
+    {
+      "id": "zh_jump_8",
+      "category": "count",
+      "instruction": "跳八次",
+      "expected": [
+        "action jump 8"
+      ]
+    },
+    {
+      "id": "zh_left_hop_2",
+      "category": "action_parameters",
+      "instruction": "用左脚跳两次",
+      "expected": [
+        "action jump 2 left"
+      ]
+    },
+    {
+      "id": "zh_right_hop_8",
+      "category": "action_parameters",
+      "instruction": "用右脚跳八下",
+      "expected": [
+        "action jump 8 right"
+      ]
+    },
+    {
+      "id": "zh_bow_3",
+      "category": "count",
+      "instruction": "鞠躬三次",
+      "expected": [
+        "action bow 3"
+      ]
+    },
+    {
+      "id": "zh_sway_2",
+      "category": "count",
+      "instruction": "左右摇摆两次",
+      "expected": [
+        "action sway 2"
+      ]
+    },
+    {
+      "id": "zh_jump_still_arms",
+      "category": "action_parameters",
+      "instruction": "跳两次，双臂保持不动",
+      "expected": [
+        "action jump 2\narms still"
+      ]
+    },
+    {
+      "id": "zh_kick_still_arms",
+      "category": "action_parameters",
+      "instruction": "不要动双臂，踢一下",
+      "expected": [
+        "action kick_right 1\narms still"
+      ]
+    },
+    {
+      "id": "zh_stop",
+      "category": "playback",
+      "instruction": "停下来",
+      "expected": [
+        "playback pause"
+      ]
+    },
+    {
+      "id": "zh_resume",
+      "category": "playback",
+      "instruction": "继续播放",
+      "expected": [
+        "playback resume"
+      ]
+    },
+    {
+      "id": "zh_run",
+      "category": "basic_action",
+      "instruction": "跑起来",
+      "expected": [
+        "action run 1"
+      ]
+    },
+    {
+      "id": "zh_kneel",
+      "category": "basic_action",
+      "instruction": "跪下",
+      "expected": [
+        "action kneel 1"
+      ]
+    },
+    {
+      "id": "zh_lie_down",
+      "category": "basic_action",
+      "instruction": "躺下",
+      "expected": [
+        "action lie_down 1"
+      ]
+    },
+    {
+      "id": "zh_salsa",
+      "category": "dance_boundary",
+      "instruction": "跳萨尔萨舞",
+      "expected": [
+        "dance salsa"
+      ]
+    },
+    {
+      "id": "zh_coin_knuckles",
+      "category": "dexterity_boundary",
+      "instruction": "让硬币在左手指关节上滚动",
+      "expected": [
+        "skill coin_roll left forward"
+      ]
+    },
+    {
+      "id": "zh_coin_head",
+      "category": "unsupported",
+      "instruction": "把硬币放在头顶保持平衡",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "zh_juggle_three",
+      "category": "unsupported",
+      "instruction": "用手抛接三个球",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "zh_ordered_jump_bow",
+      "category": "ordered",
+      "instruction": "先跳两次，然后鞠躬。",
+      "expected_steps": [
+        {
+          "commands": [
+            "action jump 2"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action bow 1"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "zh_ordered_wave_sit",
+      "category": "ordered",
+      "instruction": "先挥左手，然后坐下。",
+      "expected_steps": [
+        {
+          "commands": [
+            "wave left"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action sit 1"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "zh_ordered_salsa_support",
+      "category": "ordered",
+      "instruction": "先跳萨尔萨舞，然后继续跳但只用左脚支撑。",
+      "expected_steps": [
+        {
+          "commands": [
+            "dance salsa"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "support left"
+          ],
+          "mode": "continue"
+        }
+      ]
+    },
+    {
+      "id": "zh_ordered_left_right_arm",
+      "category": "ordered",
+      "instruction": "先抬左手，然后抬右手。",
+      "expected_steps": [
+        {
+          "commands": [
+            "joint left_shoulder z 45"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "joint right_shoulder z -45"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "zh_negated_foot_lift",
+      "category": "semantic_boundary",
+      "instruction": "不要抬左脚",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "zh_arm_lift_meaning",
+      "category": "semantic_boundary",
+      "instruction": "抬左手是什么意思",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "zh_jump_9_boundary",
+      "category": "semantic_boundary",
+      "instruction": "跳九次",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "zh_head_left_angle",
+      "category": "joint_boundary",
+      "instruction": "头向左转30度",
+      "expected": [
+        "joint head y 30"
+      ]
+    },
+    {
+      "id": "zh_left_ankle_up_20",
+      "category": "joint_boundary",
+      "instruction": "左脚尖向上抬20度",
+      "expected": [
+        "joint left_ankle x -20"
+      ]
+    },
+    {
+      "id": "zh_mixed_ordered_jump_bow",
+      "category": "ordered",
+      "instruction": "先 jump twice，然后鞠躬。",
+      "expected_steps": [
+        {
+          "commands": [
+            "action jump 2"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action bow 1"
+          ],
+          "mode": "perform"
+        }
+      ]
+    },
+    {
+      "id": "zh_sway_still_arms",
+      "category": "action_parameters",
+      "instruction": "左右摆动，双臂保持不动",
+      "expected": [
+        "action sway 1\narms still"
+      ]
+    },
+    {
+      "id": "zh_prone",
+      "category": "unsupported",
+      "instruction": "俯卧",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "zh_handstand",
+      "category": "unsupported",
+      "instruction": "倒立",
+      "expected": [
+        "unsupported"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+Classify the ORIGINAL user input, in ANY language (English, Chinese, other languages, or mixed), before trusting any translation. Does the user ask the avatar to perform/change/hold a movement, rather than discuss it or prohibit a new operation? The same intent rules apply across languages. Read question words and negation in the original; never strip them and classify only an embedded motion phrase. Output ONLY command or other. This function does NOT decide which motions are implemented. A request for any action, including an unsupported action such as a handstand, juggling or a fist, is command; separate motion functions decide capability. Do not extract joints or angles.
+
+command: positive instructions, polite requests, suggestions to demonstrate something, new poses, existing-motion edits, freezes/holds, restores, and constraints attached to an actual requested action. Could you raise your arm? is a polite command despite its question mark. Keep the thumb still and do not let the thumb move while the other fingers ripple are positive requests to HOLD the current thumb pose. Kick without moving your arms is a positive action plus a constraint. A request may be one word. Body part, side and count are optional.
+
+other: explanations, tutorials, definitions, meaning questions, hypothetical or past-action descriptions with no request to act. What does raising an arm mean? is discussion, not an arm raise. Also other: standalone prohibitions of a specific NEW operation such as do not lift a foot, don't raise an arm, don't bend a knee, don't wiggle a thumb, don't freeze a finger, don't reverse it. Do not strip the negation and execute it. Distinguish those from explicitly holding existing motion still: keep still, stop this joint moving, don't let this part move while the rest continues are command. An unsupported or unknown requested action still returns command, never other merely because it is unusual.
+
+Polite ability-question forms asking the avatar to act are command (Could you raise your arm? / 能把左手抬起来吗？). Meaning, explanation, tutorial and hypothetical questions are other (What does raising an arm mean? / 抬左手是什么意思 / 如何抬左手). A question mark alone does not decide. New-operation prohibitions are other (Do not lift your left foot / 不要抬左脚). An instruction to stop or hold existing motion is command (Don't move / 别动 / 保持手臂不动); keep attached constraints as command when another action is requested. Preserve these distinctions for entire ordered requests too. Unsupported actions remain command.
+
+Input: 抬左手是什么意思
+Output: other
+Input: 请抬左手
+Output: command
+Input: 能把左手抬起来吗？
+Output: command
+Input: 如何弯曲右膝盖？
+Output: other
+Input: 弯曲右膝盖
+Output: command
+Input: 不要抬左脚
+Output: other
+Input: 抬左脚
+Output: command
+Input: 不要冻结左手食指
+Output: other
+Input: 冻结左手食指
+Output: command
+Input: 别动左手拇指，其他手指继续动
+Output: command
+Input: 不要动双臂，踢一下
+Output: command
+Input: 不要踢腿
+Output: other
+Input: 我昨天抬了左手
+Output: other
+Input: 如果抬左手会怎样？
+Output: other
+Input: 先跳两次，然后鞠躬
+Output: command
+Input: 先跳两次然后鞠躬是什么意思？
+Output: other
+Input: ¿Qué significa levantar el brazo izquierdo?
+Output: other
+Input: ¿Puedes levantar el brazo izquierdo?
+Output: command
+Input: No levantes el pie izquierdo.
+Output: other
+Input: Mantén los brazos quietos mientras saltas.
+Output: command
+Input: Comment lever le bras gauche ?
+Output: other
+Input: Peux-tu lever le bras gauche ?
+Output: command
+Input: 左手を上げてください
+Output: command
+Input: 左手を上げるとはどういう意味？
+Output: other
+
+Input: What does raising the left arm mean?
+Output: other
+Input: Could you raise the left arm?
+Output: command
+Input: Explain how to bend the right knee
+Output: other
+Input: Please bend the right knee
+Output: command
+Input: Do not lift your left foot
+Output: other
+Input: Lift your left foot
+Output: command
+Input: Don't raise either arm
+Output: other
+Input: Raise both arms
+Output: command
+Input: Do not freeze the left index finger
+Output: other
+Input: Freeze the left index finger
+Output: command
+Input: Don't wiggle your left thumb
+Output: other
+Input: Do not let the left thumb move while the other fingers ripple
+Output: command
+Input: Keep the right wrist still
+Output: command
+Input: Stop only the ring finger
+Output: command
+Input: How does rolling a coin across the knuckles work?
+Output: other
+Input: Could you roll a coin across your left knuckles?
+Output: command
+Input: What is a finger ripple?
+Output: other
+Input: Tell me about Gangnam Style
+Output: other
+Input: Wave hello with your right hand
+Output: command
+Input: I raised my left arm yesterday
+Output: other
+Input: If someone bent a knee what would happen?
+Output: other
+Input: Show me a knee bend
+Output: command
+Input: Kick without moving your arms
+Output: command
+Input: Keep the dance going but pause the left thumb
+Output: command
+Input: Hold the left index finger at 30 degrees
+Output: command
+Input: Freeze the thumb at a new 30 degree angle
+Output: command
+Input: Let it move again
+Output: command
+Input: Restore
+Output: command
+Input: Use the other hand
+Output: command
+Input: Make it twice as fast
+Output: command
+Input: Stand on your hands
+Output: command
+Input: Juggle more slowly
+Output: command
+Input: Make a fist with your left hand
+Output: command

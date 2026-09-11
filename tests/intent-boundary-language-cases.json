@@ -1,0 +1,157 @@
+{
+  "description": "Balanced full-director regressions distinguishing informational questions and standalone prohibitions from polite motion requests and explicit current-pose holds. These require complete command behavior, not only a dispatch label.",
+  "cases": [
+    {
+      "id": "intent_arm_meaning",
+      "category": "informational",
+      "instruction": "What does raising the left arm mean?",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "intent_polite_arm_raise",
+      "category": "positive_motion",
+      "instruction": "Could you raise the left arm?",
+      "expected": [
+        "joint left_shoulder z 45"
+      ]
+    },
+    {
+      "id": "intent_explain_knee",
+      "category": "informational",
+      "instruction": "Explain how to bend the right knee.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "intent_polite_knee_bend",
+      "category": "positive_motion",
+      "instruction": "Please bend the right knee.",
+      "expected": [
+        "joint right_knee x 45"
+      ]
+    },
+    {
+      "id": "intent_prohibit_foot_lift",
+      "category": "prohibition",
+      "instruction": "Do not lift your left foot.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "intent_lift_foot",
+      "category": "positive_motion",
+      "instruction": "Lift your left foot.",
+      "expected": [
+        "support right"
+      ]
+    },
+    {
+      "id": "intent_prohibit_arm_raise",
+      "category": "prohibition",
+      "instruction": "Don't raise either arm.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "intent_raise_both_arms",
+      "category": "positive_motion",
+      "instruction": "Raise both arms.",
+      "expected": [
+        "joint left_shoulder z 45\njoint right_shoulder z -45"
+      ]
+    },
+    {
+      "id": "intent_prohibit_freeze",
+      "category": "prohibition",
+      "instruction": "Do not freeze the left index finger.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "intent_freeze_index",
+      "category": "positive_edit",
+      "instruction": "Freeze the left index finger.",
+      "expected": [
+        "freeze left_index"
+      ]
+    },
+    {
+      "id": "intent_prohibit_wiggle",
+      "category": "prohibition",
+      "instruction": "Don't wiggle your left thumb.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "intent_hold_thumb_during_ripple",
+      "category": "positive_edit",
+      "instruction": "Do not let the left thumb move while the other fingers ripple.",
+      "expected": [
+        "freeze left_thumb"
+      ]
+    },
+    {
+      "id": "intent_hold_wrist",
+      "category": "positive_edit",
+      "instruction": "Keep the right wrist still.",
+      "expected": [
+        "freeze right_wrist"
+      ]
+    },
+    {
+      "id": "intent_stop_ring_only",
+      "category": "positive_edit",
+      "instruction": "Stop only the ring finger.",
+      "expected": [
+        "freeze ring"
+      ]
+    },
+    {
+      "id": "intent_coin_explanation",
+      "category": "informational",
+      "instruction": "How does rolling a coin across the knuckles work?",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "intent_polite_coin_roll",
+      "category": "positive_dexterity",
+      "instruction": "Could you roll a coin across your left knuckles?",
+      "expected": [
+        "skill coin_roll left forward"
+      ]
+    },
+    {
+      "id": "intent_ripple_definition",
+      "category": "informational",
+      "instruction": "What is a finger ripple?",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "intent_gangnam_explanation",
+      "category": "informational",
+      "instruction": "Tell me about Gangnam Style.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "intent_right_hand_greeting",
+      "category": "positive_control",
+      "instruction": "Wave hello with your right hand.",
+      "expected": [
+        "wave right"
+      ]
+    }
+  ]
+}

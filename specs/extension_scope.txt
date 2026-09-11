@@ -1,0 +1,100 @@
+Classify which new motion family an avatar request actually asks to perform. Output ONLY sway, gesture, or none. This is ONLY a classification, never emit an action, count or explanation. Most inputs are none. Counts, side words, arms-still constraints and politeness do NOT change the family of the main requested movement.
+
+sway: standing whole-body or torso rocking/swaying left and right, side to side. Includes bare sway. It is a left/right weight shift, not a turn, roll, jump, kick, squat, kneel or hand wave. Requests about an individual wrist, ankle, head or finger are none. A barrel ROLL is none, not a body ROCK/sway. A speed/reverse/edit request preserving an existing sway is none; creating a new sway is sway.
+gesture: actually clapping/applauding or punching/throwing a punch. Only those two action families belong here. Handshakes, patting the head, waving, grasping, fist poses without a punch, finger tricks, coin rolls and other gestures are none. A request to clap/punch remains gesture even if a specialist must reject an extra incompatible constraint.
+none: EVERYTHING ELSE, including all basic actions (walk, run, jump, hop, bow, crouch, squat, kneel, sit, lie down, kick, turn), dances, arm styles, joint edits, support-foot changes, playback, relative controls, unsupported tricks, questions and explanations. Jump eight times is none. Kneel with still arms is none. Kick without moving arms is none. Never classify an action as sway just because it includes a count, side or still-arms instruction.
+
+Input: Rock your body from side to side.
+Output: sway
+Input: Sway your torso from side to side
+Output: sway
+Input: Sway twice without moving your arms
+Output: sway
+Input: Sway eight times
+Output: sway
+Input: Sway on one foot
+Output: sway
+Input: Make the sway faster
+Output: none
+Input: Keep swaying but bend the left finger
+Output: none
+Input: Clap your hands
+Output: gesture
+Input: Applaud
+Output: gesture
+Input: Clap twice
+Output: gesture
+Input: Punch
+Output: gesture
+Input: Throw a punch with your left hand
+Output: gesture
+Input: Punch right three times
+Output: gesture
+Input: Shake hands
+Output: none
+Input: Touch your head
+Output: none
+Input: Make a fist
+Output: none
+Input: Wave your left hand
+Output: none
+Input: Wave both arms
+Output: none
+Input: Jump eight times
+Output: none
+Input: Jump seven times
+Output: none
+Input: Jump twice without moving your arms
+Output: none
+Input: Jump on one leg
+Output: none
+Input: Hop on your right foot eight times
+Output: none
+Input: Kneel on both knees
+Output: none
+Input: Kneel with your arms still
+Output: none
+Input: Get down on your knees
+Output: none
+Input: Squat
+Output: none
+Input: Crouch
+Output: none
+Input: Lie flat on the floor
+Output: none
+Input: Kick without moving arms
+Output: none
+Input: Kick sideways with the left leg
+Output: none
+Input: Kick to your right side twice
+Output: none
+Input: Do a front kick with your right leg
+Output: none
+Input: Bow
+Output: none
+Input: Run
+Output: none
+Input: Turn left 180 degrees
+Output: none
+Input: Dance salsa
+Output: none
+Input: Dance Gangnam Style
+Output: none
+Input: Both feet again
+Output: none
+Input: Balance on one foot
+Output: none
+Input: Lift your left arm
+Output: none
+Input: Wiggle the left index finger 65 degrees
+Output: none
+Input: Bend the right wrist
+Output: none
+Input: Roll a coin across both hands
+Output: none
+Input: Jump up and do a barrel roll
+Output: none
+Input: Stand on your hands
+Output: none
+Input: Juggle more slowly
+Output: none

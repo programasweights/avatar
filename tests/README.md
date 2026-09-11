@@ -142,3 +142,53 @@ AVATAR_LIVE_PUBLIC=1 BASE_URL=https://programasweights.com \
 `genericSupport.spec.ts` checks the support constraints against both bundled
 rigs. `genericSupportUI.spec.ts` uses fixed command responses to cover the same
 scene transitions without inference.
+
+## Paired language requests and body gestures
+
+`chinese-motion-language-cases.json` checks ordinary arm raises, raised versus
+supporting feet, literal joint angles, counts 1–8, ordered and mixed-language
+steps, playback, and still-arm constraints. Its boundary cases require rejection
+of negated actions, informational questions, and unsupported counts or props.
+The remote `request_intent` program checks the original wording first.
+`language_scope` then identifies requests that need literal English translation.
+English and translated requests both pass through `meaning_scope`. It preserves
+ordinary directions exactly and sends anatomical or default-action wording to
+`motion_language` only when clarification is needed. Both paths then use the
+same motion specialists. Translation and motion interpretation have separate
+specifications.
+`translated-motion-language-cases.json` pairs each Chinese request with natural
+English wording and identical expectations; hand and foot wording stays intact
+in those translations. Each case requires an exact final command or every step
+of its sequence.
+
+`recent-motion-language-cases.json` adds paired visitor requests for putting a
+foot down, raising both hands, clapping, punching, and common body actions.
+Handshake, head-touch, splits, and backbend cases remain marked `decline_only`:
+rejecting them does not count as successfully performing those motions.
+
+```sh
+.venv/bin/python tools/evaluate-launch.py --infer-url https://programasweights.com/api/v1/infer \
+  --cases tests/chinese-motion-language-cases.json --output /tmp/chinese-motion-language.json
+.venv/bin/python tools/evaluate-launch.py --infer-url https://programasweights.com/api/v1/infer \
+  --cases tests/translated-motion-language-cases.json --output /tmp/translated-motion-language.json
+.venv/bin/python tools/evaluate-launch.py --infer-url https://programasweights.com/api/v1/infer \
+  --cases tests/recent-motion-language-cases.json --output /tmp/recent-motion-language.json
+```
+
+Run the corresponding real public inputs sequentially after deployment:
+
+```sh
+AVATAR_LIVE_PUBLIC=1 BASE_URL=https://programasweights.com \
+  npx playwright test tests/public-chinese-motion.spec.ts --workers=1
+```
+
+The public checks cover both `/avatar` and `/gangnam`, measuring the raised foot,
+arm angle, continuing footwork during a wave, jump count, forward bow, sway,
+foot lowering, palm contact, and forward fist extension. They record API responses
+and rendered poses. The rig tests check both characters' planted feet, lateral
+weight transfer, complete repeat cycles, clap contacts, closed fists, and
+composition with other actions without inference:
+
+```sh
+npx playwright test tests/bodySway.spec.ts tests/gestureBodyActions.spec.ts tests/genericSupport.spec.ts --workers=1
+```

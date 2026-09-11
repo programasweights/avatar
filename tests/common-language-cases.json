@@ -585,6 +585,30 @@
       ],
       "category": "everyday_composition",
       "source": "Authored composition"
+    },
+    {
+      "id": "sway_body",
+      "instruction": "Rock your body from side to side.",
+      "expected": [
+        "action sway 1"
+      ],
+      "category": "sway"
+    },
+    {
+      "id": "sway_twice",
+      "instruction": "Rock your body from side to side twice.",
+      "expected": [
+        "action sway 2"
+      ],
+      "category": "sway"
+    },
+    {
+      "id": "sway_still",
+      "instruction": "Rock your body from side to side with your arms still.",
+      "expected": [
+        "action sway 1\narms still"
+      ],
+      "category": "sway"
     }
   ]
 }

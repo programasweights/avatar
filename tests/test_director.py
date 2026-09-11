@@ -12,29 +12,53 @@ import unittest
 from unittest.mock import patch
 
 from director import (
-    JOINTS, PROGRAMS, _load_function, direct, joint_commands,
+    JOINTS, PROGRAMS, _load_function, direct, joint_commands, local_infer,
     transform_command, validate_body, validate_dexterity, validate_edit, validate_follow_up, validate_actions, validate_dance_extension,
 )
 from paw_worker import serve
 
 
+def setUpModule():
+    global _focused_programs
+    _focused_programs = patch.dict(PROGRAMS, {
+        name: PROGRAMS.get(name, f"test-{name}") for name in ("body_sway", "request_intent", "motion_language", "extension_scope", "action_gesture", "language_scope", "motion_translation", "meaning_scope")
+    })
+    _focused_programs.start()
+
+
+def tearDownModule():
+    _focused_programs.stop()
+
+
 class Inference:
     def __init__(self, **outputs):
-        self.outputs = {"sequence": "single", "leg_control": "none", "leg_scope": "yes", "action_intent": "none", "arm_control": "none", "playback_control": "none", "dance_extension": "none", "dance_confirmation": "yes" if outputs.get("dance_extension", "none") != "none" else "no", "dance_fallback": "none", "activity_scope": "other", "activity_confirmation": "basic" if outputs.get("activity_scope") == "basic" else "other", "action_composition": "unsupported", "edit_intent": "none", "edit_fallback": "none", "current_control": "unsupported", **outputs}
+        self.outputs = {"meaning_scope": "clarify" if "motion_language" in outputs else "keep", "language_scope": "english", "sequence": "single", "extension_scope": "none", "body_sway": "none", "request_intent": "command", "leg_control": "none", "leg_scope": "yes", "action_intent": "none", "arm_control": "none", "playback_control": "none", "dance_extension": "none", "dance_confirmation": "yes" if outputs.get("dance_extension", "none") != "none" else "no", "dance_fallback": "none", "activity_scope": "other", "activity_confirmation": "basic" if outputs.get("activity_scope") == "basic" else "other", "action_composition": "unsupported", "edit_intent": "none", "edit_fallback": "none", "current_control": "unsupported", **outputs}
         self.calls = []
 
     @property
     def atomic_calls(self):
         """Isolate the original expert graph; calls retains every gate call."""
-        return [call for call in self.calls if call[0] not in {"sequence", "leg_control", "action_intent", "arm_control"}]
+        return [call for call in self.calls if call[0] not in {"sequence", "leg_control", "action_intent", "arm_control", "body_sway", "request_intent", "motion_language", "extension_scope", "action_gesture", "language_scope", "motion_translation", "meaning_scope"}]
 
     def __call__(self, program_id, text):
         name = next(name for name, pid in PROGRAMS.items() if pid == program_id)
         self.calls.append((name, text))
-        return self.outputs[name]
+        if name == "motion_language" and name not in self.outputs:
+            return "unchanged"
+        output = self.outputs[name]
+        return output(text) if callable(output) else output
 
 
-class DirectorTest(unittest.TestCase):
+class MotionAssertions(unittest.TestCase):
+    def assertRejected(self, result, pattern=None):
+        self.assertEqual(result["output"], "unsupported")
+        self.assertEqual(result["trace"]["route"], "unsupported")
+        self.assertTrue(result["trace"]["validation_error"])
+        if pattern is not None:
+            self.assertRegex(result["trace"]["validation_error"], pattern)
+
+
+class DirectorTest(MotionAssertions):
 
     def test_recognized_arm_edit_never_calls_a_conflicting_leg_gate(self):
         cases = [
@@ -48,9 +72,7 @@ class DirectorTest(unittest.TestCase):
                 infer = Inference(arm_control=arm, leg_control=wrong_leg)
                 result = direct(instruction, infer)
                 self.assertEqual(result["output"], arm)
-                self.assertEqual([name for name, _ in infer.calls], [
-                    "sequence", "playback_control", "action_intent", "arm_control",
-                ])
+                self.assertEqual([name for name, _ in infer.calls], ['request_intent', 'language_scope', 'meaning_scope', 'sequence', 'extension_scope', 'playback_control', 'action_intent', 'arm_control'])
                 self.assertNotIn("leg_control", result["trace"])
 
     def test_confirmed_body_action_never_calls_a_conflicting_leg_gate(self):
@@ -60,9 +82,7 @@ class DirectorTest(unittest.TestCase):
                                   arm_control="arms still", leg_control="freeze both_legs")
                 result = direct("Perform a new whole-body action.", infer)
                 self.assertEqual(result["output"], action)
-                self.assertEqual([name for name, _ in infer.calls], [
-                    "sequence", "playback_control", "action_intent", "activity_scope", "action",
-                ])
+                self.assertEqual([name for name, _ in infer.calls], ['request_intent', 'language_scope', 'meaning_scope', 'sequence', 'extension_scope', 'playback_control', 'action_intent', 'activity_scope', 'action'])
                 self.assertNotIn("leg_control", result["trace"])
 
     def test_leg_controls_after_arm_abstention_only_defer_restore_until_dance_abstains(self):
@@ -71,10 +91,7 @@ class DirectorTest(unittest.TestCase):
                 infer = Inference(leg_control=leg)
                 result = direct(instruction, infer)
                 self.assertEqual(result["output"], leg)
-                self.assertEqual([name for name, _ in infer.calls], [
-                    "sequence", "playback_control", "action_intent", "arm_control", "leg_control", "leg_scope",
-                    *(["dance_extension", "dance_confirmation"] if leg.startswith("restore ") else []),
-                ])
+                self.assertEqual([name for name, _ in infer.calls], ['request_intent', 'language_scope', 'meaning_scope', 'sequence', 'extension_scope', 'playback_control', 'action_intent', 'arm_control', 'leg_control', 'leg_scope', *(['dance_extension', 'dance_confirmation'] if leg.startswith('restore ') else [])])
                 self.assertEqual(result["trace"]["route"], "edit")
                 self.assertNotIn("activity_scope", result["trace"])
 
@@ -123,11 +140,8 @@ class DirectorTest(unittest.TestCase):
         for raw in ["", "none", "true", "unsupported", "yes\nno"]:
             with self.subTest(raw=raw):
                 infer = Inference(leg_control="restore both_legs", leg_scope=raw)
-                with self.assertRaisesRegex(ValueError, "Invalid leg anatomy scope"):
-                    direct("Resume the footwork.", infer)
-                self.assertEqual([name for name, _ in infer.calls], [
-                    "sequence", "playback_control", "action_intent", "arm_control", "leg_control", "leg_scope",
-                ])
+                self.assertRejected(direct('Resume the footwork.', infer), 'Invalid leg anatomy scope')
+                self.assertEqual([name for name, _ in infer.calls], ['request_intent', 'language_scope', 'meaning_scope', 'sequence', 'extension_scope', 'playback_control', 'action_intent', 'arm_control', 'leg_control', 'leg_scope'])
 
     def test_unconfirmed_new_action_candidate_preserves_arm_hand_and_coin_routes_without_repeat_classification(self):
         cases = [
@@ -163,10 +177,7 @@ class DirectorTest(unittest.TestCase):
                                   current_control=control, action=action, action_composition="action lie_down 1")
                 result = direct("A candidate new action or relative edit.", infer)
                 self.assertEqual(result["output"], expected)
-                self.assertEqual([name for name, _ in infer.calls], [
-                    "sequence", "playback_control", "action_intent", "activity_scope",
-                    "activity_confirmation", "current_control", *(["action"] if control == "unsupported" else []),
-                ])
+                self.assertEqual([name for name, _ in infer.calls], ['request_intent', 'language_scope', 'meaning_scope', 'sequence', 'extension_scope', 'playback_control', 'action_intent', 'activity_scope', 'activity_confirmation', 'current_control', *(['action'] if control == 'unsupported' else [])])
                 self.assertNotIn("action_composition", result["trace"])
 
     def test_invalid_lazy_activity_or_control_response_cannot_execute_an_action(self):
@@ -177,8 +188,7 @@ class DirectorTest(unittest.TestCase):
         ]:
             with self.subTest(outputs=outputs):
                 infer = Inference(action_intent="single", **outputs)
-                with self.assertRaisesRegex(ValueError, error):
-                    direct("A candidate body action.", infer)
+                self.assertRejected(direct('A candidate body action.', infer), error)
                 self.assertNotIn("action", [name for name, _ in infer.calls])
                 self.assertNotIn("arm_control", [name for name, _ in infer.calls])
 
@@ -187,12 +197,10 @@ class DirectorTest(unittest.TestCase):
                           arm_control="arms still", dance_extension="support left")
         result = direct("Kneel down while keeping both arms still.", infer)
         self.assertEqual(result, {"output": "action kneel 1\narms still", "trace": {
-            "sequence": "single", "playback_control": "none",
-            "action_intent": "single", "activity_scope": "basic", "action": "action kneel 1\narms still", "route": "action",
+            "meaning_scope": "keep", "normalized_instruction": "Kneel down while keeping both arms still.", "language_scope": "english", "request_intent": "command", "extension_scope": "none", "sequence": "single", "playback_control": "none",
+            "action_intent": "single", "activity_scope": "basic",  "action": "action kneel 1\narms still", "route": "action",
         }})
-        self.assertEqual([name for name, _ in infer.calls], [
-            "sequence", "playback_control", "action_intent", "activity_scope", "action",
-        ])
+        self.assertEqual([name for name, _ in infer.calls], ['request_intent', 'language_scope', 'meaning_scope', 'sequence', 'extension_scope', 'playback_control', 'action_intent', 'activity_scope', 'action'])
 
     def test_single_action_abstention_never_falls_back_to_a_different_posture(self):
         for raw in ["unsupported", "action lie_prone 1", "action lie_down 0"]:
@@ -219,10 +227,7 @@ class DirectorTest(unittest.TestCase):
                                   arm_control="arm left wave")
                 result = direct("Walk and wave.", infer)
                 self.assertEqual(result["output"], expected)
-                self.assertEqual([name for name, _ in infer.calls], [
-                    "sequence", "playback_control", "action_intent", "activity_scope", "action",
-                    *(["action_composition"] if primary == "unsupported" else []),
-                ])
+                self.assertEqual([name for name, _ in infer.calls], ['request_intent', 'language_scope', 'meaning_scope', 'sequence', 'extension_scope', 'playback_control', 'action_intent', 'activity_scope', 'action', *(['action_composition'] if primary == 'unsupported' else [])])
 
     def test_no_new_action_intent_keeps_movie_support_and_existing_arm_joint_routes(self):
         cases = [
@@ -246,9 +251,8 @@ class DirectorTest(unittest.TestCase):
         for raw in ["", "basic", "unsupported", "single action", "combined\nsingle"]:
             with self.subTest(raw=raw):
                 infer = Inference(action_intent=raw)
-                with self.assertRaisesRegex(ValueError, "Invalid new-action intent"):
-                    direct("A new motion.", infer)
-                self.assertEqual([name for name, _ in infer.calls], ["sequence", "playback_control", "action_intent"])
+                self.assertRejected(direct('A new motion.', infer), 'Invalid new-action intent')
+                self.assertEqual([name for name, _ in infer.calls], ['request_intent', 'language_scope', 'meaning_scope', 'sequence', 'extension_scope', 'playback_control', 'action_intent'])
 
     def test_leg_freeze_and_restore_confirm_anatomy_before_returning_validated_edits(self):
         for operation in ["freeze", "restore"]:
@@ -258,23 +262,19 @@ class DirectorTest(unittest.TestCase):
                     infer = Inference(leg_control=command)
                     result = direct("Change only the leg motion.", infer)
                     self.assertEqual(result, {"output": command, "trace": {
-                        "sequence": "single", "playback_control": "none", "action_intent": "none",
+                        "meaning_scope": "keep", "normalized_instruction": "Change only the leg motion.", "language_scope": "english", "request_intent": "command", "extension_scope": "none", "sequence": "single", "playback_control": "none", "action_intent": "none",
                         "arm_control": "none", "leg_control": command, "leg_scope": "yes", "route": "edit",
                         **({"dance_extension": "none", "dance_confirmation": "no"} if operation == "restore" else {}),
                     }})
-                    self.assertEqual([name for name, _ in infer.calls], [
-                        "sequence", "playback_control", "action_intent", "arm_control", "leg_control", "leg_scope",
-                        *(["dance_extension", "dance_confirmation"] if operation == "restore" else []),
-                    ])
+                    self.assertEqual([name for name, _ in infer.calls], ['request_intent', 'language_scope', 'meaning_scope', 'sequence', 'extension_scope', 'playback_control', 'action_intent', 'arm_control', 'leg_control', 'leg_scope', *(['dance_extension', 'dance_confirmation'] if operation == 'restore' else [])])
 
     def test_malformed_leg_gate_cannot_run_partial_or_unrelated_commands(self):
         for raw in ["", "unsupported", "freeze both", "freeze left_arm", "restore left_ankle",
                     "freeze\tleft_leg", "freeze left_leg extra", "freeze left_leg\nrestore right_leg"]:
             with self.subTest(raw=raw):
                 infer = Inference(leg_control=raw)
-                with self.assertRaisesRegex(ValueError, "Invalid leg motion control"):
-                    direct("Freeze a leg.", infer)
-                self.assertEqual([name for name, _ in infer.calls], ["sequence", "playback_control", "action_intent", "arm_control", "leg_control"])
+                self.assertRejected(direct('Freeze a leg.', infer), 'Invalid leg motion control')
+                self.assertEqual([name for name, _ in infer.calls], ['request_intent', 'language_scope', 'meaning_scope', 'sequence', 'extension_scope', 'playback_control', 'action_intent', 'arm_control', 'leg_control'])
 
     def test_full_overhead_reach_expands_only_the_selected_arm_and_keeps_real_trace(self):
         for target, command in [
@@ -307,7 +307,7 @@ class DirectorTest(unittest.TestCase):
         self.assertEqual(transform_command("left_shoulder", "hold z 45"), "joint left_shoulder z 45")
 
     def test_new_body_actions_keep_counts_and_optional_still_arms(self):
-        for action in ["kneel", "lie_down", "side_kick_left", "side_kick_right"]:
+        for action in ["kneel", "lie_down", "sway", "side_kick_left", "side_kick_right"]:
             for count in [1, 8]:
                 command = f"action {action} {count}\narms still"
                 with self.subTest(command=command):
@@ -318,9 +318,9 @@ class DirectorTest(unittest.TestCase):
                     self.assertEqual(result["trace"]["action"], command)
 
     def test_new_action_support_and_count_validation_cannot_execute_partial_programs(self):
-        invalid = [f"action {action} {count}" for action in ["kneel", "lie_down", "side_kick_left", "side_kick_right"]
+        invalid = [f"action {action} {count}" for action in ["kneel", "lie_down", "sway", "side_kick_left", "side_kick_right"]
                    for count in ["0", "9", "1.5"]]
-        invalid += [f"action {action} 1 {support}" for action in ["kneel", "lie_down", "side_kick_left", "side_kick_right"]
+        invalid += [f"action {action} 1 {support}" for action in ["kneel", "lie_down", "sway", "side_kick_left", "side_kick_right"]
                     for support in ["left", "right", "both"]]
         invalid += ["action kneel 8\naction side_kick_right 8\naction lie_down 1"]
         for raw in invalid:
@@ -338,15 +338,14 @@ class DirectorTest(unittest.TestCase):
                 infer = Inference(playback_control=command.removeprefix("playback "))
                 result = direct("A global playback direction", infer)
                 self.assertEqual(result, {"output": command, "trace": {
-                    "sequence": "single", "playback_control": command.removeprefix("playback "), "route": "playback"}})
+                    "meaning_scope": "keep", "normalized_instruction": "A global playback direction", "language_scope": "english", "request_intent": "command", "extension_scope": "none", "sequence": "single", "playback_control": command.removeprefix("playback "), "route": "playback"}})
                 self.assertEqual(infer.atomic_calls, [("playback_control", "A global playback direction")])
 
     def test_invalid_playback_output_is_rejected_before_other_models_run(self):
         for output in ["playback pause", "unsupported", "playback reset", "playback pause\njoint head x 10"]:
             with self.subTest(output=output):
                 infer = Inference(playback_control=output)
-                with self.assertRaisesRegex(ValueError, "Invalid playback control"):
-                    direct("A direction", infer)
+                self.assertRejected(direct('A direction', infer), 'Invalid playback control')
                 self.assertEqual(len(infer.atomic_calls), 1)
 
     def test_dance_start_and_support_edits_have_distinct_commands(self):
@@ -380,8 +379,7 @@ class DirectorTest(unittest.TestCase):
             self.assertEqual(result["trace"]["dance_confirmation"], "no")
         infer = Inference(dance_extension="unsupported", dance_confirmation="no", activity_scope="basic", action="action walk_wave 1")
         self.assertEqual(direct("Walk and wave", infer)["output"], "action walk_wave 1")
-        with self.assertRaisesRegex(ValueError, "Invalid dance domain confirmation"):
-            direct("Dance Gangnam", Inference(dance_extension="dance gangnam", dance_confirmation="maybe"))
+        self.assertRejected(direct('Dance Gangnam', Inference(dance_extension='dance gangnam', dance_confirmation='maybe')), 'Invalid dance domain confirmation')
 
     def test_confirmed_dance_abstention_uses_a_validated_fallback(self):
         for command in ["support left", "support right", "support other", "dance gangnam"]:
@@ -436,8 +434,7 @@ class DirectorTest(unittest.TestCase):
 
     def test_invalid_dance_confirmation_after_primary_abstention_stops_before_fallback(self):
         infer = Inference(dance_extension="none", dance_confirmation="maybe")
-        with self.assertRaisesRegex(ValueError, "Invalid dance domain confirmation"):
-            direct("Go on one foot.", infer)
+        self.assertRejected(direct('Go on one foot.', infer), 'Invalid dance domain confirmation')
         self.assertEqual(infer.atomic_calls[-1][0], "dance_confirmation")
         self.assertNotIn("dance_fallback", [name for name, _ in infer.atomic_calls])
 
@@ -463,8 +460,7 @@ class DirectorTest(unittest.TestCase):
         for raw in ["none", "tempo_scale nan", "tempo_scale 2\naction run 2"]:
             with self.subTest(raw=raw):
                 infer = Inference(activity_scope="other", activity_confirmation="basic", current_control=raw)
-                with self.assertRaisesRegex(ValueError, "Invalid motion route or current-motion control"):
-                    direct("Make the arm wave twice as fast.", infer)
+                self.assertRejected(direct('Make the arm wave twice as fast.', infer), 'Invalid motion route or current-motion control')
                 self.assertEqual(infer.atomic_calls[-1][0], "current_control")
                 self.assertNotIn("action", [name for name, _ in infer.atomic_calls])
 
@@ -485,8 +481,7 @@ class DirectorTest(unittest.TestCase):
         infer = Inference(activity_scope="dance", body_fallback="dance cha_cha")
         self.assertEqual(direct("Dance chacha", infer)["output"], "dance cha_cha")
         self.assertEqual([name for name, _ in infer.atomic_calls], ["playback_control", "dance_extension", "dance_confirmation", "activity_scope", "body_fallback"])
-        with self.assertRaisesRegex(ValueError, "Invalid activity scope"):
-            direct("Some instruction", Inference(activity_scope="guessed"))
+        self.assertRejected(direct('Some instruction', Inference(activity_scope='guessed')), 'Invalid activity scope')
 
     def test_action_abstention_checks_scope_before_coordinated_gaits(self):
         infer = Inference(activity_scope="basic", action="unsupported",
@@ -526,15 +521,42 @@ class DirectorTest(unittest.TestCase):
     def test_invalid_confirmation_fails_before_action_or_dispatch(self):
         for scope in ["other", "basic"]:
             infer = Inference(activity_scope=scope, action="unsupported", activity_confirmation="action jump 1")
-            with self.assertRaisesRegex(ValueError, "Invalid activity confirmation"):
-                direct("A direction", infer)
+            self.assertRejected(direct('A direction', infer), 'Invalid activity confirmation')
             self.assertNotIn("action_composition", [name for name, _ in infer.atomic_calls])
             self.assertNotIn("dispatch", [name for name, _ in infer.atomic_calls])
 
     def test_waving_gaits_reject_a_conflicting_still_arms_constraint(self):
         for gait in ["walk_wave", "run_wave"]:
-            with self.subTest(gait=gait), self.assertRaisesRegex(ValueError, "waving gait"):
-                validate_actions(f"action {gait} 1\narms still")
+            for commands in [f"action {gait} 1\narms still", f"arms still\naction {gait} 1",
+                             f"action jump 1\narms still\naction {gait} 1"]:
+                with self.subTest(commands=commands), self.assertRaisesRegex(ValueError, "waving gait"):
+                    validate_actions(commands)
+
+    def test_global_still_arms_canonicalizes_any_position_without_reordering_actions(self):
+        actions = ["action jump 2 left", "action bow 1", "action sway 3", "action kick_right 1"]
+        canonical = "\n".join([*actions, "arms still"])
+        for position in range(len(actions) + 1):
+            with self.subTest(position=position):
+                raw = "\n".join([*actions[:position], "arms still", *actions[position:]])
+                self.assertEqual(validate_actions(raw), canonical)
+                result = direct("Keep both arms still throughout these actions.", Inference(activity_scope="basic", action=raw))
+                self.assertEqual(result["output"], canonical)
+                self.assertEqual(result["trace"]["action"], raw)
+        self.assertEqual(validate_actions("\n".join(actions)), "\n".join(actions))
+
+    def test_reordered_still_arms_cannot_hide_duplicates_missing_actions_or_limits(self):
+        invalid = [
+            "arms still", "arms still\narms still", "arms still\naction jump 1\narms still",
+            "action jump 1\narms still\naction bow 1\narms still", "arms  still\naction jump 1",
+            "arms still\naction jump 0", "arms still\naction jump 9", "arms still\naction jump 1.5",
+            "arms still\naction jump 8\naction bow 8\naction sway 1",
+            "arms still\n" + "\n".join(["action jump 1"] * 5),
+        ]
+        for raw in invalid:
+            with self.subTest(raw=raw), self.assertRaises(ValueError):
+                validate_actions(raw)
+        self.assertEqual(validate_actions("arms still\naction jump 8\naction bow 8"),
+                         "action jump 8\naction bow 8\narms still")
 
     def test_action_parameters_preserve_support_and_arm_constraints(self):
         for command in ["action kick_right 1\narms still", "action jump 2 left",
@@ -545,7 +567,7 @@ class DirectorTest(unittest.TestCase):
                 self.assertEqual(direct("A parameterized body action", infer)["output"], command)
         for invalid in ["arms still", "action run 1 left", "action kick_right 1 right",
                         "action jump 1 center", "action jump 1 left extra",
-                        "arms still\naction jump 1", "action jump 1\narms still\narms still"]:
+                        "arms still extra\naction jump 1", "action jump 1\narms still\narms still"]:
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
                 validate_actions(invalid)
 
@@ -691,16 +713,15 @@ class DirectorTest(unittest.TestCase):
         infer.outputs["body_fallback"] = "arms robot"
         self.assertEqual(direct("Use robotic arms", infer)["output"], "arms robot")
         invalid = Inference(dispatch="motion", motion_scope="body", body="dance imaginary")
-        with self.assertRaisesRegex(ValueError, "Unsupported motion command"):
-            direct("Dance", invalid)
+        self.assertRejected(direct('Dance', invalid), 'Unsupported motion command')
         self.assertEqual([name for name, _ in invalid.atomic_calls], ["playback_control", "dance_extension", "dance_confirmation", "activity_scope", "activity_confirmation", "dispatch", "edit_intent", "motion_scope", "body"])
 
     def test_combined_joint_output_preserves_paired_segments_and_validates_fields(self):
         infer = Inference(dispatch="motion", motion_scope="joint", joint_motion="both_index_2 hold bend 30")
         self.assertEqual(direct("Curl the second knuckle of both index fingers 30 degrees", infer)["output"], "joint left_index_2 z 30\njoint right_index_2 z -30")
         for invalid in ["both_index_4 hold bend 30", "both_head hold left 20", "head hold y nan", "head hold y 400", "head hold y 20 extra", "head hold\ny 20"]:
-            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
-                direct("A joint request", Inference(dispatch="motion", motion_scope="joint", joint_motion=invalid))
+            with self.subTest(invalid=invalid):
+                self.assertRejected(direct('A joint request', Inference(dispatch='motion', motion_scope='joint', joint_motion=invalid)))
         infer = Inference(dispatch="motion", motion_scope="mixed", body="dance salsa", joint_motion="unsupported")
         self.assertEqual(direct("An unsupported joint plus dance", infer)["output"], "unsupported")
 
@@ -710,8 +731,8 @@ class DirectorTest(unittest.TestCase):
         self.assertEqual(result["output"], "joint left_clavicle z 18")
         self.assertEqual(result["trace"]["joint_motion"], "left_shoulder hold raise 18")
         for target in ["right_clavicle", "left_wrist", "unsupported"]:
-            with self.subTest(target=target), self.assertRaisesRegex(ValueError, "Shoulder refinement"):
-                direct("Raise the left arm", Inference(dispatch="motion", motion_scope="joint", joint_motion="left_shoulder hold raise 18", joint=target))
+            with self.subTest(target=target):
+                self.assertRejected(direct('Raise the left arm', Inference(dispatch='motion', motion_scope='joint', joint_motion='left_shoulder hold raise 18', joint=target)), 'Shoulder refinement')
 
     def test_explicit_shoulder_axis_does_not_enter_anatomical_raise_refinement(self):
         infer = Inference(dispatch="motion", motion_scope="joint", joint_motion="left_shoulder hold x -27")
@@ -726,7 +747,7 @@ class DirectorTest(unittest.TestCase):
                     infer = Inference(dispatch="dexterity", dexterity=command)
                     result = direct("An instruction", infer)
                     self.assertEqual(result["output"], command)
-                    self.assertEqual(result["trace"], {"sequence": "single", "playback_control": "none", "leg_control": "none", "action_intent": "none", "arm_control": "none", "dance_extension": "none", "dance_confirmation": "no", "activity_scope": "other", "activity_confirmation": "other", "dispatch": "dexterity", "current_control": "unsupported", "dexterity": command, "route": "dexterity"})
+                    self.assertEqual(result["trace"], {"meaning_scope": "keep", "normalized_instruction": "An instruction", "language_scope": "english", "extension_scope": "none", "sequence": "single", "playback_control": "none", "leg_control": "none", "action_intent": "none", "arm_control": "none", "dance_extension": "none", "dance_confirmation": "no", "activity_scope": "other", "activity_confirmation": "other", "request_intent": "command", "dispatch": "dexterity", "current_control": "unsupported", "dexterity": command, "route": "dexterity"})
                     self.assertEqual(len(infer.atomic_calls), 8)
 
     def test_named_skill_speed_edits_control_the_current_motion_without_creating_a_skill(self):
@@ -768,16 +789,15 @@ class DirectorTest(unittest.TestCase):
         for command in ["", "tempo_scale nan", "tempo_scale 0", "tempo_scale 4.1", "tempo_scale 2\nhand other", "skill coin_roll left forward"]:
             with self.subTest(command=command):
                 infer = Inference(dispatch="dexterity", current_control=command)
-                with self.assertRaisesRegex(ValueError, "Invalid motion route or current-motion control"):
-                    direct("Make the coin roll faster.", infer)
+                self.assertRejected(direct('Make the coin roll faster.', infer), 'Invalid motion route or current-motion control')
                 self.assertEqual(infer.atomic_calls[-1][0], "current_control")
                 self.assertNotIn("dexterity", [name for name, _ in infer.atomic_calls])
 
     def test_invalid_skill_does_not_fall_through_or_guess(self):
         for raw in ["", "unsupported", "finger_ripple left forward", "skill imaginary left forward", "skill coin_roll both forward", "skill coin_roll right fast", "skill coin_roll right forward 90", "skill coin_roll right forward\ndance salsa", "skill\ncoin_roll right forward", "legacy\nskill coin_roll left forward"]:
             infer = Inference(dispatch="dexterity", dexterity=raw)
-            with self.subTest(raw=raw), self.assertRaisesRegex(ValueError, "Invalid dexterity"):
-                direct("Roll a coin", infer)
+            with self.subTest(raw=raw):
+                self.assertRejected(direct('Roll a coin', infer), 'Invalid dexterity')
             self.assertEqual(len(infer.atomic_calls), 8)
 
     def test_input_and_output_types_are_bounded_before_execution(self):
@@ -785,11 +805,10 @@ class DirectorTest(unittest.TestCase):
             infer = Inference()
             with self.subTest(instruction=instruction), self.assertRaises(ValueError):
                 direct(instruction, infer)
-            self.assertEqual(infer.atomic_calls, [])
+            self.assertEqual(infer.calls, [])
         with self.assertRaisesRegex(ValueError, "non-text"):
             direct("Roll a coin", lambda *_: None)
-        with self.assertRaisesRegex(ValueError, "Invalid motion route"):
-            direct("An instruction", Inference(dispatch="guessed"))
+        self.assertRejected(direct('An instruction', Inference(dispatch='guessed')), 'Invalid motion route')
 
     def test_functions_load_lazily_and_are_cached_by_pinned_id(self):
         loaded = []
@@ -805,13 +824,390 @@ class DirectorTest(unittest.TestCase):
             self.assertEqual(loaded, [PROGRAMS["dexterity"]])
 
 
+class ExtensionPipelineTest(MotionAssertions):
+    def test_whole_request_intent_precedes_the_splitter_and_all_motion_models(self):
+        for label in ["other", "unknown", "command\nother", ""]:
+            with self.subTest(label=label):
+                infer = Inference(request_intent=label, playback_control="pause", extension_scope="gesture")
+                result = direct("A valid user input.", infer)
+                self.assertEqual(result["output"], "unsupported")
+                self.assertEqual(result["trace"]["request_intent"], label)
+                self.assertEqual(infer.calls, [("request_intent", "A valid user input.")])
+                self.assertNotIn("sequence", result["trace"])
+                if label != "other":
+                    self.assertRejected(result, "Invalid motion request intent")
+
+    def test_neutral_scope_selects_one_bounded_extension_without_old_action_routing(self):
+        for scope, expert, raw, expected in [
+            ("sway", "body_sway", "action sway 8", "action sway 8"),
+            ("sway", "body_sway", "arms still\naction sway 2", "action sway 2\narms still"),
+            ("gesture", "action_gesture", "action clap 2", "action clap 2"),
+            ("gesture", "action_gesture", "action punch_left 1", "action punch_left 1"),
+            ("gesture", "action_gesture", "action punch_right 8", "action punch_right 8"),
+        ]:
+            with self.subTest(scope=scope, raw=raw):
+                infer = Inference(extension_scope=scope, **{expert: raw}, action="action side_kick_right 1")
+                result = direct("Perform an extension motion.", infer)
+                self.assertEqual(result["output"], expected)
+                self.assertEqual(result["trace"], {
+                    "meaning_scope": "keep", "normalized_instruction": "Perform an extension motion.",
+                    "request_intent": "command", "language_scope": "english", "sequence": "single", "extension_scope": scope,
+                    expert: raw, "route": "action",
+                })
+                self.assertEqual([name for name, _ in infer.calls], ["request_intent", "language_scope", "meaning_scope", "sequence", "extension_scope", expert])
+
+    def test_none_scope_preserves_original_posture_support_and_playback_routes(self):
+        for outputs, expected in [
+            ({"action_intent": "single", "activity_scope": "basic", "action": "action jump 8"}, "action jump 8"),
+            ({"activity_scope": "basic", "action": "action kneel 1"}, "action kneel 1"),
+            ({"dance_extension": "support left"}, "support left"),
+            ({"playback_control": "pause"}, "playback pause"),
+        ]:
+            with self.subTest(outputs=outputs):
+                infer = Inference(extension_scope="none", body_sway="action sway 8", action_gesture="action clap 8", **outputs)
+                result = direct("An established direction.", infer)
+                self.assertEqual(result["output"], expected)
+                self.assertEqual(result["trace"]["extension_scope"], "none")
+                self.assertEqual([name for name, _ in infer.calls[:5]], ["request_intent", "language_scope", "meaning_scope", "sequence", "extension_scope"])
+                self.assertNotIn("body_sway", result["trace"])
+                self.assertNotIn("action_gesture", result["trace"])
+
+    def test_selected_extension_abstention_never_falls_through_to_an_unrelated_action(self):
+        for scope, expert in [("sway", "body_sway"), ("gesture", "action_gesture")]:
+            infer = Inference(extension_scope=scope, **{expert: "unsupported"}, activity_scope="basic", action="action jump 1")
+            result = direct("An unsupported variant of an extension.", infer)
+            self.assertEqual(result["output"], "unsupported")
+            self.assertEqual(result["trace"][expert], "unsupported")
+            self.assertEqual(infer.calls[-1][0], expert)
+            self.assertNotIn("activity_scope", result["trace"])
+
+    def test_scope_and_detail_grammars_reject_wrong_domains_counts_and_multiple_actions(self):
+        cases = [("invalid", None, None)]
+        cases += [("sway", "body_sway", raw) for raw in ["none", "action kick_right 1", "action sway 0", "action sway 9", "action sway 1 left", "action sway 1\naction sway 1"]]
+        cases += [("gesture", "action_gesture", raw) for raw in ["none", "action sway 1", "action clap 0", "action punch_left 9", "action punch_right 1\narms still", "action clap 1\naction clap 1"]]
+        for scope, expert, raw in cases:
+            with self.subTest(scope=scope, raw=raw):
+                infer = Inference(extension_scope=scope, **({expert: raw} if expert else {}))
+                result = direct("A valid motion request.", infer)
+                self.assertRejected(result)
+                self.assertEqual(result["trace"]["extension_scope"], scope)
+                if expert:
+                    self.assertEqual(result["trace"][expert], raw)
+                self.assertEqual(infer.calls[-1][0], expert or "extension_scope")
+
+    def test_pipeline_stages_preserve_non_text_and_provider_errors(self):
+        for gate, context in [("request_intent", {}), ("extension_scope", {}),
+                              ("body_sway", {"extension_scope": "sway"}), ("action_gesture", {"extension_scope": "gesture"})]:
+            for failure in [None, ValueError("Provider JSON invalid"), ConnectionError("Provider disconnected")]:
+                with self.subTest(gate=gate, failure=failure):
+                    fake = Inference(**context, **{gate: failure})
+                    def infer(program_id, text):
+                        output = fake(program_id, text)
+                        if isinstance(output, Exception):
+                            raise output
+                        return output
+                    with self.assertRaises(type(failure) if isinstance(failure, Exception) else ValueError):
+                        direct("A motion request.", infer)
+                    self.assertEqual(fake.calls[-1][0], gate)
+
+
+class ModelOutputRejectionTest(MotionAssertions):
+    def test_invalid_joint_grammar_is_a_rejection_with_original_trace_in_either_language(self):
+        for original, normalized in [("Make a fist.", None), ("握拳", "Make a fist.")]:
+            for raw, error in [("left_wrist hold fist 45", "Unknown transform: fist"),
+                               ("left_wrist_99 hold x 45", "Unsupported joint selection")]:
+                with self.subTest(original=original, raw=raw):
+                    infer = Inference(**({"language_scope": "translate", "motion_translation": normalized} if normalized else {}), dispatch="motion", motion_scope="joint", joint_motion=raw)
+                    result = direct(original, infer)
+                    self.assertRejected(result, error)
+                    self.assertEqual(result["trace"]["joint_motion"], raw)
+                    self.assertEqual(result["trace"]["joint"], raw.split()[0])
+                    self.assertEqual(result["trace"]["transform"], " ".join(raw.split()[1:]))
+                    self.assertEqual(infer.calls[-1], ("joint_motion", normalized or original))
+                    if normalized:
+                        self.assertEqual(result["trace"]["normalized_instruction"], normalized)
+                        self.assertEqual(result["trace"]["motion_translation"], normalized)
+                    else:
+                        self.assertEqual(result["trace"]["normalized_instruction"], original)
+
+    def test_late_non_text_and_provider_failures_remain_errors_in_either_language(self):
+        for original in ["Move your wrist.", "转动手腕"]:
+            for failure in [None, ValueError("Invalid provider JSON"), ConnectionError("Provider disconnected")]:
+                with self.subTest(original=original, failure=failure):
+                    fake = Inference(language_scope="english" if original == "Move your wrist." else "translate", motion_translation="Move your wrist.", dispatch="motion", motion_scope="joint", joint_motion=failure)
+                    def infer(program_id, text):
+                        output = fake(program_id, text)
+                        if isinstance(output, Exception):
+                            raise output
+                        return output
+                    expected = type(failure) if isinstance(failure, Exception) else ValueError
+                    message = str(failure) if isinstance(failure, Exception) else "non-text"
+                    with self.assertRaisesRegex(expected, message):
+                        direct(original, infer)
+                    self.assertEqual(fake.calls[-1][0], "joint_motion")
+
+
+class MotionLanguageTest(unittest.TestCase):
+    def test_original_questions_and_prohibitions_are_rejected_before_language_models(self):
+        for original in ["抬左手是什么意思", "不要抬左脚", "What does raising the left arm mean?", "Do not lift your left foot."]:
+            with self.subTest(original=original):
+                infer = Inference(request_intent="other", language_scope="translate", motion_translation="Raise your left arm.")
+                self.assertEqual(direct(original, infer), {"output": "unsupported", "trace": {"request_intent": "other", "route": "unsupported"}})
+                self.assertEqual(infer.calls, [("request_intent", original)])
+
+    def test_original_polite_requests_and_current_motion_constraints_retain_their_intent(self):
+        for original, translated, outputs, expected in [
+            ("可以抬一下左手吗", "Can you raise your left hand?", {"motion_language": "Can you raise your left arm?", "dispatch": "motion", "motion_scope": "joint", "joint_motion": "left_shoulder hold raise 45", "joint": "left_shoulder"}, "joint left_shoulder z 45"),
+            ("双手不动，踢一下", "Kick once without moving your arms.", {"action_intent": "single", "activity_scope": "basic", "action": "action kick_right 1\narms still"}, "action kick_right 1\narms still"),
+        ]:
+            with self.subTest(original=original):
+                infer = Inference(language_scope="translate", motion_translation=translated, **outputs)
+                result = direct(original, infer)
+                self.assertEqual(result["output"], expected)
+                self.assertEqual(infer.calls[:4], [("request_intent", original), ("language_scope", original), ("motion_translation", original), ("meaning_scope", translated)])
+                normalized = outputs.get("motion_language", translated)
+                start = next(i for i, (name, _) in enumerate(infer.calls) if name == "sequence")
+                self.assertTrue(all(text == normalized for _, text in infer.calls[start:]))
+
+    def test_keep_preserves_english_text_exactly_and_never_calls_translation_or_generator(self):
+        for original, outputs, expected in [
+            ("slap yourself", {"dispatch": "unsupported"}, "unsupported"),
+            ("  Unfreeze your left foot.  ", {"dispatch": "edit", "edit_intent": "restore", "edit_target": "restore left_ankle"}, "restore left_ankle"),
+            ("Send a wave from left fingertips to right.", {"dispatch": "dexterity", "dexterity": "skill arm_wave left forward"}, "skill arm_wave left forward"),
+            ("Go onto both knees.", {"activity_scope": "basic", "action": "action kneel 1"}, "action kneel 1"),
+            ("Lift your left foot.", {"dance_extension": "support right"}, "support right"),
+        ]:
+            with self.subTest(original=original):
+                infer = Inference(meaning_scope="keep", motion_language="Both feet again.", **outputs)
+                result = direct(original, infer)
+                self.assertEqual(result["output"], expected)
+                self.assertEqual(result["trace"]["meaning_scope"], "keep")
+                self.assertNotIn("motion_language", result["trace"])
+                self.assertEqual(result["trace"]["normalized_instruction"], original)
+                self.assertTrue(all(text == original for _, text in infer.calls))
+                self.assertNotIn("motion_translation", [name for name, _ in infer.calls])
+
+    def test_keep_uses_translated_english_instead_of_the_original_non_english_text(self):
+        for original in ["Остановись.", "止まれ。", "Arrete.", "Detente.", "停止", "\U00020000"]:
+            with self.subTest(original=original):
+                infer = Inference(language_scope="translate", motion_translation="Stop.", playback_control="pause")
+                result = direct(original, infer)
+                self.assertEqual(result["output"], "playback pause")
+                self.assertEqual(result["trace"]["meaning_scope"], "keep")
+                self.assertNotIn("motion_language", result["trace"])
+                self.assertEqual(result["trace"]["motion_translation"], "Stop.")
+                self.assertEqual(result["trace"]["normalized_instruction"], "Stop.")
+                self.assertEqual(infer.calls[:4], [("request_intent", original), ("language_scope", original), ("motion_translation", original), ("meaning_scope", "Stop.")])
+                self.assertTrue(all(text == "Stop." for _, text in infer.calls[3:]))
+
+    def test_english_requests_use_the_shared_semantic_stage_before_the_original_experts(self):
+        for instruction in ["Stop.", "Please stop—now.", "Stop at 45°."]:
+            with self.subTest(instruction=instruction):
+                infer = Inference(playback_control="pause")
+                self.assertEqual(direct(instruction, infer), {"output": "playback pause", "trace": {
+                    "request_intent": "command", "language_scope": "english", "meaning_scope": "keep",
+                    "normalized_instruction": instruction, "extension_scope": "none", "sequence": "single", "playback_control": "pause", "route": "playback",
+                }})
+                self.assertEqual(infer.calls, [(name, instruction) for name in ["request_intent", "language_scope", "meaning_scope", "sequence", "extension_scope", "playback_control"]])
+
+    def test_translated_and_english_anatomical_idioms_share_the_same_semantic_model_and_effects(self):
+        pairs = [
+            ("抬左手", "Raise your left hand.", "Raise your left arm.", {"dispatch": "motion", "motion_scope": "joint", "joint_motion": "left_shoulder hold raise 45", "joint": "left_shoulder"}, "joint left_shoulder z 45"),
+            ("抬左脚", "Lift your left foot.", "unchanged", {"dance_extension": "support right"}, "support right"),
+            ("放下右脚", "Lower your right foot.", "Both feet again.", {"dance_extension": "support both"}, "support both"),
+            ("右脚尖抬高16度", "Point your right toes up 16 degrees.", "Flex your right ankle upward 16 degrees.", {"dispatch": "motion", "motion_scope": "joint", "joint_motion": "right_ankle hold up 16"}, "joint right_ankle x -16"),
+            ("右手腕转30度", "Rotate your right wrist 30 degrees.", "unchanged", {"dispatch": "motion", "motion_scope": "joint", "joint_motion": "right_wrist hold y 30"}, "joint right_wrist y 30"),
+            ("跳高", "Jump high.", "Jump.", {"activity_scope": "basic", "action": "action jump 1"}, "action jump 1"),
+        ]
+        for original, english, semantic, outputs, expected in pairs:
+            with self.subTest(original=original):
+                scope = "keep" if semantic == "unchanged" else "clarify"
+                translated = Inference(language_scope="translate", motion_translation=english, meaning_scope=scope, motion_language=semantic, **outputs)
+                native = Inference(meaning_scope=scope, motion_language=semantic, **outputs)
+                translated_result, native_result = direct(original, translated), direct(english, native)
+                self.assertEqual(translated_result["output"], expected)
+                self.assertEqual(native_result["output"], expected)
+                self.assertEqual(translated.calls[3:], native.calls[2:])
+                self.assertEqual(translated_result["trace"]["normalized_instruction"], english if semantic == "unchanged" else semantic)
+
+    def test_translation_preserves_model_side_angle_and_full_input_for_existing_router(self):
+        cases = [
+            ("抬左腿", "Lift your left leg.", "left_hip hold raise 45", "joint left_hip x -45"),
+            ("抬起右腿60度", "Lift your right leg 60 degrees.", "right_hip hold raise 60", "joint right_hip x -60"),
+            ("向左转头45度", "Turn your head left 45 degrees.", "head hold left 45", "joint head y 45"),
+            ("向右轉頭45度", "Turn your head right 45°.", "head hold right 45", "joint head y -45"),
+            ("Raise the 左 leg 30 degrees", "Raise the left leg 30 degrees.", "left_hip hold raise 30", "joint left_hip x -30"),
+        ]
+        for original, english, joint, expected in cases:
+            with self.subTest(original=original):
+                infer = Inference(language_scope="translate", motion_translation=english, dispatch="motion", motion_scope="joint", joint_motion=joint)
+                result = direct(original, infer)
+                self.assertEqual(result["output"], expected)
+                self.assertEqual(result["trace"]["motion_translation"], english)
+                self.assertEqual(result["trace"]["normalized_instruction"], english)
+                self.assertTrue(all(text == english for _, text in infer.calls[3:]))
+                self.assertEqual([name for name, _ in infer.calls].count("meaning_scope"), 1)
+
+    def test_keep_protects_established_posture_and_support_from_a_wrong_generator(self):
+        for original, english, outputs, expected in [
+            ("Lie down.", "Lie down.", {"activity_scope": "basic", "action": "action lie_down 1"}, "action lie_down 1"),
+            ("躺下", "Lie down.", {"activity_scope": "basic", "action": "action lie_down 1"}, "action lie_down 1"),
+            ("Stand only on your left foot.", "Stand only on your left foot.", {"dance_extension": "support left"}, "support left"),
+            ("只用左脚站立", "Stand only on your left foot.", {"dance_extension": "support left"}, "support left"),
+        ]:
+            with self.subTest(original=original):
+                infer = Inference(language_scope="english" if original == english else "translate",
+                                  motion_translation=english, meaning_scope="keep", motion_language="Both feet again.", **outputs)
+                result = direct(original, infer)
+                self.assertEqual(result["output"], expected)
+                self.assertEqual(result["trace"]["normalized_instruction"], english)
+                self.assertNotIn("motion_language", result["trace"])
+                self.assertNotIn("motion_language", [name for name, _ in infer.calls])
+
+    def test_clarify_can_abstain_with_unchanged_without_regenerating_the_input(self):
+        for original, english in [("  Lift your left foot.  ", "  Lift your left foot.  "), ("抬左脚", "Lift your left foot.")]:
+            with self.subTest(original=original):
+                infer = Inference(language_scope="english" if original == english else "translate", motion_translation=english,
+                                  meaning_scope="clarify", motion_language="unchanged", dance_extension="support right")
+                result = direct(original, infer)
+                self.assertEqual(result["output"], "support right")
+                self.assertEqual(result["trace"]["motion_language"], "unchanged")
+                self.assertEqual(result["trace"]["normalized_instruction"], english)
+                self.assertEqual([name for name, _ in infer.calls].count("motion_language"), 1)
+
+    def test_invalid_meaning_scope_stops_before_generator_and_original_motion_experts(self):
+        for scope in ["none", "english", "Keep", "keep\nclarify", "", "unsupported"]:
+            with self.subTest(scope=scope):
+                infer = Inference(meaning_scope=scope, motion_language="Jump.", activity_scope="basic", action="action jump 1")
+                result = direct("A valid instruction.", infer)
+                self.assertEqual(result["output"], "unsupported")
+                self.assertEqual(result["trace"]["meaning_scope"], scope)
+                self.assertIn("Invalid motion meaning scope", result["trace"]["validation_error"])
+                self.assertEqual([name for name, _ in infer.calls], ["request_intent", "language_scope", "meaning_scope"])
+
+    def test_language_scope_vocabulary_fails_closed_before_translation_or_semantics(self):
+        for scope in ["none", "English", "english\ntranslate", "", "unsupported"]:
+            with self.subTest(scope=scope):
+                infer = Inference(language_scope=scope)
+                result = direct("A valid request.", infer)
+                self.assertEqual(result["output"], "unsupported")
+                self.assertEqual(result["trace"]["language_scope"], scope)
+                self.assertIn("Invalid motion language scope", result["trace"]["validation_error"])
+                self.assertEqual([name for name, _ in infer.calls], ["request_intent", "language_scope"])
+
+    def test_malformed_translation_and_semantic_output_never_reaches_motion_experts(self):
+        invalid = ["", "  ", "x" * 401, "抬右腿", "Lift the 左 leg", "45°", "...", "Подними ногу", "Lift leg\nThen bow", "Lift\tleg", "Lift\x00leg", "Lift\u200bleg", "Liftひらがなleg"]
+        for stage in ["motion_translation", "motion_language"]:
+            for raw in invalid + (["unchanged"] if stage == "motion_translation" else []):
+                with self.subTest(stage=stage, raw=raw):
+                    context = {"language_scope": "translate"} if stage == "motion_translation" else {}
+                    infer = Inference(**context, **{stage: raw})
+                    result = direct("Move your left leg.", infer)
+                    self.assertEqual(result["output"], "unsupported")
+                    self.assertEqual(result["trace"][stage], raw.strip())
+                    self.assertIn("validation_error", result["trace"])
+                    self.assertEqual(infer.calls[-1][0], stage)
+                    self.assertNotIn("sequence", result["trace"])
+
+    def test_misclassified_non_latin_input_cannot_use_the_unchanged_sentinel_to_bypass_validation(self):
+        for original in ["抬左手", "Подними левую руку", "左手を上げて", "왼손을 들어"]:
+            with self.subTest(original=original):
+                infer = Inference(language_scope="english", motion_language="unchanged")
+                result = direct(original, infer)
+                self.assertEqual(result["output"], "unsupported")
+                self.assertEqual(result["trace"]["normalized_instruction"], original)
+                self.assertIn("validation_error", result["trace"])
+                self.assertEqual(infer.calls[-1][0], "motion_language")
+
+    def test_language_stages_keep_non_text_and_provider_failures_as_errors(self):
+        for stage in ["request_intent", "language_scope", "motion_translation", "meaning_scope", "motion_language"]:
+            for error in [None, ValueError("Provider malformed response"), RuntimeError("Disconnected")]:
+                with self.subTest(stage=stage, error=error):
+                    fake = Inference(language_scope="translate", motion_translation="Stop.", meaning_scope="clarify", playback_control="pause")
+                    def infer(program_id, text):
+                        if program_id == PROGRAMS[stage]:
+                            if isinstance(error, Exception):
+                                raise error
+                            return error
+                        return fake(program_id, text)
+                    with self.assertRaisesRegex(type(error) if isinstance(error, Exception) else ValueError, "Provider|Disconnected|non-text"):
+                        direct("停止", infer)
+
+    def test_abstention_and_downstream_rejection_preserve_the_completed_language_trace(self):
+        for stage in ["motion_translation", "motion_language"]:
+            infer = Inference(language_scope="translate", motion_translation="Move your left leg.", **({stage: "unsupported"} if stage == "motion_language" else {}))
+            if stage == "motion_translation":
+                infer.outputs[stage] = "unsupported"
+            result = direct("抬左腿", infer)
+            self.assertEqual(result["output"], "unsupported")
+            self.assertEqual(result["trace"][stage], "unsupported")
+            self.assertNotIn("validation_error", result["trace"])
+            self.assertEqual(infer.calls[-1][0], stage)
+        for outputs in [{"dispatch": "unsupported"}, {"arm_control": "arms invalid"}, {"sequence": "sequence"}]:
+            infer = Inference(language_scope="translate", motion_translation="Lift your left leg.", **outputs)
+            result = direct("抬左腿", infer)
+            self.assertEqual(result["output"], "unsupported")
+            self.assertEqual(result["trace"]["motion_translation"], "Lift your left leg.")
+            self.assertEqual(result["trace"]["meaning_scope"], "keep")
+            self.assertNotIn("motion_language", result["trace"])
+            self.assertEqual(result["trace"]["normalized_instruction"], "Lift your left leg.")
+
+    def test_translation_semantics_and_sequence_have_256_tokens_other_experts_keep_80(self):
+        calls = []
+        def function(text, **options):
+            calls.append((text, options))
+            return "an output"
+        names = ["motion_translation", "motion_language", "sequence", "meaning_scope", "language_scope", "request_intent", "joint_motion"]
+        with patch(f"{local_infer.__module__}._load_function", return_value=function):
+            for name in names:
+                self.assertEqual(local_infer(PROGRAMS[name], name), "an output")
+        self.assertEqual(calls, [(name, {"temperature": 0, "max_tokens": 256 if name in {"motion_language", "motion_translation", "sequence"} else 80}) for name in names])
+
+    def test_default_clone_path_loads_pinned_language_and_motion_experts_with_correct_budgets(self):
+        infer = Inference(language_scope="translate", motion_translation="Lift your left leg 60 degrees.", dispatch="motion", motion_scope="joint", joint_motion="left_hip hold raise 60")
+        loaded, options = [], []
+        def load(program_id):
+            loaded.append(program_id)
+            def function(text, **kwargs):
+                options.append(kwargs)
+                return infer(program_id, text)
+            return function
+        with patch(f"{local_infer.__module__}._load_function", side_effect=load):
+            result = direct("抬左腿60度")
+        self.assertEqual(result["output"], "joint left_hip x -60")
+        self.assertEqual(loaded[:5], [PROGRAMS[name] for name in ["request_intent", "language_scope", "motion_translation", "meaning_scope", "sequence"]])
+        self.assertEqual(options, [{"temperature": 0, "max_tokens": 256 if name in {"motion_language", "motion_translation", "sequence"} else 80} for name, _ in infer.calls])
+
+
 class WorkerTest(unittest.TestCase):
+    def test_worker_preserves_chinese_normalization_and_recovers_for_following_english_request(self):
+        infer = Inference(language_scope=lambda text: "translate" if text == "停止" else "english", motion_translation="Stop.", playback_control="pause")
+        requests = [{"id": "chinese", "instruction": "停止"}, {"id": "english", "instruction": "Stop."}]
+        output = io.StringIO()
+        with patch.dict(PROGRAMS, {"motion_language": PROGRAMS.get("motion_language", "test-motion-language")}):
+            serve(io.StringIO("\n".join(json.dumps(request) for request in requests)), output, infer)
+        responses = [json.loads(line) for line in output.getvalue().splitlines()]
+        self.assertTrue(all(response["ok"] for response in responses))
+        self.assertEqual(responses[0]["result"]["trace"]["normalized_instruction"], "Stop.")
+        self.assertEqual(responses[1]["result"]["trace"]["normalized_instruction"], "Stop.")
+        self.assertEqual([name for name, _ in infer.calls].count("meaning_scope"), 2)
+
     def test_worker_recovers_after_invalid_request_and_model_output(self):
         requests = ["invalid JSON", json.dumps({"id": "bad", "instruction": " "}), json.dumps({"id": "model", "instruction": "Bad model"}), json.dumps({"id": "valid", "instruction": "Ripple"})]
         calls = []
         def infer(pid, text):
+            if pid == PROGRAMS["meaning_scope"]:
+                return "keep"
+            if pid == PROGRAMS["language_scope"]:
+                return "english"
+            if pid == PROGRAMS["motion_language"]:
+                return "unchanged"
             if pid == PROGRAMS["sequence"]:
                 return "single"
+            if pid == PROGRAMS["request_intent"]:
+                return "command"
+            if pid in {PROGRAMS["body_sway"], PROGRAMS["extension_scope"]}:
+                return "none"
             if pid in {PROGRAMS["action_intent"], PROGRAMS["leg_control"], PROGRAMS["arm_control"], PROGRAMS["playback_control"], PROGRAMS["dance_extension"], PROGRAMS["dance_fallback"]}:
                 return "none"
             if pid == PROGRAMS["dance_confirmation"]:
@@ -827,7 +1223,11 @@ class WorkerTest(unittest.TestCase):
         output = io.StringIO()
         serve(io.StringIO("\n".join(requests)), output, infer)
         responses = [json.loads(line) for line in output.getvalue().splitlines()]
-        self.assertEqual([r.get("status", 200) for r in responses], [400, 400, 422, 200])
+        self.assertEqual([r.get("status", 200) for r in responses], [400, 400, 200, 200])
+        self.assertTrue(responses[2]["ok"])
+        self.assertEqual(responses[2]["result"]["output"], "unsupported")
+        self.assertEqual(responses[2]["result"]["trace"]["dexterity"], "invalid")
+        self.assertIn("Invalid dexterity", responses[2]["result"]["trace"]["validation_error"])
         self.assertEqual(responses[-1]["result"]["output"], "skill finger_ripple left forward")
         self.assertEqual(calls, ["Bad model", "Ripple"])
 
@@ -848,8 +1248,18 @@ class WorkerTest(unittest.TestCase):
                 import os
                 print("import log")
                 def function(program_id):
+                    if program_id == {PROGRAMS["meaning_scope"]!r}:
+                        return lambda text, **kwargs: "keep"
+                    if program_id == {PROGRAMS["language_scope"]!r}:
+                        return lambda text, **kwargs: "english"
+                    if program_id == {PROGRAMS["motion_language"]!r}:
+                        return lambda text, **kwargs: "unchanged"
                     if program_id == {PROGRAMS["sequence"]!r}:
                         return lambda *args, **kwargs: "single"
+                    if program_id == {PROGRAMS["request_intent"]!r}:
+                        return lambda *args, **kwargs: "command"
+                    if program_id in ({PROGRAMS["body_sway"]!r}, {PROGRAMS["extension_scope"]!r}):
+                        return lambda *args, **kwargs: "none"
                     if program_id in ({PROGRAMS["action_intent"]!r}, {PROGRAMS["leg_control"]!r}, {PROGRAMS["arm_control"]!r}, {PROGRAMS["playback_control"]!r}, {PROGRAMS["dance_extension"]!r}, {PROGRAMS["dance_fallback"]!r}):
                         return lambda *args, **kwargs: "none"
                     if program_id == {PROGRAMS["dance_confirmation"]!r}:
@@ -882,12 +1292,12 @@ class WorkerTest(unittest.TestCase):
         self.assertEqual(result.stderr.count("python inference log"), 2)
 
 
-class DispatchRoutingTest(unittest.TestCase):
+class DispatchRoutingTest(MotionAssertions):
     def test_edit_target_is_sequential_and_short_circuits_actions(self):
         infer = Inference(dispatch="edit", edit_intent="freeze", edit_target="freeze ring")
         self.assertEqual(direct("Keep the wave going. Stop just the ring finger.", infer), {
             "output": "freeze ring",
-            "trace": {"sequence": "single", "playback_control": "none", "leg_control": "none", "action_intent": "none", "arm_control": "none", "dance_extension": "none", "dance_confirmation": "no", "activity_scope": "other", "activity_confirmation": "other", "dispatch": "edit", "edit_intent": "freeze", "edit_target": "freeze ring", "route": "edit"},
+            "trace": {"meaning_scope": "keep", "normalized_instruction": "Keep the wave going. Stop just the ring finger.", "language_scope": "english", "extension_scope": "none", "sequence": "single", "playback_control": "none", "leg_control": "none", "action_intent": "none", "arm_control": "none", "dance_extension": "none", "dance_confirmation": "no", "activity_scope": "other", "activity_confirmation": "other", "request_intent": "command", "dispatch": "edit", "edit_intent": "freeze", "edit_target": "freeze ring", "route": "edit"},
         })
         self.assertEqual([name for name, _ in infer.atomic_calls], ["playback_control", "dance_extension", "dance_confirmation", "activity_scope", "activity_confirmation", "dispatch", "edit_intent", "edit_target"])
 
@@ -911,10 +1321,9 @@ class DispatchRoutingTest(unittest.TestCase):
             self.assertEqual(direct("A visitor direction", infer)["output"], command)
             self.assertEqual([name for name, _ in infer.atomic_calls], ["playback_control", "dance_extension", "dance_confirmation", "activity_scope", "activity_confirmation", "dispatch", "edit_intent", "current_control"])
         for command in ["", "body", "joint", "hand both", "wave both", "tempo_scale nan", "tempo_scale -1", "tempo_scale 0.249", "tempo_scale 4.1", "reverse", "hand left\njoint head x 40"]:
-            with self.subTest(command=command), self.assertRaises(ValueError):
-                direct("A visitor direction", Inference(dispatch="control", edit_intent="none", current_control=command))
-        with self.assertRaisesRegex(ValueError, "Invalid motion scope"):
-            direct("A motion", Inference(dispatch="motion", motion_scope="unsupported"))
+            with self.subTest(command=command):
+                self.assertRejected(direct('A visitor direction', Inference(dispatch='control', edit_intent='none', current_control=command)))
+        self.assertRejected(direct('A motion', Inference(dispatch='motion', motion_scope='unsupported')), 'Invalid motion scope')
 
     def test_pause_is_resolved_before_a_motion_scope_can_reset_the_joint(self):
         infer = Inference(dispatch="motion", edit_intent="freeze", edit_target="freeze both_knee")
@@ -930,8 +1339,7 @@ class DispatchRoutingTest(unittest.TestCase):
         infer = Inference(dispatch="edit", edit_intent="none")
         self.assertEqual(direct("Explain how to freeze a finger", infer)["output"], "unsupported")
         self.assertEqual([name for name, _ in infer.atomic_calls], ["playback_control", "dance_extension", "dance_confirmation", "activity_scope", "activity_confirmation", "dispatch", "edit_intent", "edit_fallback"])
-        with self.assertRaisesRegex(ValueError, "Invalid motion edit intent"):
-            direct("An edit", Inference(dispatch="edit", edit_intent="guessed"))
+        self.assertRejected(direct('An edit', Inference(dispatch='edit', edit_intent='guessed')), 'Invalid motion edit intent')
 
     def test_only_an_explicit_edit_domain_can_use_the_intent_fallback(self):
         infer = Inference(dispatch="edit", edit_intent="none", edit_fallback="freeze", edit_target="freeze hips")
@@ -939,8 +1347,7 @@ class DispatchRoutingTest(unittest.TestCase):
         self.assertEqual(result["output"], "freeze hips")
         self.assertEqual(result["trace"]["edit_intent"], "none")
         self.assertEqual(result["trace"]["edit_fallback"], "freeze")
-        with self.assertRaisesRegex(ValueError, "Invalid motion edit intent"):
-            direct("An edit", Inference(dispatch="edit", edit_intent="none", edit_fallback="guessed"))
+        self.assertRejected(direct('An edit', Inference(dispatch='edit', edit_intent='none', edit_fallback='guessed')), 'Invalid motion edit intent')
 
     def test_new_thumb_motion_cannot_enter_edit_selector(self):
         infer = Inference(dispatch="motion", motion_scope="joint", joint_motion="left_thumb hold bend 45")
@@ -954,8 +1361,7 @@ class DispatchRoutingTest(unittest.TestCase):
         self.assertEqual([name for name, _ in infer.atomic_calls], ["playback_control", "dance_extension", "dance_confirmation", "activity_scope", "activity_confirmation", "dispatch", "current_control", "dexterity"])
         infer = Inference(dispatch="edit", edit_intent="freeze", edit_target="none", edit_confirmation="none")
         self.assertEqual(direct("An unsupported edit", infer)["output"], "unsupported")
-        with self.assertRaises(ValueError):
-            direct("An invalid edit", Inference(dispatch="edit", edit_intent="freeze", edit_target="none", edit_confirmation="freeze everything"))
+        self.assertRejected(direct('An invalid edit', Inference(dispatch='edit', edit_intent='freeze', edit_target='none', edit_confirmation='freeze everything')))
 
     def test_editor_tokens_cover_fingers_joints_and_selected_without_resolving_context(self):
         for target in ["selected", "hips", "spine_mid", "head", "elbow", "ring", "index_3", "right_ring", "both_thumb", "left_knee", "arm", "left_arm", "right_arm", "both_arms"]:

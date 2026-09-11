@@ -23,5 +23,13 @@
   "dance_fallback": "44d8dcea056e001fee57",
   "leg_control": "072548d8f7126999a32c",
   "action_intent": "afcd59074f7177b983db",
-  "leg_scope": "fd2d92c84105edb9e0bb"
+  "leg_scope": "fd2d92c84105edb9e0bb",
+  "language_scope": "ea90f3eee68e38cf5566",
+  "motion_translation": "b868c7b99f7850ff95ea",
+  "meaning_scope": "ac10abced2dcb34cc3bc",
+  "motion_language": "e66920ff8d53022cfbdb",
+  "extension_scope": "67f02016db1ca9ffb588",
+  "action_gesture": "f0c1518f24ef74ce7712",
+  "body_sway": "ccdd1f970bf921178e06",
+  "request_intent": "455d5754aa863bfe8d43"
 }

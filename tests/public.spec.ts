@@ -86,7 +86,7 @@ test("public language directions preserve the visible creation through hand, spe
     .click();
   expect((await snapshot()).program).toEqual(faster.program);
   await direct("Roll a coin on your head", "unsupported");
-  await expect(page.getByRole("alert")).toContainText("supported yet");
+  await expect(page.getByRole("alert")).toContainText("I couldn’t interpret that direction.");
   expect((await snapshot()).program).toEqual(faster.program);
   await page.screenshot({
     path: testInfo.outputPath("unsupported_keeps_coin.png"),

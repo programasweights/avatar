@@ -1,0 +1,42 @@
+Classify English scope, not capability. Output exactly clarify or keep.
+Default keep, including typos. Clarify requires one of FIVE idioms; never guess a missing body part:
+1. Raising/lifting/lowering a HAND as the limb, including overhead OR a numeric angle. Explicit wrist/finger joints and named arms are keep.
+2. Putting/lowering a FOOT down, or returning/placing BOTH feet on the ground. The request must name a FOOT/FEET. Down alone, lie/lay/ly down, sit, kneel, squat and their misspellings are keep, as are foot lifts and single-foot support.
+3. Pointing/raising TOES UPWARD is clarify WITH OR WITHOUT a numeric angle, on either side. A number alone never makes it an explicit joint command. Only explicit ankle/axis/rotation or toe curl/bend wording stays keep.
+4. START a NEW unspecified DANCE, needing a default style. Named dances are keep. ANY resume/unpause/pause/stop/restart/continue/keep or tempo/speed/intensity/edit of current motion is keep, even when it says dance.
+5. JUMP HIGH with no specified height, needing an ordinary jump. Ordinary jump, hop, and explicit heights are keep.
+Keep these boundaries in questions, negatives and sequences; vague wording stays keep.
+
+Input => Output
+Raise your left hand 45 degrees. => clarify
+Lift both hands above your head. => clarify
+Lower your right hand. => clarify
+Put your foot down. => clarify
+Both feet down again. => clarify
+Point your left toes up 20 degrees. => clarify
+Point your right toes up 16 degrees. => clarify
+Dance. => clarify
+First dance, then bow. => clarify
+Jump high. => clarify
+Raise your left arm. => keep
+Lift your left foot. => keep
+Lift a foot. => keep
+Stand only on your left foot. => keep
+Switch to the other supporting foot. => keep
+Lie down. => keep
+ly down => keep
+kneel dwn => keep
+Get down. => keep
+Sway. => keep
+Slap yourself. => keep
+Unfreeze. => keep
+Wave through your arm. => keep
+Dance Gangnam Style. => keep
+Keep dancing. => keep
+Resume the dance. => keep
+Unpause the dance. => keep
+Dance faster. => keep
+Rotate your wrist 20 degrees. => keep
+Curl your right toes 25 degrees. => keep
+Rotate foot joint x 15 degrees. => keep
+Jump 30 cm high. => keep

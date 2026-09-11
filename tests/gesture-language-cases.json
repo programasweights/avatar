@@ -1,0 +1,120 @@
+{
+  "description": "Exact remote-language acceptance for clap and punch repetition counts, sides, defaults, contradictory or unsupported arm constraints, ordered composition, and paired Chinese/English requests. Unsupported cases check a deliberate decline rather than implemented motion. Rendered-rig geometry is verified separately in gestureBodyActions.spec.ts.",
+  "cases": [
+    {
+      "id": "gesture_clap_twice",
+      "category": "count",
+      "instruction": "Clap your hands twice.",
+      "expected": [
+        "action clap 2"
+      ],
+      "pair_id": "gesture_counted_clap",
+      "source_instruction": "拍手两次。",
+      "source_language": "zh",
+      "language": "en"
+    },
+    {
+      "id": "gesture_clap_eight",
+      "category": "count",
+      "instruction": "Clap your hands eight times.",
+      "expected": [
+        "action clap 8"
+      ]
+    },
+    {
+      "id": "gesture_clap_nine_boundary",
+      "category": "boundary",
+      "instruction": "Clap your hands nine times.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gesture_punch_left_three",
+      "category": "side_and_count",
+      "instruction": "Punch three times with your left fist.",
+      "expected": [
+        "action punch_left 3"
+      ],
+      "pair_id": "gesture_sided_counted_punch",
+      "source_instruction": "用左拳出拳三次。",
+      "source_language": "zh",
+      "language": "en"
+    },
+    {
+      "id": "gesture_punch_right_two",
+      "category": "side_and_count",
+      "instruction": "Punch twice with your right fist.",
+      "expected": [
+        "action punch_right 2"
+      ]
+    },
+    {
+      "id": "gesture_punch_default",
+      "category": "default",
+      "instruction": "Punch.",
+      "expected": [
+        "action punch_right 1"
+      ]
+    },
+    {
+      "id": "gesture_clap_still_arms_boundary",
+      "category": "conflicting_constraint",
+      "instruction": "Clap your hands while keeping both arms still.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gesture_clap_one_hand_boundary",
+      "category": "unsupported_variant",
+      "instruction": "Clap with one hand.",
+      "expected": [
+        "unsupported"
+      ]
+    },
+    {
+      "id": "gesture_clap_twice_zh",
+      "category": "count",
+      "instruction": "拍手两次。",
+      "expected": [
+        "action clap 2"
+      ],
+      "pair_id": "gesture_counted_clap",
+      "source_instruction": "拍手两次。",
+      "source_language": "zh",
+      "language": "zh"
+    },
+    {
+      "id": "gesture_punch_left_three_zh",
+      "category": "side_and_count",
+      "instruction": "用左拳出拳三次。",
+      "expected": [
+        "action punch_left 3"
+      ],
+      "pair_id": "gesture_sided_counted_punch",
+      "source_instruction": "用左拳出拳三次。",
+      "source_language": "zh",
+      "language": "zh"
+    },
+    {
+      "id": "gesture_ordered_clap_bow",
+      "category": "ordered",
+      "instruction": "First clap twice, then bow.",
+      "expected_steps": [
+        {
+          "commands": [
+            "action clap 2"
+          ],
+          "mode": "perform"
+        },
+        {
+          "commands": [
+            "action bow 1"
+          ],
+          "mode": "perform"
+        }
+      ]
+    }
+  ]
+}

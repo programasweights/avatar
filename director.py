@@ -3,12 +3,19 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from functools import cache
 from pathlib import Path
 from typing import Callable
 
 PROGRAMS = json.loads((Path(__file__).parent / "programs.json").read_text())
 Infer = Callable[[str, str], str]
+
+
+class _InferenceResponseError(ValueError):
+    """Provider failures must not be mistaken for invalid motion commands."""
+
+
 SIDES = ("left", "right")
 FINGERS = ("thumb", "index", "middle", "ring", "pinky")
 PARTS = ("clavicle", "shoulder", "elbow", "wrist", "hip", "knee", "ankle", "toes")
@@ -25,7 +32,7 @@ JOINT_ALIASES.update({
 EDIT_ALIASES = {"arms": "both_arms", "both_arm": "both_arms", "legs": "both_legs", "both_leg": "both_legs"}
 EDIT_ALIASES.update({f"{prefix}foot": f"{prefix}ankle" for prefix in ("", "left_", "right_", "both_")})
 DEXTERITY_SKILLS = {"finger_ripple", "finger_touches", "arm_wave", "coin_roll"}
-BODY_ACTIONS = {"walk", "run", "jump", "bow", "crouch", "sit", "kneel", "lie_down", "turn_left", "turn_right", "spin", "kick_left", "kick_right", "side_kick_left", "side_kick_right", "walk_wave", "run_wave"}
+BODY_ACTIONS = {"walk", "run", "jump", "bow", "crouch", "sit", "kneel", "lie_down", "sway", "clap", "punch_left", "punch_right", "turn_left", "turn_right", "spin", "kick_left", "kick_right", "side_kick_left", "side_kick_right", "walk_wave", "run_wave"}
 EDIT_PARTS = {"arm", "leg"} | set(PARTS) | set(FINGERS) | {f"{finger}_{segment}" for finger in FINGERS for segment in (1, 2, 3)}
 EDIT_TARGETS = {"selected", "both_arms", "both_legs", "hips", "spine", "spine_mid", "chest", "neck", "head"} | EDIT_PARTS | {
     f"{side}_{part}" for side in ("left", "right", "both") for part in EDIT_PARTS
@@ -47,7 +54,7 @@ def _load_function(program_id: str):
 
 def local_infer(program_id: str, instruction: str) -> str:
     output = _load_function(program_id)(instruction, temperature=0,
-                                        max_tokens=256 if program_id == PROGRAMS.get("sequence") else 80)
+                                        max_tokens=256 if program_id in {PROGRAMS.get("sequence"), PROGRAMS.get("motion_language"), PROGRAMS.get("motion_translation")} else 80)
     if not isinstance(output, str):
         raise ValueError("PAW returned a non-text response")
     return output
@@ -188,7 +195,10 @@ def validate_follow_up(raw: str) -> str:
 def validate_actions(raw: str) -> str:
     """Bound a sequential whole-body program before creating joint curves."""
     lines = raw.splitlines()
-    steps = lines[:-1] if lines and lines[-1] == "arms still" else lines
+    still_arms = lines.count("arms still")
+    if still_arms > 1:
+        raise ValueError("An action program may specify arms still only once")
+    steps = [line for line in lines if line != "arms still"]
     if not 1 <= len(steps) <= 4:
         raise ValueError("An action sequence needs 1–4 steps")
     total = 0
@@ -199,12 +209,12 @@ def validate_actions(raw: str) -> str:
             raise ValueError("Invalid whole-body action command")
         if len(parts) == 4 and (parts[1] != "jump" or parts[3] not in {"both", "left", "right"}):
             raise ValueError("A support-foot parameter requires a jump and a valid side")
-        if lines[-1] == "arms still" and parts[1] in {"walk_wave", "run_wave"}:
+        if still_arms and parts[1] in {"walk_wave", "run_wave"}:
             raise ValueError("A waving gait cannot keep both arms still")
         total += int(parts[2])
     if total > 16:
         raise ValueError("An action sequence is limited to 16 repetitions")
-    return "\n".join(lines)
+    return "\n".join([*steps, *(["arms still"] if still_arms else [])])
 
 
 def validate_arm_control(raw: str) -> str:
@@ -246,15 +256,93 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
     """Interpret an atomic direction or a fully validated ordered motion plan."""
     if not isinstance(instruction, str) or not instruction.strip() or len(instruction) > 400:
         raise ValueError("Provide a direction of 1–400 characters.")
-    infer = infer or local_infer
+    provider = infer or local_infer
+
+    def checked_infer(program_id: str, text: str) -> str:
+        try:
+            output = provider(program_id, text)
+        except ValueError as exc:
+            raise _InferenceResponseError(str(exc)) from exc
+        if not isinstance(output, str):
+            raise _InferenceResponseError("PAW returned a non-text response")
+        return output
+
+    infer = checked_infer
+    # Classify the original wording before any translation can lose its intent.
+    request_intent = infer(PROGRAMS["request_intent"], instruction).strip()
+    normalization_trace = {"request_intent": request_intent}
+    if request_intent == "other":
+        return {"output": "unsupported", "trace": {**normalization_trace, "route": "unsupported"}}
+    if request_intent != "command":
+        return {"output": "unsupported", "trace": {
+            **normalization_trace, "route": "unsupported",
+            "validation_error": "Invalid motion request intent",
+        }}
+    language_scope = infer(PROGRAMS["language_scope"], instruction).strip()
+    normalization_trace["language_scope"] = language_scope
+    if language_scope not in {"english", "translate"}:
+        return {"output": "unsupported", "trace": {
+            **normalization_trace, "route": "unsupported",
+            "validation_error": "Invalid motion language scope",
+        }}
+
+    def valid_english(text: str) -> bool:
+        return (bool(text) and len(text) <= 400 and text.isprintable()
+                and bool(re.search(r"[A-Za-z]", text))
+                and all(not char.isalpha() or unicodedata.name(char, "").startswith("LATIN ")
+                        for char in text))
+
+    english_instruction = instruction
+    if language_scope == "translate":
+        english_instruction = infer(PROGRAMS["motion_translation"], instruction).strip()
+        normalization_trace["motion_translation"] = english_instruction
+        if english_instruction == "unsupported":
+            return {"output": "unsupported", "trace": {**normalization_trace, "route": "unsupported"}}
+        if english_instruction == "unchanged" or not valid_english(english_instruction):
+            return {"output": "unsupported", "trace": {
+                **normalization_trace, "route": "unsupported",
+                "validation_error": "Motion translation requires 1–400 printable English characters",
+            }}
+    # Decide whether anatomical clarification is needed before asking the
+    # specialized generator. Unrelated directions preserve their exact text.
+    meaning_scope = infer(PROGRAMS["meaning_scope"], english_instruction).strip()
+    normalization_trace["meaning_scope"] = meaning_scope
+    if meaning_scope not in {"keep", "clarify"}:
+        return {"output": "unsupported", "trace": {
+            **normalization_trace, "route": "unsupported",
+            "validation_error": "Invalid motion meaning scope",
+        }}
+    normalized = english_instruction
+    if meaning_scope == "clarify":
+        raw_normalization = infer(PROGRAMS["motion_language"], english_instruction).strip()
+        normalized = english_instruction if raw_normalization == "unchanged" else raw_normalization
+        normalization_trace["motion_language"] = raw_normalization
+    normalization_trace["normalized_instruction"] = normalized
+    if meaning_scope == "clarify" and raw_normalization == "unsupported":
+        return {"output": "unsupported", "trace": {**normalization_trace, "route": "unsupported"}}
+    if not valid_english(normalized):
+        return {"output": "unsupported", "trace": {
+            **normalization_trace, "route": "unsupported",
+            "validation_error": "Motion interpretation requires 1–400 printable English characters",
+        }}
+    instruction = normalized
     raw = infer(PROGRAMS["sequence"], instruction)
     if not isinstance(raw, str):
         raise ValueError("PAW returned a non-text response")
     raw = raw.strip()
     if raw == "single":
-        result = _direct_atomic(instruction, infer)
-        return {**result, "trace": {"sequence": raw, **result["trace"]}}
-    trace = {"sequence": raw, "route": "sequence", "steps": []}
+        atomic_trace = {}
+        try:
+            result = _direct_atomic(instruction, infer, trace=atomic_trace)
+        except _InferenceResponseError:
+            raise
+        except ValueError as exc:
+            return {"output": "unsupported", "trace": {
+                **normalization_trace, "sequence": raw, **atomic_trace,
+                "route": "unsupported", "validation_error": str(exc),
+            }}
+        return {**result, "trace": {**normalization_trace, "sequence": raw, **result["trace"]}}
+    trace = {**normalization_trace, "sequence": raw, "route": "sequence", "steps": []}
 
     def reject(reason: str) -> dict:
         trace.update(route="unsupported", validation_error=reason)
@@ -266,10 +354,13 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
         return reject(str(exc))
     plan = []
     for step in steps:
+        atomic_trace = {}
         try:
-            result = _direct_atomic(step["instruction"], infer)
+            result = _direct_atomic(step["instruction"], infer, trace=atomic_trace)
+        except _InferenceResponseError:
+            raise
         except ValueError as exc:
-            trace["steps"].append({"instruction": step["instruction"], "validation_error": str(exc)})
+            trace["steps"].append({"instruction": step["instruction"], "trace": atomic_trace, "validation_error": str(exc)})
             return reject(f"Sequence step {len(plan) + 1}: {exc}")
         trace["steps"].append({"instruction": step["instruction"], "trace": result["trace"]})
         commands = result["output"]
@@ -281,7 +372,7 @@ def direct(instruction: str, infer: Infer | None = None) -> dict:
     return {"output": json.dumps({"kind": "sequence", "steps": plan}, separators=(",", ":")), "trace": trace}
 
 
-def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
+def _direct_atomic(instruction: str, infer: Infer | None = None, *, trace: dict | None = None) -> dict:
     """Interpret one direction with sequential calls to the inference provider.
 
     Every emitted command is validated. The trace records actual model decisions
@@ -291,7 +382,7 @@ def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
     if not isinstance(instruction, str) or not instruction.strip() or len(instruction) > 400:
         raise ValueError("Provide a direction of 1–400 characters.")
     infer = infer or local_infer
-    trace = {}
+    trace = {} if trace is None else trace
 
     def finish(output: str, route: str | None = None) -> dict:
         # route names the final handler; per-model fields preserve raw decisions.
@@ -339,6 +430,23 @@ def _direct_atomic(instruction: str, infer: Infer | None = None) -> dict:
 
     def current_control() -> str:
         return cached_decision("current_control")
+
+    extension_scope = ask("extension_scope")
+    trace["extension_scope"] = extension_scope
+    if extension_scope not in {"sway", "gesture", "none"}:
+        raise ValueError("Invalid motion extension scope")
+    if extension_scope != "none":
+        expert = "body_sway" if extension_scope == "sway" else "action_gesture"
+        raw = ask(expert)
+        trace.update({expert: raw, "route": "action"})
+        if raw == "unsupported":
+            return finish(raw)
+        command = validate_actions(raw)
+        pattern = (r"action sway [1-8](?:\narms still)?" if extension_scope == "sway"
+                   else r"action (?:clap|punch_left|punch_right) [1-8]")
+        if not re.fullmatch(pattern, command):
+            raise ValueError("Invalid motion extension command")
+        return finish(command)
 
     playback = ask("playback_control")
     trace["playback_control"] = playback
