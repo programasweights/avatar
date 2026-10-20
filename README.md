@@ -264,6 +264,38 @@ input also needs a backend at `/api/direct`; `npm run dev` and `npm run preview`
 provide the included local Python bridge. A hosted site can connect that route
 to its own PAW inference provider.
 
+## Citation
+
+The avatar application is described in [Compile by Training (§6.2)](https://arxiv.org/html/2609.04199v1#S6.SS2). If you use this demo in research, please cite that paper and Program-as-Weights for the underlying fuzzy-function programming model.
+
+**[Compile by Training: Turning Natural-Language Specifications into Local Neural Functions](https://arxiv.org/abs/2609.04199)**
+
+```bibtex
+@misc{paw_2609_04199,
+  title = {{Compile by Training: Turning Natural-Language Specifications into Local Neural Functions}},
+  author = {Deng, Yuntian and Nie, Pengyu and Shieber, Stuart},
+  year = {2026},
+  note = {arXiv preprint},
+  eprint = {2609.04199},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2609.04199}
+}
+```
+
+**[Program-as-Weights: A Programming Paradigm for Fuzzy Functions](https://arxiv.org/abs/2607.02512)**
+
+```bibtex
+@misc{paw_2607_02512,
+  title = {{Program-as-Weights: A Programming Paradigm for Fuzzy Functions}},
+  author = {Zhang, Wentao and Hotsko, Liliana and Kim, Woojeong and Nie, Pengyu and Shieber, Stuart and Deng, Yuntian},
+  year = {2026},
+  note = {arXiv preprint},
+  eprint = {2607.02512},
+  archivePrefix = {arXiv},
+  url = {https://arxiv.org/abs/2607.02512}
+}
+```
+
 ## Character and license
 
 Code: [MIT](LICENSE). Bundled character: Quaternius, [CC0](ASSETS.md), styled as a
