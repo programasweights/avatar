@@ -298,7 +298,7 @@ NeurIPS 2026 · [Preprint](https://arxiv.org/abs/2607.02512)
 
 ## Character and license
 
-Code: [MIT](LICENSE). Bundled character: Quaternius, [CC0](ASSETS.md), styled as a
+Bundled character: Quaternius, [CC0](ASSETS.md), styled as a
 matte jade mannequin. The character ships with the app; Blender is optional.
 [ASSETS.md](ASSETS.md) explains how to rebuild it or import your own Mixamo Y Bot
 for local use with `?character=mixamo`.
